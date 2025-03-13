@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" th:href="@{/css/stocks.css}">
+	<title>Cập nhật cổ phiếu</title>
+</head>
+<body>
+	<div th:fragment="content">
+		<div class="toolbar">
+			<a th:href="@{/stocks/add}">Thêm</a> |
+			<a th:href="@{/stocks/reload}">Reload</a> |
+			<form th:action="@{/stocks/search}" method="get">
+				<input type="text" name="query" placeholder="Tìm kiếm..."/>
+				<button type="submit">Tìm kiếm</button>
+			</form> |
+			<a th:href="@{/}">Thoát</a>
+		</div>
+		
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Mã CP</th>
+					<th>Tên công ty</th>
+					<th>Địa chỉ</th>
+					<th>Số lượng phát hành</th>
+					<th>Hành động</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="stock : ${stocks}">
+					<td th:text="${stock.maCP}"></td>
+					<td th:text="${stock.tenCty}"></td>
+					<td th:text="${stock.diaChi}"></td>
+					<td th:text="${stock.soLuongPH}"></td>
+					<td>
+						<a th:href="@{/stocks/edit/{maCP} (maCP=${stock.maCP})}">Ghi</a> |
+						<form th:action="@{/stocks/delete/{maCP} (maCP=${stock.maCP})}" method="post">
+							<input type="hidden" name="delete-method" value="delete"/>
+							<button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+						</form>
+						<a th:href="@{/stocks/restore/{maCP} (maCP=${stock.maCP})}" th:if="${stock.deleted}"
+							onclick="return confirm('Phục hồi cổ phiếu này?')">Phục hồi</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+
+<script>
+	function confirmAction(url, message) {
+		if (confirm(message)) {
+			window.location.href = url;
+		}
+	}
+</script>
+
+</html>

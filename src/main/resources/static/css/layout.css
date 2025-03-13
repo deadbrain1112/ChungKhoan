@@ -1,0 +1,59 @@
+@charset "UTF-8";
+
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+}
+
+.header {
+	background: #333;
+	color: white;
+	padding: 10px;
+}
+
+.sidebar {
+	width: 250px;
+	float: left;
+	background: #f0f0f0;
+	padding: 10px;
+	height: 100vh;
+	overflow-y: auto; 
+}
+
+.content {
+	margin-left: 260px;
+	padding: 10px;
+}
+
+.tree-menu {
+	list-style: none;
+	padding-left: 20px;
+}
+
+.tree-menu li {
+	margin: 5px 0;
+}
+
+.tree-menu a {
+	text-decoration: none;
+	color: #000;
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.table th, .table td {
+	border: 1px solid #ddd;
+	padding: 8px;
+	text-align: left;
+}
+
+.table th {
+	background-color: #f2f2f2;
+}
+
+.toolbar {
+	margin-bottom: 10px;
+}

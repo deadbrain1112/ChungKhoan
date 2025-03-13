@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" th:href="@{/css/investor_list.css}">
+	<title>Cập nhật nhà đầu tư</title>
+</head>
+<body>
+	<div th:fragment="content">
+		<div class="toolbar">
+			<a th:href="@{/investor/add}">Thêm</a>
+			<a th:href="@{/}">Thoát</a>
+		</div>
+		
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Mã</th>
+					<th>Họ tên</th>
+					<th>Ngày sinh</th>
+					<th>Địa chỉ</th>
+					<th>Số điện thoại</th>
+					<th>CMND</th>
+					<th>Giới tính</th>
+					<th>Email</th>
+					<td>Hành động</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="investor :: ${investors}">
+					<td th:text="${investor.maNDT}"></td>
+					<td th:text="${investor.hoTen}"></td>
+					<td th:text="${investor.ngaySinh}"></td>
+					<td th:text="${investor.diaChi}"></td>
+					<td th:text="${investor.phone}"></td>
+					<td th:text="${investor.cmnd}"></td>
+					<td th:text="${investor.gioiTinh}"></td>
+					<td th:text="${investor.email}"></td>
+					
+					<td>
+						<a th:href="@{/investors/edit/{maNDT} (maNDT=${investor.maNDT})}">Ghi</a> |
+						<form th:action="@{/investors/delete/{id}(id=${investor.id})}" method="post" style="display: inline;">
+                            <input type="hidden" name="delete-method" value="delete" />
+                            <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                        </form>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+</html>

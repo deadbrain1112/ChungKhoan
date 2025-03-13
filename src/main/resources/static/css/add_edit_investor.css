@@ -1,0 +1,100 @@
+@charset "UTF-8";
+.investor-form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .investor-form-container h3, .investor-form-container h4 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .investor-form-container div {
+            margin-bottom: 15px;
+        }
+        .investor-form-container label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+            color: #555;
+        }
+        .investor-form-container input[type="text"],
+        .investor-form-container input[type="number"] {
+            width: calc(100% - 130px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .investor-form-container input[type="text"]:focus,
+        .investor-form-container input[type="number"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .investor-form-container .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .investor-form-container .table th, .investor-form-container .table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .investor-form-container .table th {
+            background-color: #f2f2f2;
+        }
+        .investor-form-container .table td input[type="text"],
+        .investor-form-container .table td input[type="number"] {
+            width: 90%;
+        }
+        .investor-form-container .add-btn, .investor-form-container .remove-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .investor-form-container .add-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .investor-form-container .add-btn:hover {
+            background-color: #218838;
+        }
+        .investor-form-container .remove-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        .investor-form-container .remove-btn:hover {
+            background-color: #c82333;
+        }
+        .investor-form-container button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .investor-form-container button[type="submit"]:hover {
+            background-color: #218838;
+        }
+        .investor-form-container a {
+            padding: 10px 20px;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        .investor-form-container a:hover {
+            background-color: #c82333;
+        }
+        .investor-form-container .form-buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
