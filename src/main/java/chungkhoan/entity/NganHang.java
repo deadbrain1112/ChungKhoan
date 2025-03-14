@@ -12,13 +12,13 @@ import lombok.*;
 @Builder
 public class NganHang {
     @Id
-    @Column(length = 20)
+    @Column(length = 20, nullable = false)
     private String maNH;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true, length = 50, columnDefinition = "nvarchar(50)")
     private String tenNH;
 
-    @Column(length = 100)
+    @Column(length = 100, columnDefinition = "nvarchar(100)")
     private String diaChi;
 
     @Column(length = 10)

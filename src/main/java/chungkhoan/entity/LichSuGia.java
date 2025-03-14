@@ -2,6 +2,8 @@ package chungkhoan.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,9 +20,14 @@ public class LichSuGia {
     private CoPhieu coPhieu;
 
     @Id
-    private LocalDateTime ngay;
+    private LocalDate ngay;
 
+    @Column(nullable = false)
     private double giaTran;
+
+    @Column(nullable = false)
     private double giaSan;
+
+    @Column(nullable = false)
     private double giaTC;
 }

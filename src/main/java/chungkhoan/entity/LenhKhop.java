@@ -25,5 +25,5 @@ public class LenhKhop {
     private double giaKhop;
 
     @Column(length = 50)
-    private String kieuKhop; // Khớp hết, Khớp 1 phần
+    private String kieuKhop;
 }

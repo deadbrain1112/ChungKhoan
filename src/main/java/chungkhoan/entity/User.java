@@ -22,7 +22,7 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role; // ROLE_NDT (Nhà đầu tư), ROLE_NV (Nhân viên)
+    private Role role;
 
     @OneToOne
     @JoinColumn(name = "maNDT", referencedColumnName = "maNDT", unique = true)

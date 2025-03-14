@@ -13,15 +13,15 @@ import java.time.LocalDate;
 @Builder
 public class NhanVien {
     @Id
-    @Column(length = 20)
+    @Column(length = 20, nullable = false)
     private String maNV;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, columnDefinition = "nvarchar(50)")
     private String hoTen;
 
     private LocalDate ngaySinh;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, columnDefinition = "nvarchar(100)")
     private String diaChi;
 
     @Column(nullable = false, length = 15)
@@ -30,7 +30,7 @@ public class NhanVien {
     @Column(nullable = false, unique = true, length = 10)
     private String cmnd;
 
-    @Column(length = 5)
+    @Column(length = 5, columnDefinition = "nvarchar(5)")
     private String gioiTinh;
 
     @Column(length = 50)

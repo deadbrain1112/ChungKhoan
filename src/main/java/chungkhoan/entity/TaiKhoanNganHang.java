@@ -12,13 +12,14 @@ import lombok.*;
 @Builder
 public class TaiKhoanNganHang {
     @Id
-    @Column(length = 20)
+    @Column(length = 20, nullable = false)
     private String maTK;
 
     @ManyToOne
     @JoinColumn(name = "maNDT", nullable = false)
     private NDT ndt;
 
+    @Column(nullable = false)
     private double soTien;
 
     @ManyToOne
