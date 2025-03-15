@@ -2,6 +2,7 @@ package chungkhoan.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "TAIKHOAN_NGANHANG")
@@ -11,16 +12,18 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class TaiKhoanNganHang {
+
     @Id
-    @Column(length = 20, nullable = false)
-    private String maTK;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable = false)
+    private Long maTK;
 
     @ManyToOne
     @JoinColumn(name = "maNDT", nullable = false)
     private NDT ndt;
 
-    @Column(nullable = false)
-    private double soTien;
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal soTien;
 
     @ManyToOne
     @JoinColumn(name = "maNH", nullable = false)

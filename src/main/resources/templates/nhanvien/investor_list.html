@@ -28,7 +28,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr th:each="investor :: ${investors}">
+				<tr th:each="investor : ${investors}">
 					<td th:text="${investor.maNDT}"></td>
 					<td th:text="${investor.hoTen}"></td>
 					<td th:text="${investor.ngaySinh}"></td>

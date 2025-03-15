@@ -20,8 +20,12 @@ public class LoginController {
 	private UserService userService;
 
 	@GetMapping("/login")
-	public String loginForm() {
-		return "nhanvien/login";
+	public ModelAndView loginForm(@RequestParam(value = "error", required = false) String error) {
+		ModelAndView mav = new ModelAndView("nhanvien/login");
+		if (error != null) {
+			mav.addObject("error", "Sai tài khoản hoặc mật khẩu!");
+		}
+		return mav;
 	}
 
 	@PostMapping("/login")
@@ -29,8 +33,17 @@ public class LoginController {
 							  @RequestParam("password") String password,
 							  HttpSession session) {
 		ModelAndView mav = new ModelAndView();
-		Optional<User> userOptional = userService.authenticateUser(username, password);
 
+		// Kiểm tra nếu đăng nhập bằng tài khoản sa
+		if ("sa".equals(username) && "123456".equals(password)) {
+			session.setAttribute("username", "sa");
+			session.setAttribute("role", Role.ROLE_ADMIN);
+			mav.setViewName("redirect:/nhanvien/layout");
+			return mav;
+		}
+
+		// Kiểm tra người dùng thông thường
+		Optional<User> userOptional = userService.authenticateUser(username, password);
 		if (userOptional.isPresent()) {
 			User user = userOptional.get();
 			session.setAttribute("username", username);
@@ -56,27 +69,12 @@ public class LoginController {
 		session.invalidate();
 		return "redirect:/login";
 	}
-	
-	// Vào form điền thông tin
-	@GetMapping("/sign-in")
-	public String signIn() {
-		return "sign_in_request";
+
+	@GetMapping("/nhanvien/layout")
+	public String adminHome(HttpSession session) {
+		if (session.getAttribute("role") == Role.ROLE_ADMIN) {
+			return "nhanvien/layout";
+		}
+		return "redirect:/login?error=unauthorized";
 	}
-	
-	// Xử lý lưu thông tin cá nhân (nhân viên & nđt)
-	@PostMapping("/sign-in-request")
-	public ModelAndView signInRequest() {
-		ModelAndView mav = new ModelAndView("sign_in_request");
-		return mav;
-	}
-	
-	// Vào trang Tạo tài khoản sau khi nhân viên đăng nhập
-	@GetMapping("/register")
-	public String registerForm() {
-		return "register";
-	}
-	
-	// Xử lý thông tin
-	//@PostMapping("/user-create")
-	
 }

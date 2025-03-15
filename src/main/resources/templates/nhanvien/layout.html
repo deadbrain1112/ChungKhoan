@@ -1,30 +1,30 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" th:href="@{/css/layout.css}">
 	<title>QUẢN LÝ</title>
 </head>
 <body>
-	<div class="header">
-		<h2>QUẢN LÝ CHỨNG KHOÁN</h2>
-	</div>
-	
-	<div class="sidebar">
-		<ul class="tree-menu">
-			<li><a th:href="/">Cập nhật</a>
-				<ul>
-					<li><a th:href="@{/stocks}">Cập nhật cổ phiếu</a></li>
-					<li><a th:href="@{/investors}">Cập nhật nhà đầu tư</a></li>
-					<li><a th:href="@{/register}">Tạo tài khoản</a></li>
-				</ul>
-			</li>
-		</ul>
-	</div>
-	
-	<div class="content">
-		<div th:replace="${content} :: content"></div>
-	</div>
+<div class="header">
+	<h2>QUẢN LÝ CHỨNG KHOÁN</h2>
+</div>
+
+<div class="sidebar">
+	<ul class="tree-menu">
+		<li><a th:href="@{/}">Cập nhật</a>
+			<ul>
+				<li><a th:href="@{/stocks}">Cập nhật cổ phiếu</a></li>
+				<li><a th:href="@{/investors}">Cập nhật nhà đầu tư</a></li>
+				<li><a th:href="@{/register}">Tạo tài khoản</a></li>
+			</ul>
+		</li>
+	</ul>
+</div>
+
+<!--<div class="content">-->
+<!--	<div th:replace="~{::content}"></div>-->
+<!--</div>-->
 </body>
 </html>
