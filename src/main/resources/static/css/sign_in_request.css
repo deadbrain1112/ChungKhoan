@@ -1,46 +1,102 @@
-@charset "UTF-8";
+/* Reset mặc định */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Thiết kế nền cho toàn bộ trang */
 body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .request-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 350px;
-        }
-        .request-container h2 {
-            text-align: center;
-            color: #333;
-        }
-        .request-container label {
-            display: block;
-            margin: 10px 0 5px;
-            color: #555;
-        }
-        .request-container input {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .request-container button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .request-container button:hover {
-            background-color: #45a049;
-        }
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #80deea); /* Gradient nền nhẹ */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Container chính */
+.main-container {
+    background-color: #ffffff; /* Nền trắng cho khung */
+    width: 100%;
+    max-width: 450px; /* Độ rộng tối đa của khung */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Hiệu ứng bóng đổ */
+    text-align: center; /* Căn giữa tiêu đề */
+}
+
+/* Tiêu đề */
+.main-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Form */
+form {
+    display: flex;
+    flex-direction: column; /* Sắp xếp các phần tử theo chiều dọc */
+    gap: 15px; /* Khoảng cách giữa các phần tử */
+}
+
+/* Label */
+label {
+    font-size: 16px;
+    color: #555;
+    text-align: left; /* Căn trái cho label */
+    margin-bottom: 5px;
+}
+
+/* Input */
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+/* Hiệu ứng khi focus vào input */
+input[type="text"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Nút Gửi yêu cầu */
+button[type="submit"] {
+    background-color: #007bff; /* Màu nền xanh */
+    color: #ffffff;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Hiệu ứng hover cho nút */
+button[type="submit"]:hover {
+    background-color: #0056b3; /* Màu xanh đậm hơn khi hover */
+}
+
+/* Thông báo thành công */
+.success {
+    color: #28a745;
+    font-size: 16px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+/* Thông báo lỗi */
+.error {
+    color: #dc3545;
+    font-size: 16px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}

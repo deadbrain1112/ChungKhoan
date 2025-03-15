@@ -12,7 +12,7 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
+    
     public Optional<User> authenticateUser(String username, String password) {
         return userRepository.findByUsernameAndPassword(username, password);
     }

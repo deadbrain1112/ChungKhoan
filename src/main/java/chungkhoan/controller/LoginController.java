@@ -77,4 +77,22 @@ public class LoginController {
 		}
 		return "redirect:/login?error=unauthorized";
 	}
+	
+	
+	@GetMapping("/register")
+	public String registerForm() {
+		return "nhanvien/register";
+	}
+	
+	@GetMapping("/sign-in-request")
+	public String signIn() {
+		return "ndt/sign_in_request";
+	}
+	
+	
+	// Xử lý lưu thông tin vào database
+	@PostMapping("/sign-in-request")
+	public String signInRequest() {
+		return "ndt/sign_in_request";
+	}
 }
