@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" th:href="@{/css/sign_in_request.css}">
+	<title>Yêu Cầu Tạo Tài Khoản</title>
+</head>
+<body>
+	<!-- Form NĐT điền thông tin cá nhân -->
+	<div class="main-container">
+		<h2>Điền thông tin cá nhân</h2>
+		<form th:action="@{/sign-in-request}" method="post">
+			<label for="hoTen">Họ và tên:</label>
+			<input type="text" name="hoTen" id="hoTen" required="required">
+			
+			<label for="ngaySinh">Ngày sinh:</label>
+			<input type="text" name="ngaySinh" id="ngaySinh" required="required">
+			
+			<label for="diaChi">Địa chỉ:</label>
+			<input type="text" name="diaChi" id="diaChi" required="required">
+			
+			<label for="phone">Số điện thoại:</label>
+			<input type="text" name="phone" id="phone" maxlength="11" required="required">
+			
+			<label for="cmnd">Chứng minh nhân dân:</label>
+			<input type="text" name="cmnd" id="cmnd" maxlength="12" required="required">
+			
+			<label for="gioiTinh">Giới tính:</label>
+			<input type="text" name="gioiTinh" id="gioiTinh" required="required">
+			
+			<label for="email">Email:</label>
+			<input type="text" name="email" id="email" required="required">
+			
+			<button type="submit">Gửi yêu cầu</button>
+		</form>
+	</div>
+</body>
+</html>

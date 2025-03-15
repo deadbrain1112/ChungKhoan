@@ -1,0 +1,101 @@
+@charset "UTF-8";
+/* Định dạng chung cho body */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #333;
+}
+
+/* Container cho form */
+.register-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Tiêu đề form */
+h2 {
+    text-align: center;
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+/* Định dạng label */
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Định dạng select và input */
+select,
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+/* Định dạng nhóm radio */
+.radio-group {
+    margin-bottom: 15px;
+}
+
+.radio-group label {
+    display: inline;
+    margin-right: 10px;
+    font-weight: normal;
+}
+
+.radio-group input[type="radio"] {
+    margin-right: 5px;
+}
+
+/* Định dạng button */
+button {
+    width: 48%;
+    padding: 10px;
+    margin-right: 4%;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:last-child {
+    margin-right: 0;
+    background-color: #f44336;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Định dạng thông báo lỗi */
+.error {
+    color: red;
+    text-align: center;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #f8d7da;
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký</title>
+    <link rel="stylesheet" th:href="@{/css/register.css}">
+</head>
+<body>
+	<!-- Form tạo tài khoản sau khi nhân viên đăng nhập -->
+	<div class="register-container">
+		<h2>Tạo tài khoản đăng nhập</h2>
+		<form th:action="@{/user-create}" th:object="${user}" method="post">
+			<label for="hoTen">Họ và tên:</label>
+			<select id="hoTen" th:field="*{maNDT}" required="required">
+				<option value="">Chọn họ tên</option>
+				
+				<optgroup label="Nhân viên">
+					<option th:each="nv : ${nhanvien}" th:value="'NV-' + ${nv.manv}" th:text="${nv.hoTen}"></option>
+				</optgroup>
+				
+				<optgroup label="Nhà đầu tư">
+					<option th:each="ndt : ${ndt}" th:value="'NDT-' + ${ndt.mandt}" th:text="${ndt.hoTen}"></option>
+				</optgroup>
+			</select>
+			
+			<label for="userName">Tên đăng nhập:</label>
+            <input type="text" id="userName" th:field="*{userName}" required>
+
+            <label for="password">Mật khẩu:</label>
+            <input type="password" id="password" th:field="*{password}" required>
+
+            <div class="radio-group">
+                <label>Thuộc nhóm:</label>
+                <input type="radio" id="roleNhanVien" th:field="*{role}" value="Nhân viên" required> Nhân viên
+                <input type="radio" id="roleNhaDauTu" th:field="*{role}" value="Nhà đầu tư"> Nhà đầu tư
+            </div>
+            
+            <div class="mkgd-group">
+                <label for="mkgd">Mật khẩu giao dịch:</label>
+                <input type="password" id="mkgd" th:field="*{mkgd}" required>
+            </div>
+
+            <button type="submit">Tạo tài khoản</button>
+            <button type="button" th:onclick="|window.location.href='/admin/user/delete?userName=${user.userName}'|" th:disabled="${user.userName == null}">Xóa tài khoản</button>
+		</form>
+		
+		<p th:if="${error}" class="error" th:text="${error}"></p>
+	</div>
+</body>
+</html>
