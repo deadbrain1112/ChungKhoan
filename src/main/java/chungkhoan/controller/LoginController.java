@@ -56,4 +56,27 @@ public class LoginController {
 		session.invalidate();
 		return "redirect:/login";
 	}
+	
+	// Vào form điền thông tin
+	@GetMapping("/sign-in")
+	public String signIn() {
+		return "sign_in_request";
+	}
+	
+	// Xử lý lưu thông tin cá nhân (nhân viên & nđt)
+	@PostMapping("/sign-in-request")
+	public ModelAndView signInRequest() {
+		ModelAndView mav = new ModelAndView("sign_in_request");
+		return mav;
+	}
+	
+	// Vào trang Tạo tài khoản sau khi nhân viên đăng nhập
+	@GetMapping("/register")
+	public String registerForm() {
+		return "register";
+	}
+	
+	// Xử lý thông tin
+	//@PostMapping("/user-create")
+	
 }

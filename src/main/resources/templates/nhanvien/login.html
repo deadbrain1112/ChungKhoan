@@ -8,7 +8,7 @@
 </head>
 <body>
 	<h2>Đăng nhập</h2>
-	<form action="/login" method="post">
+	<form th:action="@{/login}" method="post">
 		<div class="input-group">
 			<label for="username">Tên tài khoản:</label>
 			<input type="text" id="username" name="username" placeholder="Nhập tên tài khoản" required="required">
@@ -34,7 +34,7 @@
 		<!-- Dòng tạo tài khoản -->
 		<div class="account-actions">
 		    <p><a th:href="@{/forget-password(from='admin')}">Quên mật khẩu</a></p>
-		    <p>Chưa có tài khoản? <a href="/sign-in-request">Đăng ký</a></p>
+		    <p>Chưa có tài khoản? <a href="/sign-in">Đăng ký</a></p>
 		</div>
 	</form>
 </body>
