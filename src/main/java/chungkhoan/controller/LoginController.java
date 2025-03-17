@@ -1,17 +1,13 @@
 package chungkhoan.controller;
 
-import chungkhoan.entity.User;
-import chungkhoan.entity.Role;
 import chungkhoan.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.ModelAndView;
-
-import java.util.Optional;
 
 @Controller
 public class LoginController {
@@ -20,48 +16,36 @@ public class LoginController {
 	private UserService userService;
 
 	@GetMapping("/login")
-	public ModelAndView loginForm(@RequestParam(value = "error", required = false) String error) {
-		ModelAndView mav = new ModelAndView("nhanvien/login");
+	public String loginForm(@RequestParam(value = "error", required = false) String error, Model model) {
 		if (error != null) {
-			mav.addObject("error", "Sai tài khoản hoặc mật khẩu!");
+			model.addAttribute("error", "Sai tài khoản hoặc mật khẩu!");
 		}
-		return mav;
+		return "nhanvien/login";
 	}
 
 	@PostMapping("/login")
-	public ModelAndView login(@RequestParam("username") String username,
-							  @RequestParam("password") String password,
-							  HttpSession session) {
-		ModelAndView mav = new ModelAndView();
+	public String login(@RequestParam("username") String username,
+						@RequestParam("password") String password,
+						HttpSession session) {
 
-		// Kiểm tra nếu đăng nhập bằng tài khoản sa
-		if ("sa".equals(username) && "123456".equals(password)) {
-			session.setAttribute("username", "sa");
-			session.setAttribute("role", Role.ROLE_ADMIN);
-			mav.setViewName("redirect:/nhanvien/layout");
-			return mav;
+		String role = userService.authenticateUser(username, password);
+		if (role == null) {
+			return "redirect:/login?error=invalid_credentials";
 		}
 
-		// Kiểm tra người dùng thông thường
-		Optional<User> userOptional = userService.authenticateUser(username, password);
-		if (userOptional.isPresent()) {
-			User user = userOptional.get();
-			session.setAttribute("username", username);
-			session.setAttribute("role", user.getRole());
+		session.setAttribute("username", username);
+		session.setAttribute("role", role);
 
-			if (user.getRole() == Role.ROLE_INVESTOR && user.getNdt() != null) {
-				session.setAttribute("maNDT", user.getNdt().getMaNDT());
-				mav.setViewName("redirect:/ndt/success");
-			} else if (user.getRole() == Role.ROLE_EMPLOYEE && user.getNhanVien() != null) {
-				session.setAttribute("maNV", user.getNhanVien().getMaNV());
-				mav.setViewName("redirect:/nhanvien/success");
-			} else {
-				mav.setViewName("redirect:/login?error=invalid_role");
-			}
+		if ("ROLE_INVESTOR".equals(role)) {
+			session.setAttribute("maNDT", userService.getMaNDT(username));
+			return "redirect:/ndt/success";
+		} else if ("ROLE_EMPLOYEE".equals(role)) {
+			session.setAttribute("maNV", userService.getMaNV(username));
+			return "redirect:/nhanvien/success";
 		} else {
-			mav.setViewName("redirect:/login?error=invalid_credentials");
+			return "redirect:/login?error=unauthorized";
 		}
-		return mav;
+
 	}
 
 	@GetMapping("/logout")
@@ -70,29 +54,39 @@ public class LoginController {
 		return "redirect:/login";
 	}
 
-	@GetMapping("/nhanvien/layout")
-	public String adminHome(HttpSession session) {
-		if (session.getAttribute("role") == Role.ROLE_ADMIN) {
-			return "nhanvien/layout";
-		}
-		return "redirect:/login?error=unauthorized";
-	}
-	
-	
 	@GetMapping("/register")
-	public String registerForm() {
+	public String registerNhanVienForm() {
 		return "nhanvien/register";
 	}
-	
-	@GetMapping("/sign-in-request")
-	public String signIn() {
-		return "ndt/sign_in_request";
+
+	@PostMapping("/register")
+	public String registerNhanVien(@RequestParam("username") String username,
+								   @RequestParam("password") String password,
+								   @RequestParam("maNV") String maNV,
+								   @RequestParam("tenNV") String tenNV,
+								   @RequestParam("ngaySinh") String ngaySinh,
+								   @RequestParam("email") String email,
+								   @RequestParam("soDienThoai") String soDienThoai) {
+
+		boolean success = userService.themNhanVien(username, password, maNV, tenNV, ngaySinh, email, soDienThoai);
+		return success ? "redirect:/login" : "redirect:/register-nhanvien?error=failed";
 	}
-	
-	
-	// Xử lý lưu thông tin vào database
-	@PostMapping("/sign-in-request")
-	public String signInRequest() {
-		return "ndt/sign_in_request";
+
+	@GetMapping("/register-ndt")
+	public String registerNhaDauTuForm() {
+		return "ndt/register";
+	}
+
+	@PostMapping("/register-ndt")
+	public String registerNhaDauTu(@RequestParam("username") String username,
+								   @RequestParam("password") String password,
+								   @RequestParam("maNDT") String maNDT,
+								   @RequestParam("tenNDT") String tenNDT,
+								   @RequestParam("ngaySinh") String ngaySinh,
+								   @RequestParam("email") String email,
+								   @RequestParam("soDienThoai") String soDienThoai) {
+
+		boolean success = userService.themNhaDauTu(username, password, maNDT, tenNDT, ngaySinh, email, soDienThoai);
+		return success ? "redirect:/login" : "redirect:/register-ndt?error=failed";
 	}
 }

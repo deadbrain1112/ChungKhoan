@@ -12,7 +12,7 @@
         <h2>Tạo tài khoản đăng nhập</h2>
         <form th:action="@{/user-create}" th:object="${user}" method="post">
             <label for="hoTen">Họ và tên:</label>
-            <select id="hoTen" th:field="*{maNDT}" required>
+            <select id="hoTen" th:field="*{ndt.maNDT}" required>
                 <option value="">Chọn họ tên</option>
                 <optgroup>
                     <option th:each="ndt : ${ndt}" th:value="${ndt.maNDT}" th:text="${ndt.hoTen}"></option>

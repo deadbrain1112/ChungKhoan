@@ -5,37 +5,55 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "LENHDAT")
-@Getter
-@Setter
+@Table(name = "lenhdat")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class LenhDat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "MaGD")
     private Long maGD;
 
+    @Column(name = "NgayGD", nullable = false, columnDefinition = "DATETIME DEFAULT GETDATE()")
     private LocalDateTime ngayGD;
 
-    @Column(length = 1)
-    private String loaiGD; // Mua (M) hoặc Bán (B)
+    @Column(name = "LoaiGD", columnDefinition = "CHAR(1) CHECK (LoaiGD IN ('M', 'B'))", nullable = false)
+    private String loaiGD;
 
-    @Column(length = 5)
-    private String loaiLenh; // LO, ATO, ATC
+    @Column(name = "loailenh", columnDefinition = "NCHAR(5)", nullable = false)
+    private String loaiLenh;
 
+    @Column(name = "soluong", nullable = false)
     private int soLuong;
 
     @ManyToOne
-    @JoinColumn(name = "maCP", nullable = false)
+    @JoinColumn(name = "MaCP", nullable = false)
     private CoPhieu coPhieu;
 
+    @Column(name = "Gia", nullable = false)
     private double gia;
 
     @ManyToOne
-    @JoinColumn(name = "maTK", nullable = false)
-    private TaiKhoanNganHang taiKhoan;
+    @JoinColumn(name = "MaTK", nullable = false)
+    private TaiKhoanNganHang taiKhoanNganHang;
 
-    @Column(length = 20)
+    @Column(name = "trangthai", columnDefinition = "NVARCHAR(20)", nullable = false)
     private String trangThai;
+
+    // Đảm bảo số lượng và giá đặt hợp lệ
+    @PrePersist
+    @PreUpdate
+    private void validateLenhDat() {
+        if (this.soLuong <= 0) {
+            throw new IllegalArgumentException("Số lượng cổ phiếu đặt phải lớn hơn 0!");
+        }
+        if (this.gia <= 0) {
+            throw new IllegalArgumentException("Giá đặt phải lớn hơn 0!");
+        }
+        if (!this.trangThai.matches("Hủy|Chưa|Một phần|Hết|Chờ")) {
+            throw new IllegalArgumentException("Trạng thái lệnh không hợp lệ!");
+        }
+    }
 }

@@ -2,28 +2,32 @@ package chungkhoan.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "COPHIEU")
-@Getter
-@Setter
+@Table(name = "cophieu")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CoPhieu {
     @Id
-    @Column(length = 10, nullable = false)
+    @Column(name = "MaCP", columnDefinition = "NCHAR(10)")
     private String maCP;
 
-    @Column(nullable = false, unique = true, length = 50, columnDefinition = "nvarchar(50)")
+    @Column(name = "tencty", columnDefinition = "NVARCHAR(50)", nullable = false, unique = true)
     private String tenCty;
 
-    @Column(nullable = false, length = 100, columnDefinition = "nvarchar(100)")
+    @Column(name = "diachi", columnDefinition = "NVARCHAR(100)", nullable = false)
     private String diaChi;
 
-    @Column(nullable = false)
+    @Column(name = "soluongph", nullable = false)
     private int soLuongPH;
+
+    @PrePersist
+    @PreUpdate
+    private void validateSoLuongPH() {
+        if (this.soLuongPH <= 0) {
+            throw new IllegalArgumentException("Số lượng cổ phiếu phát hành phải lớn hơn 0!");
+        }
+    }
 }

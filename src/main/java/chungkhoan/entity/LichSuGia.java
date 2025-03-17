@@ -2,32 +2,31 @@ package chungkhoan.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "LICHSUGIA")
-@Getter
-@Setter
+@Table(name = "lichsugia")
+@IdClass(LichSuGiaKey.class)
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class LichSuGia {
     @Id
     @ManyToOne
-    @JoinColumn(name = "maCP", nullable = false)
+    @JoinColumn(name = "MaCP", nullable = false,columnDefinition = "NCHAR(10)")
     private CoPhieu coPhieu;
 
     @Id
-    private LocalDate ngay;
+    @Column(name = "Ngay", nullable = false)
+    private LocalDateTime ngay;
 
-    @Column(nullable = false)
+    @Column(name = "giatran", nullable = false)
     private double giaTran;
 
-    @Column(nullable = false)
+    @Column(name = "giasan", nullable = false)
     private double giaSan;
 
-    @Column(nullable = false)
+    @Column(name = "GiaTC", nullable = false)
     private double giaTC;
 }

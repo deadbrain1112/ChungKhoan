@@ -5,27 +5,24 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "TAIKHOAN_NGANHANG")
-@Getter
-@Setter
+@Table(name = "taikhoan_nganhang")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class TaiKhoanNganHang {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
-    private Long maTK;
+    @Column(name = "MaTK", columnDefinition = "NCHAR(20)")
+    private String maTK;
 
     @ManyToOne
-    @JoinColumn(name = "maNDT", nullable = false)
-    private NDT ndt;
-
-    @Column(nullable = false, precision = 18, scale = 2)
-    private BigDecimal soTien;
+    @JoinColumn(name = "MaNDT", nullable = false)
+    private NhaDauTu nhaDauTu;
 
     @ManyToOne
-    @JoinColumn(name = "maNH", nullable = false)
+    @JoinColumn(name = "MaNH", nullable = false)
     private NganHang nganHang;
+
+    @Column(name = "sotien", nullable = false, precision = 18, scale = 2)
+    private BigDecimal soTien;
 }
