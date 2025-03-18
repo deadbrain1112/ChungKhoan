@@ -1,19 +1,32 @@
-@charset "UTF-8";
-.table { 
-	width: 100%; 
-	border-collapse: collapse; 
+/* Kiểu dáng cho SubForm */
+.subform-container {
+    display: none;
+    margin-top: 20px;
 }
 
-.table th, .table td { 
-	border: 1px solid #ddd; 
-	padding: 8px; 
-	text-align: left; 
+.subform-container.active {
+    display: block;
 }
 
-.table th { 
-	background-color: #f2f2f2; 
+/* Kiểu dáng cho bảng tài khoản ngân hàng */
+.bank-account-table {
+    width: 100%;
+    margin-top: 10px;
 }
 
-.toolbar { 
-	margin-bottom: 10px; 
+.bank-account-table th, .bank-account-table td {
+    padding: 8px;
+    text-align: left;
+}
+
+/* Kiểu dáng cho thông tin ngân hàng */
+.bank-info {
+    margin-top: 5px;
+    font-size: 0.9em;
+    color: #555;
+}
+
+/* Kiểu dáng cho nút điều khiển trong form */
+.form-actions {
+    margin-top: 20px;
 }
