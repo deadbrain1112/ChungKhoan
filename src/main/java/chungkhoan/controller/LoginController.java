@@ -54,8 +54,17 @@ public class LoginController {
 		return "redirect:/login";
 	}
 
+	@GetMapping("/nhanvien/layout")
+	public String adminHome(HttpSession session) {
+		if (session.getAttribute("role") == Role.ROLE_ADMIN) {
+			return "nhanvien/layout";
+		}
+		return "redirect:/login?error=unauthorized";
+	}
+	
+	
 	@GetMapping("/register")
-	public String registerNhanVienForm() {
+	public String registerForm() {
 		return "nhanvien/register";
 	}
 
