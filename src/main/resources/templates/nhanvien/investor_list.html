@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: content}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,7 +39,7 @@
                     <td th:text="${investor.email}"></td>
                     <td>
                         <a href="#" th:onclick="'showSubform(\'edit\', \'' + ${investor.maNDT} + '\')'">Sửa</a> |
-                        <form th:action="@{/investors/delete/{id}(id=${investor.id})}" method="post" style="display: inline;">
+                        <form th:action="@{/investors/delete/{id}(id=${investor.id})}" method="get" style="display: inline;">
                             <input type="hidden" name="delete-method" value="delete" />
                             <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
                         </form>
@@ -52,7 +52,7 @@
         <div id="subform" class="subform-container">
             <div class="investor-form-container">
                 <h3 id="subform-title"></h3>
-                <form id="investor-form" th:action="@{/investors/add}" th:object="${investor}" method="post">
+                <form id="investor-form" th:action="@{/investors/add}" th:object="${investor}" method="get">
                     <input type="hidden" th:field="*{maNDT}" id="maNDT-hidden" />
 
                     <div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: content}">
 <head>
     <meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,7 +36,7 @@
 					<td th:text="${stock.soLuongPH}"></td>
 					<td>
 						<a th:href="@{/stocks/edit/{maCP} (maCP=${stock.maCP})}">Ghi</a> |
-						<form th:action="@{/stocks/delete/{maCP} (maCP=${stock.maCP})}" method="post">
+						<form th:action="@{/stocks/delete/{maCP} (maCP=${stock.maCP})}" method="get">
 							<input type="hidden" name="delete-method" value="delete"/>
 							<button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
 						</form>
