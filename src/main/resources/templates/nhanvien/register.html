@@ -10,7 +10,7 @@
     <!-- Form tạo tài khoản sau khi nhân viên đăng nhập -->
     <div class="register-container">
         <h2>Tạo tài khoản đăng nhập</h2>
-        <form th:action="@{/user-create}" th:object="${user}" method="post">
+        <form th:action="@{/user-create}" th:object="${user}" method="get">
             <label for="hoTen">Họ và tên:</label>
             <select id="hoTen" th:field="*{maNDT}" required>
                 <option value="">Chọn họ tên</option>
