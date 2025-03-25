@@ -9,7 +9,7 @@
 <body>
 	<div th:fragment="content">
 		<h3 th:text="${stock.maCP} ? 'Sửa cố phiếu' : 'Thêm cố phiếu'"></h3>
-		<form th:action="@{/stocks/add}" th:object="${stock}" method="get">
+		<form th:action="@{/stocks/add}" th:object="${stock}" method="post">
 			<input type="hidden" th:field="*{maCP}" th:if="${stock.maCP}"/>
 			
 			<div>
