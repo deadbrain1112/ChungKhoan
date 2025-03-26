@@ -11,7 +11,7 @@
 		<div class="toolbar">
 			<a th:href="@{/stocks/add}">Thêm</a> |
 			<a th:href="@{/stocks/reload}">Reload</a> |
-			<form th:action="@{/stocks/search}" method="get">
+			<form th:action="@{/stocks/search}" method="post">
 				<input type="text" name="query" placeholder="Tìm kiếm..."/>
 				<button type="submit">Tìm kiếm</button>
 			</form> |
@@ -36,7 +36,7 @@
 					<td th:text="${stock.soLuongPH}"></td>
 					<td>
 						<a th:href="@{/stocks/edit/{maCP} (maCP=${stock.maCP})}">Ghi</a> |
-						<form th:action="@{/stocks/delete/{maCP} (maCP=${stock.maCP})}" method="get">
+						<form th:action="@{/stocks/delete/{maCP} (maCP=${stock.maCP})}" method="post">
 							<input type="hidden" name="delete-method" value="delete"/>
 							<button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
 						</form>
