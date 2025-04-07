@@ -2,7 +2,7 @@ package chungkhoan.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "lichsugia")
@@ -13,20 +13,20 @@ import java.time.LocalDateTime;
 @Builder
 public class LichSuGia {
     @Id
-    @ManyToOne
-    @JoinColumn(name = "MaCP", nullable = false,columnDefinition = "NCHAR(10)")
-    private CoPhieu coPhieu;
+    @Column(name = "MaCP", columnDefinition = "NCHAR(10)")
+    private String maCP;
 
     @Id
+    @Temporal(TemporalType.TIMESTAMP)  // Cập nhật annotation
     @Column(name = "Ngay", nullable = false)
-    private LocalDateTime ngay;
+    private Timestamp ngay;
 
-    @Column(name = "giatran", nullable = false)
-    private double giaTran;
+    @Column(name = "GiaTran", nullable = false)
+    private float giaTran;
 
-    @Column(name = "giasan", nullable = false)
-    private double giaSan;
+    @Column(name = "GiaSan", nullable = false)
+    private float giaSan;
 
     @Column(name = "GiaTC", nullable = false)
-    private double giaTC;
+    private float giaTC;
 }

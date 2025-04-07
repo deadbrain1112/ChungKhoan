@@ -12,15 +12,13 @@ import lombok.*;
 @Builder
 public class SoHuu {
     @Id
-    @ManyToOne
-    @JoinColumn(name = "MaNDT", nullable = false, columnDefinition = "NCHAR(20)")
-    private NhaDauTu nhaDauTu;
+    @Column(name = "MaNDT", columnDefinition = "NCHAR(20)")
+    private String maNDT;
 
     @Id
-    @ManyToOne
-    @JoinColumn(name = "MaCP", nullable = false,columnDefinition = "NCHAR(10)")
-    private CoPhieu coPhieu;
+    @Column(name = "MaCP", columnDefinition = "NCHAR(10)")
+    private String maCP;
 
-    @Column(name = "soluong", nullable = false)
+    @Column(name = "SoLuong", nullable = false)
     private int soLuong;
 }

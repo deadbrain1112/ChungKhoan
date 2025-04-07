@@ -15,7 +15,7 @@ public class StocksController {
 	// Hiển thị form thêm cổ phiếu 
 	@GetMapping("/stocks/add")
 	public String showAddStocks() {
-		return "add_edit";
+		return "nhanvien/add_edit";
 	}
 	
 	// Xử lý thêm cổ phiếu

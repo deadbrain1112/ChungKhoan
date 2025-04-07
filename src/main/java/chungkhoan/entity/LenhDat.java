@@ -29,7 +29,7 @@ public class LenhDat {
     private int soLuong;
 
     @ManyToOne
-    @JoinColumn(name = "MaCP", nullable = false)
+    @JoinColumn(name = "MaCP", nullable = false, columnDefinition = "NCHAR(10)")
     private CoPhieu coPhieu;
 
     @Column(name = "Gia", nullable = false)

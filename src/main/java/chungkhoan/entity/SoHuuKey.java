@@ -7,6 +7,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SoHuuKey implements Serializable {
-    private String nhaDauTu;
-    private String coPhieu;
+    private String maNDT;
+    private String maCP;
 }

@@ -13,24 +13,32 @@
 			<input type="hidden" th:field="*{maCP}" th:if="${stock.maCP}"/>
 			
 			<div>
-				<label>Mã CP:</label> 
-				<input type="text" th:field="*{maCP}" th:disabled="${stock.maCP}" />
+				<label>Mã CP:</label>
+				<label>
+					<input type="text" th:field="*{maCP}" th:disabled="${stock.maCP}" />
+				</label>
 			</div>
 			
             <div>
-            	<label>Tên công ty:</label> 
-            	<input type="text" th:field="*{tenCty}" />
-            </div>
+            	<label>Tên công ty:</label>
+				<label>
+					<input type="text" th:field="*{tenCty}" />
+				</label>
+			</div>
             
             <div>
-            	<label>Địa chỉ:</label> 
-            	<input type="text" th:field="*{diaChi}" />
-            </div>
+            	<label>Địa chỉ:</label>
+				<label>
+					<input type="text" th:field="*{diaChi}" />
+				</label>
+			</div>
             
             <div>
-            	<label>Số lượng phát hành:</label> 
-            	<input type="text" th:field="*{soLuongPH}" />
-            </div>
+            	<label>Số lượng phát hành:</label>
+				<label>
+					<input type="text" th:field="*{soLuongPH}" />
+				</label>
+			</div>
             
             <div class="form-buttons">
             	<button type="submit">Lưu</button>

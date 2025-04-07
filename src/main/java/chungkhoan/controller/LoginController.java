@@ -1,19 +1,21 @@
 package chungkhoan.controller;
 
 import chungkhoan.service.UserService;
+import chungkhoan.service.DatabaseService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class LoginController {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private DatabaseService databaseService;
 
 	@GetMapping("/login")
 	public String loginForm(@RequestParam(value = "error", required = false) String error, Model model) {
@@ -28,74 +30,36 @@ public class LoginController {
 						@RequestParam("password") String password,
 						HttpSession session) {
 
-		String role = userService.authenticateUser(username, password);
-		if (role == null) {
+		// Bước 1: kiểm tra kết nối thành công
+		boolean authenticated = databaseService.testConnection(username, password);
+		if (!authenticated) {
 			return "redirect:/login?error=invalid_credentials";
 		}
 
+		// Bước 2: lưu user vào session
 		session.setAttribute("username", username);
-		session.setAttribute("role", role);
+		session.setAttribute("password", password);
 
-		if ("ROLE_INVESTOR".equals(role)) {
-			session.setAttribute("maNDT", userService.getMaNDT(username));
-			return "redirect:/ndt/success";
-		} else if ("ROLE_EMPLOYEE".equals(role)) {
-			session.setAttribute("maNV", userService.getMaNV(username));
-			return "redirect:/nhanvien/success";
-		} else {
-			return "redirect:/login?error=unauthorized";
+		// Bước 3: xác định role
+		String role = databaseService.getUserRole(username, password);
+
+		switch (role) {
+			case "nhanvien":
+				return "redirect:/nhanvien/home"; // giao diện nhân viên
+			case "nhadautu":
+				return "redirect:/nhadautu/home"; // giao diện nhà đầu tư
+			case "khong_ro_role":
+				session.invalidate();
+				return "redirect:/login?error=no_role";
+			default:
+				session.invalidate();
+				return "redirect:/login?error=unknown";
 		}
-
 	}
 
 	@GetMapping("/logout")
 	public String logout(HttpSession session) {
 		session.invalidate();
 		return "redirect:/login";
-	}
-
-	@GetMapping("/nhanvien/layout")
-	public String adminHome(HttpSession session) {
-		if (session.getAttribute("role") == Role.ROLE_ADMIN) {
-			return "nhanvien/layout";
-		}
-		return "redirect:/login?error=unauthorized";
-	}
-	
-	
-	@GetMapping("/register")
-	public String registerForm() {
-		return "nhanvien/register";
-	}
-
-	@PostMapping("/register")
-	public String registerNhanVien(@RequestParam("username") String username,
-								   @RequestParam("password") String password,
-								   @RequestParam("maNV") String maNV,
-								   @RequestParam("tenNV") String tenNV,
-								   @RequestParam("ngaySinh") String ngaySinh,
-								   @RequestParam("email") String email,
-								   @RequestParam("soDienThoai") String soDienThoai) {
-
-		boolean success = userService.themNhanVien(username, password, maNV, tenNV, ngaySinh, email, soDienThoai);
-		return success ? "redirect:/login" : "redirect:/register-nhanvien?error=failed";
-	}
-
-	@GetMapping("/register-ndt")
-	public String registerNhaDauTuForm() {
-		return "ndt/register";
-	}
-
-	@PostMapping("/register-ndt")
-	public String registerNhaDauTu(@RequestParam("username") String username,
-								   @RequestParam("password") String password,
-								   @RequestParam("maNDT") String maNDT,
-								   @RequestParam("tenNDT") String tenNDT,
-								   @RequestParam("ngaySinh") String ngaySinh,
-								   @RequestParam("email") String email,
-								   @RequestParam("soDienThoai") String soDienThoai) {
-
-		boolean success = userService.themNhaDauTu(username, password, maNDT, tenNDT, ngaySinh, email, soDienThoai);
-		return success ? "redirect:/login" : "redirect:/register-ndt?error=failed";
 	}
 }
