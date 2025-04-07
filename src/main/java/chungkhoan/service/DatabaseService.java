@@ -15,7 +15,13 @@ public class DatabaseService {
             return false;
         }
     }
+
     public String getUserRole(String username, String password) {
+        // Nếu là tài khoản 'sa', mặc định là 'nhanvien'
+        if ("sa".equalsIgnoreCase(username)) {
+            return "nhanvien";
+        }
+
         String connectionUrl = URL + ";user=" + username + ";password=" + password;
         String sql = "SELECT r.name AS role_name " +
                 "FROM sys.database_role_members drm " +
@@ -38,7 +44,7 @@ public class DatabaseService {
         } catch (SQLException e) {
             return "loi: " + e.getMessage();
         }
+
         return "khong_ro_role";
     }
-
 }

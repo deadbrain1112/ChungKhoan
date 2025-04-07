@@ -45,7 +45,7 @@ public class LoginController {
 
 		switch (role) {
 			case "nhanvien":
-				return "redirect:/nhanvien/home"; // giao diện nhân viên
+				return "redirect:/nhanvien/layout"; // giao diện nhân viên
 			case "nhadautu":
 				return "redirect:/nhadautu/home"; // giao diện nhà đầu tư
 			case "khong_ro_role":
@@ -57,9 +57,9 @@ public class LoginController {
 		}
 	}
 
-	@GetMapping("/logout")
-	public String logout(HttpSession session) {
-		session.invalidate();
-		return "redirect:/login";
-	}
+//	@GetMapping("/logout")
+//	public String logout(HttpSession session) {
+//		session.invalidate();
+//		return "redirect:/login";
+//	}
 }
