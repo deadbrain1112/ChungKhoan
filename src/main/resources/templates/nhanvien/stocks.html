@@ -2,59 +2,135 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" th:href="@{/css/stocks.css}">
-	<title>Cập nhật cổ phiếu</title>
+    <title>Danh sách cổ phiếu</title>
+    <link rel="stylesheet" th:href="@{/css/stocks.css}">
 </head>
 <body>
-	<div>
-		<div class="toolbar">
-			<a th:href="@{/stocks/add}">Thêm</a> |
-			<a th:href="@{/stocks/reload}">Reload</a> |
-			<form th:action="@{/stocks/search}" method="post">
-				<input type="text" name="query" placeholder="Tìm kiếm..."/>
-				<button type="submit">Tìm kiếm</button>
-			</form> |
-			<a th:href="@{/}">Thoát</a>
-		</div>
-		
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Mã CP</th>
-					<th>Tên công ty</th>
-					<th>Địa chỉ</th>
-					<th>Số lượng phát hành</th>
-					<th>Hành động</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="stock : ${stocks}">
-					<td th:text="${stock.maCP}"></td>
-					<td th:text="${stock.tenCty}"></td>
-					<td th:text="${stock.diaChi}"></td>
-					<td th:text="${stock.soLuongPH}"></td>
-					<td>
-						<a th:href="@{/stocks/edit/{maCP} (maCP=${stock.maCP})}">Ghi</a> |
-						<form th:action="@{/stocks/delete/{maCP} (maCP=${stock.maCP})}" method="post">
-							<input type="hidden" name="delete-method" value="delete"/>
-							<button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-						</form>
-						<a th:href="@{/stocks/restore/{maCP} (maCP=${stock.maCP})}" th:if="${stock.deleted}"
-							onclick="return confirm('Phục hồi cổ phiếu này?')">Phục hồi</a>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
-</body>
+<div>
+    <div class="toolbar">
+        <a href="#" onclick="showSubform('add'); return false;">Thêm</a> |
+        <a th:href="@{/stocks}">Reload</a> |
+        <form th:action="@{/stocks/search}" method="post" style="display: inline;">
+            <input type="text" name="query" placeholder="Tìm kiếm...">
+            <button type="submit">Tìm</button>
+        </form> |
+        <a th:href="@{/nhanvien}">Thoát</a>
+    </div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Mã CP</th>
+            <th>Tên công ty</th>
+            <th>Địa chỉ</th>
+            <th>Số lượng phát hành</th>
+            <th>Hành động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="stock : ${stocks.content}">
+            <td th:text="${stock.maCP}"></td>
+            <td th:text="${stock.tenCty}"></td>
+            <td th:text="${stock.diaChi}"></td>
+            <td th:text="${stock.soLuongPH}"></td>
+            <td>
+                <a href="@{/stocks(action='edit', maCP=${stock.maCP})}" class="edit-link" th:attr="data-maCP=${stock.maCP}">Ghi</a> |
+                <form th:action="@{/stocks/delete/{maCP}(maCP=${stock.maCP})}" method="post" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Phân trang -->
+    <div class="pagination">
+        <span th:if="${stocks.hasPrevious()}">
+            <a th:href="@{/stocks(page=${stocks.number - 1})}">&laquo; Trước</a>
+        </span>
+        <span th:each="i : ${#numbers.sequence(0, stocks.totalPages - 1)}">
+            <a th:href="@{/stocks(page=${i})}"
+               th:text="${i + 1}"
+               th:classappend="${i == stocks.number} ? 'active'"></a>
+        </span>
+        <span th:if="${stocks.hasNext()}">
+            <a th:href="@{/stocks(page=${stocks.number + 1})}">Sau &raquo;</a>
+        </span>
+    </div>
+    
+    <!-- Subform -->
+    <div id="subform" class="subform-container">
+        <h3 id="subform-title"></h3>
+        <form id="stock-form" th:action="@{/stocks/add}" th:object="${stock}" method="post">
+            <input type="hidden" th:field="*{maCP}" id="maCP-hidden" />
+
+            <table class="subform-table">
+                <tr>
+                    <td><label>Mã cổ phiếu:</label></td>
+                    <td><input type="text" th:field="*{maCP}" id="maCP" /></td>
+                </tr>
+                <tr>
+                    <td><label>Tên công ty:</label></td>
+                    <td><input type="text" th:field="*{tenCty}" /></td>
+                </tr>
+                <tr>
+                    <td><label>Địa chỉ:</label></td>
+                    <td><input type="text" th:field="*{diaChi}" /></td>
+                </tr>
+                <tr>
+                    <td><label>Số lượng phát hành:</label></td>
+                    <td><input type="text" th:field="*{soLuongPH}" /></td>
+                </tr>
+            </table>
+
+            <div class="form-actions">
+                <button type="submit">Lưu</button>
+                <button type="button" onclick="hideSubform()">Hủy</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
-	function confirmAction(url, message) {
-		if (confirm(message)) {
-			window.location.href = url;
-		}
-	}
-</script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".edit-link").forEach(function (link) {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const maCP = this.getAttribute("data-maCP");
+                showSubform('edit', maCP);
+            });
+        });
+    });
 
+    function showSubform(action, maCP = '') {
+        const subform = document.getElementById('subform');
+        const title = document.getElementById('subform-title');
+        const form = document.getElementById('stock-form');
+        const maCPInput = document.getElementById('maCP');
+        const maCPHidden = document.getElementById('maCP-hidden');
+
+        subform.classList.add('active');
+        form.reset();
+
+        if (action === 'add') {
+            title.textContent = 'Thêm cổ phiếu';
+            form.action = '/stocks/add';
+            maCPInput.disabled = false;
+            maCPInput.value = '';
+            maCPHidden.value = '';
+        } else if (action === 'edit') {
+            title.textContent = 'Sửa cổ phiếu';
+            form.action = '/stocks/edit/' + maCP;
+            maCPInput.disabled = true;
+            maCPInput.value = maCP;
+            maCPHidden.value = maCP;
+            // Có thể thêm logic load dữ liệu chi tiết nếu cần
+        }
+    }
+
+    function hideSubform() {
+        document.getElementById('subform').classList.remove('active');
+    }
+</script>
+</body>
 </html>

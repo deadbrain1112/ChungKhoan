@@ -1,13 +1,20 @@
 @charset "UTF-8";
-/* Định dạng tổng thể cho form */
+/* Canh giữa form ở giữa màn hình */
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f2f5; /* màu nền nhẹ để form nổi bật hơn */
+}
+
+/* Ngăn form bị tràn khi màn hình nhỏ */
 .stock-form-container {
+    width: 100%;
     max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
 /* Định dạng tiêu đề */

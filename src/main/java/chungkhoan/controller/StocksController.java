@@ -1,62 +1,78 @@
 package chungkhoan.controller;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import chungkhoan.entity.CoPhieu;
+import chungkhoan.service.CoPhieuService;
 
 @Controller
 public class StocksController {
-	
-	@GetMapping("/stocks")
-    public String stocksList() {
-    	return "stocks";
-    }	
-	
-	// Hiển thị form thêm cổ phiếu 
-	@GetMapping("/stocks/add")
-	public String showAddStocks() {
-		return "nhanvien/add_edit";
-	}
-	
-	// Xử lý thêm cổ phiếu
-	@PostMapping("/stocks/add")
-	public String addStocks() {
-		return "redirect:/stocks";
-	}
-	
-	// Reload trang
-	@GetMapping("/stocks/reload")
-	public String reloadForm() {
-		return "redirect:/stocks";
-	}
-	
-	// Tìm kiếm cổ phiếu
-	@PostMapping("/stocks/search")
-	public String searching() {
-		return "redirect:/stocks";
-	}
-	
-	// Hiển thị form ghi cổ phiếu 
-		@GetMapping("/stocks/edit/{maNDT}")
-		public String showEditStocksForm() {
-			return "add_edit";
-		}
-	
-	// Ghi cổ phiếu
-	@PostMapping("/stocks/edit/{maNDT}")
-	public String editStocks() {
-		return "redirect:/stocks";
-	}
-	
-	// Xử lý xóa cổ phiếu
-	@PostMapping("/stocks/delete/{maCP}")
-	public String deleteStocks() {
-		return "redirect:/stocks";
-	}
-	
-	// Xử lý khôi phục cổ phiếu
-	@GetMapping("/stocks/restore/{maCP}")
-	public String restoreStocks() {
-		return "redirect:/stocks";
-	}
+
+    @Autowired
+    private CoPhieuService coPhieuService;
+
+    // Trang chính: hiển thị danh sách, có thể truyền form nếu đang "thêm" hoặc "ghi"
+    @GetMapping("/stocks")
+    public String listStocks(@RequestParam(defaultValue = "0") int page,
+                             @RequestParam(defaultValue = "5") int size,
+                             @RequestParam(name = "action", required = false) String action,
+                             @RequestParam(name = "maCP", required = false) String maCP,
+                             Model model) {
+        Page<CoPhieu> stockPage = coPhieuService.getPaginated(page, size);
+        model.addAttribute("stocks", stockPage);
+
+        if ("edit".equals(action) && maCP != null) {
+            Optional<CoPhieu> optional = coPhieuService.findById(maCP);
+            optional.ifPresentOrElse(
+                stock -> model.addAttribute("stock", stock),
+                () -> model.addAttribute("stock", new CoPhieu())
+            );
+            model.addAttribute("formMode", "edit");
+        } else if ("add".equals(action)) {
+            model.addAttribute("stock", new CoPhieu());
+            model.addAttribute("formMode", "add");
+        } else {
+            // Trường hợp không có action, vẫn cần có stock để Thymeleaf không lỗi
+            model.addAttribute("stock", new CoPhieu());
+        }
+
+        return "nhanvien/stocks";
+    }
+
+    // Thêm cổ phiếu
+    @PostMapping("/stocks/add")
+    public String addStock(@ModelAttribute("stock") CoPhieu coPhieu) {
+        coPhieuService.save(coPhieu);
+        return "redirect:/stocks";
+    }
+
+    // Ghi (chỉnh sửa) cổ phiếu
+    @PostMapping("/stocks/edit/{maCP}")
+    public String editStock(@PathVariable String maCP,
+                            @ModelAttribute("stock") CoPhieu coPhieu) {
+        coPhieu.setMaCP(maCP); // Đảm bảo giữ đúng mã cổ phiếu
+        coPhieuService.save(coPhieu);
+        return "redirect:/stocks";
+    }
+
+    // Xóa cổ phiếu
+    @PostMapping("/stocks/delete/{maCP}")
+    public String deleteStock(@PathVariable String maCP) {
+        coPhieuService.deleteById(maCP);
+        return "redirect:/stocks";
+    }
+
+    // Tìm kiếm (placeholder)
+    @PostMapping("/stocks/search")
+    public String searchStock(@RequestParam("query") String query, Model model) {
+        // Bạn có thể thực hiện tìm kiếm thực sự ở đây
+        // Tạm thời redirect về trang stocks
+        return "redirect:/stocks";
+    }
 }

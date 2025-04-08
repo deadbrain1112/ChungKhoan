@@ -1,12 +1,18 @@
 @charset "UTF-8";
 
+body {
+	font-family: Arial, sans-serif;
+	margin: 20px;
+}
+
 .table {
 	width: 100%;
 	border-collapse: collapse;
+	margin-top: 10px;
 }
 
 .table th, .table td {
-	border: 1px solid #ddd;
+	border: 1px solid #ccc;
 	padding: 8px;
 	text-align: left;
 }
@@ -16,9 +22,46 @@
 }
 
 .toolbar {
-	margin-bottom: 10px;
+	margin-bottom: 15px;
 }
 
 form {
 	display: inline;
 }
+
+.pagination {
+	margin-top: 20px;
+}
+
+.pagination a {
+	margin: 0 4px;
+	padding: 6px 10px;
+	border: 1px solid #ccc;
+	text-decoration: none;
+	color: #333;
+	border-radius: 4px;
+}
+
+.pagination a.active {
+	background-color: #007bff;
+	color: white;
+	border-color: #007bff;
+}
+
+.subform-container {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+}
+.subform-container.active {
+    display: block;
+}
+.subform-table td {
+    padding: 5px;
+}
+.form-actions {
+    margin-top: 10px;
+}
+

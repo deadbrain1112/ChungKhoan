@@ -28,11 +28,11 @@ public class HomeController {
 //        return "redirect:/login?error=unauthorized";
 //    }
 //
-//    // Thoát về trang chủ
-//    @GetMapping("/")
-//    public String home() {
-//        return "redirect:/layout";
-//    }
+    // Thoát về trang chủ
+    @GetMapping("")
+    public String home() {
+        return "nhanvien/layout";
+    }
 	
 	@GetMapping("/layout")
 	public String showLayout() {

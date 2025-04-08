@@ -17,11 +17,6 @@ public class DatabaseService {
     }
 
     public String getUserRole(String username, String password) {
-        // Nếu là tài khoản 'sa', mặc định là 'nhanvien'
-        if ("sa".equalsIgnoreCase(username)) {
-            return "nhanvien";
-        }
-
         String connectionUrl = URL + ";user=" + username + ";password=" + password;
         String sql = "SELECT r.name AS role_name " +
                 "FROM sys.database_role_members drm " +

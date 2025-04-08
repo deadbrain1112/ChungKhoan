@@ -38,6 +38,5 @@ public class InvestorController {
 	@PostMapping("/investors/edit/{maNDT}")
 	public String editInvestor() {
 		return "redirect:/investors";
-	}
-	
+	} 
 }

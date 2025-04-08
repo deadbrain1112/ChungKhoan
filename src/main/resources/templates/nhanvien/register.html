@@ -7,17 +7,11 @@
     <link rel="stylesheet" th:href="@{/css/register.css}">
 </head>
 <body>
-    <!-- Form tạo tài khoản sau khi nhân viên đăng nhập -->
     <div class="register-container">
         <h2>Tạo tài khoản đăng nhập</h2>
         <form th:action="@{/user-create}" th:object="${user}" method="post">
             <label for="hoTen">Họ và tên:</label>
-            <select id="hoTen" th:field="*{ndt.maNDT}" required>
-                <option value="">Chọn họ tên</option>
-                <optgroup>
-                    <option th:each="ndt : ${ndt}" th:value="${ndt.maNDT}" th:text="${ndt.hoTen}"></option>
-                </optgroup>
-            </select>
+            <input type="text" id="hoTen" th:field="*{hoTen}" required>
 
             <label for="userName">Tên đăng nhập:</label>
             <input type="text" id="userName" th:field="*{username}" required>
@@ -27,23 +21,43 @@
 
             <div class="radio-group">
                 <label>Thuộc nhóm:</label>
-                <input type="radio" id="roleNhanVien" th:field="*{role}" value="ROLE_EMPLOYEE" required> Nhân viên
-                <input type="radio" id="roleNhaDauTu" th:field="*{role}" value="ROLE_INVESTOR"> Nhà đầu tư
+                <input type="radio" id="roleNhanVien" name="role" th:field="*{role}" value="ROLE_EMPLOYEE" required> Nhân viên
+                <input type="radio" id="roleNhaDauTu" name="role" th:field="*{role}" value="ROLE_INVESTOR"> Nhà đầu tư
             </div>
 
-            <div th:if="${user.role == 'ROLE_INVESTOR'}">
-                <div class="mkgd-group">
-                    <label for="mkgd">Mật khẩu giao dịch:</label>
-                    <input type="password" id="mkgd" name="ndtObj.mkGiaoDich" required>
-                </div>
+            <div id="mkgdGroup" class="mkgd-group" style="display:none;">
+                <label for="mkgd">Mật khẩu giao dịch:</label>
+                <input type="password" id="mkgd" name="mkGiaoDich" th:field="*{mkGiaoDich}">
             </div>
 
             <button type="submit">Tạo tài khoản</button>
-            <button type="button" th:onclick="|window.location.href='/admin/user/delete?userName=${user.username}'|" th:disabled="${user.username == null}">Xóa tài khoản</button>
+            <button type="button" 
+                    th:onclick="|window.location.href='/admin/user/delete?userName=${user.username}'|" 
+                    th:disabled="${user.username == null}">
+                Xóa tài khoản
+            </button>
         </form>
 
         <p th:if="${error}" class="error" th:text="${error}"></p>
         <p th:if="${success}" class="success" th:text="${success}"></p>
     </div>
-</body>
+</body>    
+
+<script th:inline="javascript">
+	function toggleMKGDField() {
+	    const roleInvestor = document.getElementById('roleNhaDauTu');
+	    const mkgdGroup = document.getElementById('mkgdGroup');
+	    if (roleInvestor.checked) {
+	        mkgdGroup.style.display = 'block';
+	    } else {
+	        mkgdGroup.style.display = 'none';
+	    }
+	}
+	
+	document.addEventListener('DOMContentLoaded', () => {
+	    toggleMKGDField();
+	    document.getElementById('roleNhanVien').addEventListener('change', toggleMKGDField);
+	    document.getElementById('roleNhaDauTu').addEventListener('change', toggleMKGDField);
+	});
+</script>
 </html>
