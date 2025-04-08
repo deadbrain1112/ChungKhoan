@@ -1,32 +1,57 @@
-/* Kiểu dáng cho SubForm */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+.toolbar {
+    margin-bottom: 15px;
+}
+
+.toolbar a {
+    margin-right: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    color: #2a5885;
+}
+
+.main-table, .subform-table, .bank-account-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.main-table th, .main-table td,
+.subform-table th, .subform-table td,
+.bank-account-table th, .bank-account-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+
 .subform-container {
     display: none;
     margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #999;
+    background-color: #f9f9f9;
 }
 
 .subform-container.active {
     display: block;
 }
 
-/* Kiểu dáng cho bảng tài khoản ngân hàng */
-.bank-account-table {
+input[type="text"] {
     width: 100%;
-    margin-top: 10px;
+    box-sizing: border-box;
+    padding: 5px;
 }
 
-.bank-account-table th, .bank-account-table td {
-    padding: 8px;
-    text-align: left;
-}
-
-/* Kiểu dáng cho thông tin ngân hàng */
-.bank-info {
-    margin-top: 5px;
-    font-size: 0.9em;
-    color: #555;
-}
-
-/* Kiểu dáng cho nút điều khiển trong form */
 .form-actions {
-    margin-top: 20px;
+    margin-top: 15px;
+}
+
+button {
+    padding: 6px 12px;
+    margin-right: 5px;
+    cursor: pointer;
 }

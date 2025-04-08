@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: content}">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
 	<title>Thêm/Sửa cổ phiếu</title>
 </head>
 <body>
-	<div th:replace="layout :: content">
+	<div>
 		<h3 th:text="${stock.maCP} ? 'Sửa cố phiếu' : 'Thêm cố phiếu'"></h3>
 		<form th:action="@{/stocks/add}" th:object="${stock}" method="post">
 			<input type="hidden" th:field="*{maCP}" th:if="${stock.maCP}"/>
