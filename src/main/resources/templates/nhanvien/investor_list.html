@@ -53,15 +53,15 @@
             <table class="subform-table">
                 <tr>
                     <td><label>Mã nhà đầu tư:</label></td>
-                    <td><input type="text" th:field="*{maNDT}" id="maNDT" /></td>
+                    <td><input type="text" th:field="*{maNDT}" id="maNDT" maxlength="20" required /></td>
                 </tr>
                 <tr>
                     <td><label>Họ tên:</label></td>
-                    <td><input type="text" th:field="*{hoTen}" /></td>
+                    <td><input type="text" th:field="*{hoTen}" maxlength="50" required /></td>
                 </tr>
                 <tr>
                     <td><label>Ngày sinh:</label></td>
-                    <td><input type="date" th:field="*{ngaySinh}" /></td>
+                    <td><input type="date" th:field="*{ngaySinh}" required /></td>
                 </tr>
                 <tr>
                     <td><label>Mật khẩu giao dịch:</label></td>
@@ -69,15 +69,15 @@
                 </tr>
                 <tr>
                     <td><label>Địa chỉ:</label></td>
-                    <td><input type="text" th:field="*{diaChi}" /></td>
+                    <td><input type="text" th:field="*{diaChi}" maxlength="100" required /></td>
                 </tr>
                 <tr>
                     <td><label>Số điện thoại:</label></td>
-                    <td><input type="text" th:field="*{phone}" /></td>
+                    <td><input type="text" th:field="*{phone}" maxlength="15" required /></td>
                 </tr>
                 <tr>
                     <td><label>CMND:</label></td>
-                    <td><input type="text" th:field="*{cmnd}" /></td>
+                    <td><input type="text" th:field="*{cmnd}" id="cmnd" maxlength="10" required /></td>
                 </tr>
                 <tr>
 				    <td><label>Giới tính:</label></td>
@@ -91,7 +91,7 @@
 				</tr>
                 <tr>
                     <td><label>Email:</label></td>
-                    <td><input type="text" th:field="*{email}" /></td>
+                    <td><input type="email" th:field="*{email}" maxlength="50" required /></td>
                 </tr>
             </table>
 
@@ -135,7 +135,9 @@
 
         document.getElementById("investor-form").addEventListener("submit", function(e) {
             const maNDT = document.getElementById("maNDT").value;
+            const cmnd = document.getElementById("cmnd").value;
             console.log("Biểu mẫu được gửi, Mã NDT (input):", maNDT);
+            console.log("Biểu mẫu được gửi, CMND (input):", cmnd);
             console.log("Action của form:", this.action);
         });
     });
