@@ -19,7 +19,6 @@
             <th>Mã</th>
             <th>Họ tên</th>
             <th>Ngày sinh</th>
-            <th>Mật khẩu GD</th>
             <th>Địa chỉ</th>
             <th>Số điện thoại</th>
             <th>CMND</th>
@@ -33,7 +32,6 @@
             <td th:text="${investor.maNDT}"></td>
             <td th:text="${investor.hoTen}"></td>
             <td th:text="${investor.ngaySinh}"></td>
-            <td th:text="${investor.mkGiaoDich}"></td>
             <td th:text="${investor.diaChi}"></td>
             <td th:text="${investor.phone}"></td>
             <td th:text="${investor.cmnd}"></td>
@@ -67,7 +65,7 @@
                 </tr>
                 <tr>
                     <td><label>Mật khẩu giao dịch:</label></td>
-                    <td><input type="password" th:field="*{mkGiaoDich}" /></td>
+                    <td><input type="password" th:field="*{mkGiaoDich}" th:disabled="${disablePassword}" /></td>
                 </tr>
                 <tr>
                     <td><label>Địa chỉ:</label></td>
@@ -82,9 +80,15 @@
                     <td><input type="text" th:field="*{cmnd}" /></td>
                 </tr>
                 <tr>
-                    <td><label>Giới tính:</label></td>
-                    <td><input type="text" th:field="*{gioiTinh}" /></td>
-                </tr>
+				    <td><label>Giới tính:</label></td>
+				    <td>
+				        <input type="radio" th:field="*{gioiTinh}" value="Nam" id="nam" />
+				        <label for="nam">Nam</label>
+				
+				        <input type="radio" th:field="*{gioiTinh}" value="Nữ" id="nu" style="margin-left: 20px;" />
+				        <label for="nu">Nữ</label>
+				    </td>
+				</tr>
                 <tr>
                     <td><label>Email:</label></td>
                     <td><input type="text" th:field="*{email}" /></td>
@@ -141,6 +145,7 @@
         const title = document.getElementById('subform-title');
         const form = document.getElementById('investor-form');
         const maNDTInput = document.getElementById('maNDT');
+        const mkGiaoDichInput = document.querySelector('[name="mkGiaoDich"]');
 
         subform.classList.add('active');
         form.reset();
@@ -151,12 +156,14 @@
             form.action = '/investors/add';
             maNDTInput.disabled = false;
             maNDTInput.value = '';
+            mkGiaoDichInput.disabled = false; // bật nhập mật khẩu
             console.log("Mở subform để thêm, Mã NDT được reset thành rỗng.");
         } else if (action === 'edit') {
             title.textContent = 'Sửa nhà đầu tư';
             form.action = '/investors/edit/' + maNDT;
             maNDTInput.disabled = true;
             maNDTInput.value = maNDT;
+            mkGiaoDichInput.disabled = true; // disable ô mật khẩu
             console.log("Mở subform để sửa, Mã NDT được gán:", maNDT);
             populateBankAccounts(maNDT);
         }

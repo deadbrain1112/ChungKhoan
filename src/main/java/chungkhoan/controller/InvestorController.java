@@ -23,6 +23,7 @@ public class InvestorController {
 	public String investorsList(Model model) {
 		model.addAttribute("investors", ndtRepository.findAll());
 		model.addAttribute("investor", new NhaDauTu()); // cho form thêm
+		model.addAttribute("disablePassword", false);   // mặc định là false
 		return "nhanvien/investor_list";
 	}
 

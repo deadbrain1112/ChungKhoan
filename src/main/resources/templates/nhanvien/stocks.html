@@ -62,27 +62,21 @@
     <div id="subform" class="subform-container">
         <h3 id="subform-title"></h3>
         <form id="stock-form" th:action="@{/stocks/add}" th:object="${stock}" method="post">
-            <!-- SỬA: Loại bỏ trường ẩn <input type="hidden" th:field="*{maCP}" id="maCP-hidden" />
-                     vì nó gây xung đột binding, khiến maCP gửi lên thành mảng [,<giá trị>] -->
             <table class="subform-table">
                 <tr>
                     <td><label>Mã cổ phiếu:</label></td>
-                    <!-- SỬA: Bỏ <label for="maCP"></label> không cần thiết, giữ chỉ một trường maCP -->
                     <td><input type="text" th:field="*{maCP}" id="maCP" /></td>
                 </tr>
                 <tr>
                     <td><label>Tên công ty:</label></td>
-                    <!-- SỬA: Bỏ thẻ <label> quanh <input> để đơn giản hóa cấu trúc -->
                     <td><input type="text" th:field="*{tenCty}" /></td>
                 </tr>
                 <tr>
                     <td><label>Địa chỉ:</label></td>
-                    <!-- SỬA: Bỏ thẻ <label> quanh <input> để đồng nhất giao diện -->
                     <td><input type="text" th:field="*{diaChi}" /></td>
                 </tr>
                 <tr>
                     <td><label>Số lượng phát hành:</label></td>
-                    <!-- SỬA: Bỏ thẻ <label> quanh <input> để làm gọn mã -->
                     <td><input type="text" th:field="*{soLuongPH}" /></td>
                 </tr>
             </table>
