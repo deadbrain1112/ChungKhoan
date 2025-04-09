@@ -21,8 +21,8 @@
 
             <div class="radio-group">
                 <label>Thuộc nhóm:</label>
-                <input type="radio" id="roleNhanVien" name="role" th:field="*{role}" value="ROLE_EMPLOYEE" required> Nhân viên
-                <input type="radio" id="roleNhaDauTu" name="role" th:field="*{role}" value="ROLE_INVESTOR"> Nhà đầu tư
+                <input type="radio" id="roleNhanVien" th:field="*{role}" value="ROLE_EMPLOYEE" required> Nhân viên
+                <input type="radio" id="roleNhaDauTu" th:field="*{role}" value="ROLE_INVESTOR"> Nhà đầu tư
             </div>
 
             <div id="mkgdGroup" class="mkgd-group" style="display:none;">
@@ -31,8 +31,8 @@
             </div>
 
             <button type="submit">Tạo tài khoản</button>
-            <button type="button" 
-                    th:onclick="|window.location.href='/admin/user/delete?userName=${user.username}'|" 
+            <button type="button"
+                    th:onclick="|window.location.href='/admin/user/delete?userName=${user.username}'|"
                     th:disabled="${user.username == null}">
                 Xóa tài khoản
             </button>
@@ -41,7 +41,7 @@
         <p th:if="${error}" class="error" th:text="${error}"></p>
         <p th:if="${success}" class="success" th:text="${success}"></p>
     </div>
-</body>    
+</body>
 
 <script th:inline="javascript">
 	function toggleMKGDField() {
@@ -53,7 +53,7 @@
 	        mkgdGroup.style.display = 'none';
 	    }
 	}
-	
+
 	document.addEventListener('DOMContentLoaded', () => {
 	    toggleMKGDField();
 	    document.getElementById('roleNhanVien').addEventListener('change', toggleMKGDField);

@@ -48,9 +48,16 @@ public class StocksController {
     // Thêm cổ phiếu
     @PostMapping("/stocks/add")
     public String addStock(@ModelAttribute("stock") CoPhieu coPhieu) {
-        coPhieuService.save(coPhieu);
+        try {
+
+            coPhieuService.themCoPhieuBangSP(coPhieu);
+        } catch (Exception e) {
+            // Có thể ghi log hoặc hiển thị lỗi nếu muốn
+            e.printStackTrace();
+        }
         return "redirect:/stocks";
     }
+
 
     // Ghi (chỉnh sửa) cổ phiếu
     @PostMapping("/stocks/edit/{maCP}")

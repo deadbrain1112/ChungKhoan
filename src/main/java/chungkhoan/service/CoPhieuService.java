@@ -19,9 +19,20 @@ public class CoPhieuService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("maCP").ascending());
         return coPhieuRepository.findAll(pageable);
     }
-    
+
+    // Ghi hoặc cập nhật
     public CoPhieu save(CoPhieu stock) {
         return coPhieuRepository.save(stock);
+    }
+
+    // Thêm mới sử dụng stored procedure
+    public void themCoPhieuBangSP(CoPhieu stock) {
+        coPhieuRepository.themCoPhieu(
+                stock.getMaCP(),
+                stock.getTenCty(),
+                stock.getDiaChi(),
+                stock.getSoLuongPH()
+        );
     }
 
     public Optional<CoPhieu> findById(String maCP) {

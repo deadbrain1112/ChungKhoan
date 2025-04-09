@@ -46,7 +46,7 @@
     <!-- Phân trang -->
     <div class="pagination">
         <span th:if="${stocks.hasPrevious()}">
-            <a th:href="@{/stocks(page=${stocks.number - 1})}">&laquo; Trước</a>
+            <a th:href="@{/stocks(page=${stocks.number - 1})}">« Trước</a>
         </span>
         <span th:each="i : ${#numbers.sequence(0, stocks.totalPages - 1)}">
             <a th:href="@{/stocks(page=${i})}"
@@ -54,31 +54,35 @@
                th:classappend="${i == stocks.number} ? 'active'"></a>
         </span>
         <span th:if="${stocks.hasNext()}">
-            <a th:href="@{/stocks(page=${stocks.number + 1})}">Sau &raquo;</a>
+            <a th:href="@{/stocks(page=${stocks.number + 1})}">Sau »</a>
         </span>
     </div>
-    
+
     <!-- Subform -->
     <div id="subform" class="subform-container">
         <h3 id="subform-title"></h3>
         <form id="stock-form" th:action="@{/stocks/add}" th:object="${stock}" method="post">
-            <input type="hidden" th:field="*{maCP}" id="maCP-hidden" />
-
+            <!-- SỬA: Loại bỏ trường ẩn <input type="hidden" th:field="*{maCP}" id="maCP-hidden" />
+                     vì nó gây xung đột binding, khiến maCP gửi lên thành mảng [,<giá trị>] -->
             <table class="subform-table">
                 <tr>
                     <td><label>Mã cổ phiếu:</label></td>
+                    <!-- SỬA: Bỏ <label for="maCP"></label> không cần thiết, giữ chỉ một trường maCP -->
                     <td><input type="text" th:field="*{maCP}" id="maCP" /></td>
                 </tr>
                 <tr>
                     <td><label>Tên công ty:</label></td>
+                    <!-- SỬA: Bỏ thẻ <label> quanh <input> để đơn giản hóa cấu trúc -->
                     <td><input type="text" th:field="*{tenCty}" /></td>
                 </tr>
                 <tr>
                     <td><label>Địa chỉ:</label></td>
+                    <!-- SỬA: Bỏ thẻ <label> quanh <input> để đồng nhất giao diện -->
                     <td><input type="text" th:field="*{diaChi}" /></td>
                 </tr>
                 <tr>
                     <td><label>Số lượng phát hành:</label></td>
+                    <!-- SỬA: Bỏ thẻ <label> quanh <input> để làm gọn mã -->
                     <td><input type="text" th:field="*{soLuongPH}" /></td>
                 </tr>
             </table>
@@ -93,12 +97,25 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // Log khi trang tải xong
+        console.log("Trang đã tải xong, sẵn sàng xử lý sự kiện.");
+
+        // Log khi nhấn nút "Ghi" để sửa
         document.querySelectorAll(".edit-link").forEach(function (link) {
             link.addEventListener("click", function (e) {
                 e.preventDefault();
                 const maCP = this.getAttribute("data-maCP");
+                console.log("Nhấn 'Ghi', Mã CP được chọn để sửa:", maCP);
                 showSubform('edit', maCP);
             });
+        });
+
+        // Log khi biểu mẫu được gửi
+        document.getElementById("stock-form").addEventListener("submit", function(e) {
+            const maCP = document.getElementById("maCP").value;
+            console.log("Biểu mẫu được gửi, Mã CP (input):", maCP);
+            console.log("Action của form:", this.action);
+            // SỬA: Bỏ log cho maCPHidden vì trường ẩn đã bị xóa
         });
     });
 
@@ -107,7 +124,7 @@
         const title = document.getElementById('subform-title');
         const form = document.getElementById('stock-form');
         const maCPInput = document.getElementById('maCP');
-        const maCPHidden = document.getElementById('maCP-hidden');
+        // SỬA: Bỏ biến maCPHidden vì không còn trường ẩn
 
         subform.classList.add('active');
         form.reset();
@@ -117,19 +134,21 @@
             form.action = '/stocks/add';
             maCPInput.disabled = false;
             maCPInput.value = '';
-            maCPHidden.value = '';
+            console.log("Mở subform để thêm, Mã CP được reset thành rỗng.");
+            // SỬA: Bỏ gán giá trị cho maCPHidden
         } else if (action === 'edit') {
             title.textContent = 'Sửa cổ phiếu';
             form.action = '/stocks/edit/' + maCP;
             maCPInput.disabled = true;
             maCPInput.value = maCP;
-            maCPHidden.value = maCP;
-            // Có thể thêm logic load dữ liệu chi tiết nếu cần
+            console.log("Mở subform để sửa, Mã CP được gán:", maCP);
+            // SỬA: Bỏ gán giá trị cho maCPHidden, maCP được gửi qua URL
         }
     }
 
     function hideSubform() {
         document.getElementById('subform').classList.remove('active');
+        console.log("Đóng subform.");
     }
 </script>
 </body>

@@ -1,6 +1,6 @@
 package chungkhoan.controller;
 
-import chungkhoan.service.UserService;
+import chungkhoan.service.NDTService;
 import chungkhoan.service.DatabaseService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
 
 	@Autowired
-	private UserService userService;
+	private NDTService userService;
 
 	@Autowired
 	private DatabaseService databaseService;
@@ -57,9 +57,9 @@ public class LoginController {
 		}
 	}
 
-//	@GetMapping("/logout")
-//	public String logout(HttpSession session) {
-//		session.invalidate();
-//		return "redirect:/login";
-//	}
+	@GetMapping("/logout")
+	public String logout(HttpSession session) {
+		session.invalidate();
+		return "redirect:/login";
+	}
 }
