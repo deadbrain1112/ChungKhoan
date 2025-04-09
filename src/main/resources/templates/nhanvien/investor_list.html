@@ -19,6 +19,7 @@
             <th>Mã</th>
             <th>Họ tên</th>
             <th>Ngày sinh</th>
+            <th>Mật khẩu GD</th>
             <th>Địa chỉ</th>
             <th>Số điện thoại</th>
             <th>CMND</th>
@@ -32,6 +33,7 @@
             <td th:text="${investor.maNDT}"></td>
             <td th:text="${investor.hoTen}"></td>
             <td th:text="${investor.ngaySinh}"></td>
+            <td th:text="${investor.mkGiaoDich}"></td>
             <td th:text="${investor.diaChi}"></td>
             <td th:text="${investor.phone}"></td>
             <td th:text="${investor.cmnd}"></td>
@@ -50,8 +52,6 @@
     <div id="subform" class="subform-container">
         <h3 id="subform-title"></h3>
         <form id="investor-form" th:action="@{/investors/add}" th:object="${investor}" method="post">
-            <input type="hidden" th:field="*{maNDT}" id="maNDT-hidden" />
-
             <table class="subform-table">
                 <tr>
                     <td><label>Mã nhà đầu tư:</label></td>
@@ -63,7 +63,11 @@
                 </tr>
                 <tr>
                     <td><label>Ngày sinh:</label></td>
-                    <td><input type="text" th:field="*{ngaySinh}" /></td>
+                    <td><input type="date" th:field="*{ngaySinh}" /></td>
+                </tr>
+                <tr>
+                    <td><label>Mật khẩu giao dịch:</label></td>
+                    <td><input type="password" th:field="*{mkGiaoDich}" /></td>
                 </tr>
                 <tr>
                     <td><label>Địa chỉ:</label></td>
@@ -109,16 +113,26 @@
             </div>
         </form>
     </div>
+
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        console.log("Trang đã tải xong, sẵn sàng xử lý sự kiện.");
+
         document.querySelectorAll(".edit-link").forEach(function (link) {
             link.addEventListener("click", function (e) {
                 e.preventDefault();
                 const maNDT = this.getAttribute("data-maNDT");
+                console.log("Nhấn 'Sửa', Mã NDT được chọn:", maNDT);
                 showSubform('edit', maNDT);
             });
+        });
+
+        document.getElementById("investor-form").addEventListener("submit", function(e) {
+            const maNDT = document.getElementById("maNDT").value;
+            console.log("Biểu mẫu được gửi, Mã NDT (input):", maNDT);
+            console.log("Action của form:", this.action);
         });
     });
 
@@ -127,7 +141,6 @@
         const title = document.getElementById('subform-title');
         const form = document.getElementById('investor-form');
         const maNDTInput = document.getElementById('maNDT');
-        const maNDTHidden = document.getElementById('maNDT-hidden');
 
         subform.classList.add('active');
         form.reset();
@@ -138,19 +151,20 @@
             form.action = '/investors/add';
             maNDTInput.disabled = false;
             maNDTInput.value = '';
-            maNDTHidden.value = '';
+            console.log("Mở subform để thêm, Mã NDT được reset thành rỗng.");
         } else if (action === 'edit') {
             title.textContent = 'Sửa nhà đầu tư';
             form.action = '/investors/edit/' + maNDT;
             maNDTInput.disabled = true;
             maNDTInput.value = maNDT;
-            maNDTHidden.value = maNDT;
+            console.log("Mở subform để sửa, Mã NDT được gán:", maNDT);
             populateBankAccounts(maNDT);
         }
     }
 
     function hideSubform() {
         document.getElementById('subform').classList.remove('active');
+        console.log("Đóng subform.");
     }
 
     function addBankAccount() {
