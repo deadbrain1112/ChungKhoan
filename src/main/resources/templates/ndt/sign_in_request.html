@@ -15,7 +15,7 @@
 			<input type="text" name="hoTen" id="hoTen" required="required">
 			
 			<label for="ngaySinh">Ngày sinh:</label>
-			<input type="text" name="ngaySinh" id="ngaySinh" required="required">
+			<input type="date" name="ngaySinh" id="ngaySinh" required>
 			
 			<label for="diaChi">Địa chỉ:</label>
 			<input type="text" name="diaChi" id="diaChi" required="required">
@@ -26,8 +26,14 @@
 			<label for="cmnd">Chứng minh nhân dân:</label>
 			<input type="text" name="cmnd" id="cmnd" maxlength="10" required="required">
 			
-			<label for="gioiTinh">Giới tính:</label>
-			<input type="text" name="gioiTinh" id="gioiTinh" required="required">
+			<label>Giới tính:</label>
+			<div class="gender-options">
+				<input type="radio" name="gioiTinh" id="nam" value="Nam" required>
+				<label for="nam">Nam</label>
+				
+				<input type="radio" name="gioiTinh" id="nu" value="Nữ">
+				<label for="nu">Nữ</label>
+			</div>
 			
 			<label for="email">Email:</label>
 			<input type="text" name="email" id="email" required="required">

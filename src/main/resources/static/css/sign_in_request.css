@@ -100,3 +100,10 @@ button[type="submit"]:hover {
     margin-bottom: 15px;
     font-weight: bold;
 }
+
+.gender-options {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 1em;
+}

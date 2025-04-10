@@ -9,34 +9,39 @@
 <body>
     <div class="register-container">
         <h2>Tạo tài khoản đăng nhập</h2>
-        <form th:action="@{/user-create}" th:object="${user}" method="post">
-            <label for="hoTen">Họ và tên:</label>
-            <input type="text" id="hoTen" th:field="*{hoTen}" required>
-
-            <label for="userName">Tên đăng nhập:</label>
-            <input type="text" id="userName" th:field="*{username}" required>
-
-            <label for="password">Mật khẩu:</label>
-            <input type="password" id="password" th:field="*{password}" required>
-
-            <div class="radio-group">
-                <label>Thuộc nhóm:</label>
-                <input type="radio" id="roleNhanVien" th:field="*{role}" value="ROLE_EMPLOYEE" required> Nhân viên
-                <input type="radio" id="roleNhaDauTu" th:field="*{role}" value="ROLE_INVESTOR"> Nhà đầu tư
-            </div>
-
-            <div id="mkgdGroup" class="mkgd-group" style="display:none;">
-                <label for="mkgd">Mật khẩu giao dịch:</label>
-                <input type="password" id="mkgd" name="mkGiaoDich" th:field="*{mkGiaoDich}">
-            </div>
-
-            <button type="submit">Tạo tài khoản</button>
-            <button type="button"
-                    th:onclick="|window.location.href='/admin/user/delete?userName=${user.username}'|"
-                    th:disabled="${user.username == null}">
-                Xóa tài khoản
-            </button>
-        </form>
+        <form th:action="@{/create}" th:object="${user}" method="post">
+		    <!-- Tên đăng nhập & mật khẩu -->
+		    <label for="userName">Tên đăng nhập:</label>
+		    <input type="text" id="userName" th:field="*{username}" required>
+		
+		    <label for="password">Mật khẩu:</label>
+		    <input type="password" id="password" th:field="*{password}" required>
+		
+		    <!-- Nhóm -->
+		    <div class="radio-group">
+		        <label>Thuộc nhóm:</label>
+		        <input type="radio" id="roleNhanVien" th:field="*{role}" value="ROLE_EMPLOYEE" required> Nhân viên
+		        <input type="radio" id="roleNhaDauTu" th:field="*{role}" value="ROLE_INVESTOR"> Nhà đầu tư
+		    </div>
+		
+		    <!-- Dropdown Nhân viên -->
+		    <div id="nhanvienDropdown" style="display:none;">
+		        <label for="nhanvien">Chọn nhân viên:</label>
+		        <select id="nhanvien">
+		            <option th:each="nv : ${nhanViens}" th:text="${nv.hoTen}" th:value="${nv.maNV}"></option>
+		        </select>
+		    </div>
+		
+		    <!-- Dropdown Nhà đầu tư -->
+		    <div id="nhadautuDropdown" style="display:none;">
+		        <label for="nhadautu">Chọn nhà đầu tư:</label>
+		        <select id="nhadautu">
+		            <option th:each="ndt : ${nhaDauTus}" th:text="${ndt.hoTen}" th:value="${ndt.maNDT}"></option>
+		        </select>
+		    </div>
+		
+		    <button type="submit">Tạo tài khoản</button>
+		</form>
 
         <p th:if="${error}" class="error" th:text="${error}"></p>
         <p th:if="${success}" class="success" th:text="${success}"></p>
@@ -44,20 +49,17 @@
 </body>
 
 <script th:inline="javascript">
-	function toggleMKGDField() {
-	    const roleInvestor = document.getElementById('roleNhaDauTu');
-	    const mkgdGroup = document.getElementById('mkgdGroup');
-	    if (roleInvestor.checked) {
-	        mkgdGroup.style.display = 'block';
-	    } else {
-	        mkgdGroup.style.display = 'none';
-	    }
-	}
+    function toggleFields() {
+        const isNDT = document.getElementById('roleNhaDauTu').checked;
+        document.getElementById('nhanvienDropdown').style.display = !isNDT ? 'block' : 'none';
+        document.getElementById('nhadautuDropdown').style.display = isNDT ? 'block' : 'none';
+    }
 
-	document.addEventListener('DOMContentLoaded', () => {
-	    toggleMKGDField();
-	    document.getElementById('roleNhanVien').addEventListener('change', toggleMKGDField);
-	    document.getElementById('roleNhaDauTu').addEventListener('change', toggleMKGDField);
-	});
+    document.addEventListener('DOMContentLoaded', () => {
+        toggleFields();
+        document.getElementById('roleNhanVien').addEventListener('change', toggleFields);
+        document.getElementById('roleNhaDauTu').addEventListener('change', toggleFields);
+    });
 </script>
+
 </html>
