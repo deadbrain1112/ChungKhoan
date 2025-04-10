@@ -10,37 +10,48 @@
     <div class="toolbar">
         <a href="#" onclick="showSubform('add'); return false;">Thêm</a> |
         <a th:href="@{/stocks}">Reload</a> |
+        
+        <form th:action="@{/stocks/undo}" method="post" style="display:inline;">
+        	<button type="submit">Hoàn tác</button>
+    	</form>  	
+    		
         <form th:action="@{/stocks/search}" method="post" style="display: inline;">
             <input type="text" name="query" placeholder="Tìm kiếm...">
             <button type="submit">Tìm</button>
         </form> |
+        
         <a th:href="@{/nhanvien}">Thoát</a>
     </div>
 
     <table class="table">
         <thead>
-        <tr>
-            <th>Mã CP</th>
-            <th>Tên công ty</th>
-            <th>Địa chỉ</th>
-            <th>Số lượng phát hành</th>
-            <th>Hành động</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="stock : ${stocks.content}">
-            <td th:text="${stock.maCP}"></td>
-            <td th:text="${stock.tenCty}"></td>
-            <td th:text="${stock.diaChi}"></td>
-            <td th:text="${stock.soLuongPH}"></td>
-            <td>
-                <a href="@{/stocks(action='edit', maCP=${stock.maCP})}" class="edit-link" th:attr="data-maCP=${stock.maCP}">Ghi</a> |
-                <form th:action="@{/stocks/delete/{maCP}(maCP=${stock.maCP})}" method="post" style="display:inline;">
-                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
+	        <tr>
+	            <th>Mã CP</th>
+	            <th>Tên công ty</th>
+	            <th>Địa chỉ</th>
+	            <th>Số lượng phát hành</th>
+	            <th>Hành động</th>
+	        </tr>
+	        
+	        </thead>
+		        <tbody>
+			        <tr th:if="stocks.empty">
+			        	<td colspan="5" style="text-align: center;" th:text="${noDataMessage}"></td>
+			        </tr>
+			        
+			        <tr th:each="stock : ${stocks.content}">
+			            <td th:text="${stock.maCP}"></td>
+			            <td th:text="${stock.tenCty}"></td>
+			            <td th:text="${stock.diaChi}"></td>
+			            <td th:text="${stock.soLuongPH}"></td>
+			            <td>
+			                <a href="@{/stocks(action='edit', maCP=${stock.maCP})}" class="edit-link" th:attr="data-maCP=${stock.maCP}">Ghi</a> |
+			                <form th:action="@{/stocks/delete/{maCP}(maCP=${stock.maCP})}" method="post" style="display:inline;">
+			                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+			                </form>
+			            </td>
+			        </tr>
+	        </tbody>
     </table>
 
     <!-- Phân trang -->
@@ -48,11 +59,13 @@
         <span th:if="${stocks.hasPrevious()}">
             <a th:href="@{/stocks(page=${stocks.number - 1})}">« Trước</a>
         </span>
+        
         <span th:each="i : ${#numbers.sequence(0, stocks.totalPages - 1)}">
             <a th:href="@{/stocks(page=${i})}"
                th:text="${i + 1}"
                th:classappend="${i == stocks.number} ? 'active'"></a>
         </span>
+        
         <span th:if="${stocks.hasNext()}">
             <a th:href="@{/stocks(page=${stocks.number + 1})}">Sau »</a>
         </span>
@@ -67,14 +80,17 @@
                     <td><label>Mã cổ phiếu:</label></td>
                     <td><input type="text" th:field="*{maCP}" id="maCP" /></td>
                 </tr>
+                
                 <tr>
                     <td><label>Tên công ty:</label></td>
                     <td><input type="text" th:field="*{tenCty}" /></td>
                 </tr>
+                
                 <tr>
                     <td><label>Địa chỉ:</label></td>
                     <td><input type="text" th:field="*{diaChi}" /></td>
                 </tr>
+                
                 <tr>
                     <td><label>Số lượng phát hành:</label></td>
                     <td><input type="text" th:field="*{soLuongPH}" /></td>
@@ -145,5 +161,6 @@
         console.log("Đóng subform.");
     }
 </script>
+
 </body>
 </html>

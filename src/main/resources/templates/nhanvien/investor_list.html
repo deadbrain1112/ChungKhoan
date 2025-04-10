@@ -10,41 +10,48 @@
 <div>
     <div class="toolbar">
         <a href="#" onclick="showSubform('add')">Thêm</a>
+        <form th:action="@{/investors/undo}" method="post" style="display:inline;">
+        	<button type="submit">Hoàn tác</button>
+    	</form>
         <a th:href="@{/nhanvien}">Thoát</a>
     </div>
 
     <table class="main-table">
         <thead>
-        <tr>
-            <th>Mã</th>
-            <th>Họ tên</th>
-            <th>Ngày sinh</th>
-            <th>Địa chỉ</th>
-            <th>Số điện thoại</th>
-            <th>CMND</th>
-            <th>Giới tính</th>
-            <th>Email</th>
-            <th>Hành động</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="investor : ${investors}">
-            <td th:text="${investor.maNDT}"></td>
-            <td th:text="${investor.hoTen}"></td>
-            <td th:text="${investor.ngaySinh}"></td>
-            <td th:text="${investor.diaChi}"></td>
-            <td th:text="${investor.phone}"></td>
-            <td th:text="${investor.cmnd}"></td>
-            <td th:text="${investor.gioiTinh}"></td>
-            <td th:text="${investor.email}"></td>
-            <td>
-                <a href="#" class="edit-link" th:attr="data-maNDT=${investor.maNDT}">Sửa</a> |
-                <form th:action="@{/investors/delete/{maNDT}(id=${investor.maNDT})}" method="post" style="display: inline;">
-                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
+	        <tr>
+	            <th>Mã</th>
+	            <th>Họ tên</th>
+	            <th>Ngày sinh</th>
+	            <th>Địa chỉ</th>
+	            <th>Số điện thoại</th>
+	            <th>CMND</th>
+	            <th>Giới tính</th>
+	            <th>Email</th>
+	            <th>Hành động</th>
+	        </tr>
+	        </thead>
+	        <tbody>
+		        <tr th:if="${#lists.isEmpty(investors)}">
+		        	<td colspan="9" style="text-align: center;" th:text="${noDataMessage}"></td>
+		        </tr>
+		        
+		        <tr th:each="investor : ${investors}">
+		            <td th:text="${investor.maNDT}"></td>
+		            <td th:text="${investor.hoTen}"></td>
+		            <td th:text="${investor.ngaySinh}"></td>
+		            <td th:text="${investor.diaChi}"></td>
+		            <td th:text="${investor.phone}"></td>
+		            <td th:text="${investor.cmnd}"></td>
+		            <td th:text="${investor.gioiTinh}"></td>
+		            <td th:text="${investor.email}"></td>
+		            <td>
+		                <a href="#" class="edit-link" th:attr="data-maNDT=${investor.maNDT}">Sửa</a> |
+		                <form th:action="@{/investors/delete/{maNDT}(id=${investor.maNDT})}" method="post" style="display: inline;">
+		                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+		                </form>
+		            </td>
+		        </tr>
+	        </tbody>
     </table>
 
     <div id="subform" class="subform-container">
@@ -55,30 +62,37 @@
                     <td><label>Mã nhà đầu tư:</label></td>
                     <td><input type="text" th:field="*{maNDT}" id="maNDT" maxlength="20" required /></td>
                 </tr>
+                
                 <tr>
                     <td><label>Họ tên:</label></td>
                     <td><input type="text" th:field="*{hoTen}" maxlength="50" required /></td>
                 </tr>
+                
                 <tr>
                     <td><label>Ngày sinh:</label></td>
                     <td><input type="date" th:field="*{ngaySinh}" required /></td>
                 </tr>
+                
                 <tr>
                     <td><label>Mật khẩu giao dịch:</label></td>
                     <td><input type="password" th:field="*{mkGiaoDich}" th:disabled="${disablePassword}" /></td>
                 </tr>
+                
                 <tr>
                     <td><label>Địa chỉ:</label></td>
                     <td><input type="text" th:field="*{diaChi}" maxlength="100" required /></td>
                 </tr>
+                
                 <tr>
                     <td><label>Số điện thoại:</label></td>
                     <td><input type="text" th:field="*{phone}" maxlength="15" required /></td>
                 </tr>
+                
                 <tr>
                     <td><label>CMND:</label></td>
                     <td><input type="text" th:field="*{cmnd}" id="cmnd" maxlength="10" required /></td>
                 </tr>
+                
                 <tr>
 				    <td><label>Giới tính:</label></td>
 				    <td>
@@ -89,6 +103,7 @@
 				        <label for="nu">Nữ</label>
 				    </td>
 				</tr>
+				
                 <tr>
                     <td><label>Email:</label></td>
                     <td><input type="email" th:field="*{email}" maxlength="50" required /></td>
@@ -98,19 +113,20 @@
             <h4>Tài khoản ngân hàng</h4>
             <table class="bank-account-table">
                 <thead>
-                <tr>
-                    <th>Số tài khoản</th>
-                    <th>Tên ngân hàng</th>
-                    <th>Mã ngân hàng</th>
-                    <th>Số tiền</th>
-                    <th>Địa chỉ</th>
-                    <th>Số điện thoại</th>
-                    <th>Email</th>
-                    <th>Hành động</th>
-                </tr>
+	                <tr>
+	                    <th>Số tài khoản</th>
+	                    <th>Tên ngân hàng</th>
+	                    <th>Mã ngân hàng</th>
+	                    <th>Số tiền</th>
+	                    <th>Địa chỉ</th>
+	                    <th>Số điện thoại</th>
+	                    <th>Email</th>
+	                    <th>Hành động</th>
+	                </tr>
                 </thead>
                 <tbody id="bank-accounts"></tbody>
             </table>
+            
             <button type="button" onclick="addBankAccount()">Thêm tài khoản ngân hàng</button>
 
             <div class="form-actions">

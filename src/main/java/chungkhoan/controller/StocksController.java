@@ -26,6 +26,10 @@ public class StocksController {
                              Model model) {
         Page<CoPhieu> stockPage = coPhieuService.getPaginated(page, size);
         model.addAttribute("stocks", stockPage);
+        
+        if (stockPage.isEmpty()) {
+        	model.addAttribute("noDataMessage", "Không có dữ liệu cổ phiếu.");
+        }
 
         if ("edit".equals(action) && maCP != null) {
             Optional<CoPhieu> optional = coPhieuService.findById(maCP);

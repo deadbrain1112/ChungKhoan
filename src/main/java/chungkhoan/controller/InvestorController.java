@@ -4,6 +4,8 @@ import chungkhoan.entity.NhaDauTu;
 import chungkhoan.repository.NDTRepository;
 import chungkhoan.service.NDTService;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,9 +23,15 @@ public class InvestorController {
 	// Hiển thị danh sách nhà đầu tư và form thêm mới
 	@GetMapping("/investors")
 	public String investorsList(Model model) {
-		model.addAttribute("investors", ndtRepository.findAll());
+		List<NhaDauTu> list = ndtRepository.findAll();
+		model.addAttribute("investors", list);
 		model.addAttribute("investor", new NhaDauTu()); // cho form thêm
 		model.addAttribute("disablePassword", false);   // mặc định là false
+		
+		if (list.isEmpty()) {
+			model.addAttribute("noDataMessage", "Không có dữ liệu nhà đầu tư.");
+		}
+		
 		return "nhanvien/investor_list";
 	}
 
