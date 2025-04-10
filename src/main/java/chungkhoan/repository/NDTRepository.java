@@ -17,9 +17,8 @@ public interface NDTRepository extends JpaRepository<NhaDauTu, String> {
 
     @Modifying
     @Transactional
-    @Query(value = "EXEC sp_ThemNhaDauTu :maNDT, :hoTen, :ngaySinh, :mkgd, :diaChi, :phone, :cmnd, :gioiTinh, :email", nativeQuery = true)
+    @Query(value = "EXEC sp_ThemNhaDauTu :hoTen, :ngaySinh, :mkgd, :diaChi, :phone, :cmnd, :gioiTinh, :email", nativeQuery = true)
     void themNhaDauTu(
-            @Param("maNDT") String maNDT,
             @Param("hoTen") String hoTen,
             @Param("ngaySinh") Date ngaySinh,
             @Param("mkgd") String mkgd,
@@ -29,5 +28,6 @@ public interface NDTRepository extends JpaRepository<NhaDauTu, String> {
             @Param("gioiTinh") String gioiTinh,
             @Param("email") String email
     );
+
 
 }

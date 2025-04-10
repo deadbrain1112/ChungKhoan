@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import jakarta.transaction.Transactional;
 
-@Repository
+//@Repository
 public interface CoPhieuRepository extends JpaRepository<CoPhieu, String> {
 
     @Modifying
