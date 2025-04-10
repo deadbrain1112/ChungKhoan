@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao Dịch Chứng Khoán</title>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>GIAO DỊCH CHỨNG KHOÁN</h1>
+                <p>STOCK EXCHANGE</p>
+            </div>
+            <div class="header-right">
+                <p>Xin Chào - Trần Đạt</p>
+                <a href="@{/exit}">Đăng Xuất</a>
+            </div>
+        </header>
+        <nav>
+            <ul>
+                <li>Tra Cứu Số Dư</li>
+                <li>Sao Kê GDCK</li>
+                <li>Đặt Lệnh</li>
+                <li>Ứng Tiền</li>
+                <li>Bảng Giá Điện Tử</li>
+            </ul>
+        </nav>
+        <main>
+            <section class="account-info">
+                <h2>Tra Cứu Số Dư</h2>
+                <div class="info">
+                    <p><strong>Tên chủ TK:</strong> Trần Đạt</p>
+                    <p><strong>Số dư hiện tại của quý khách:</strong> <span class="highlight">10,582,000</span> VND</p>
+                    <p><strong>Mã Số Tài Khoản:</strong> TKNH01</p>
+                    <p><strong>Ngân Hàng:</strong> Vietcombank</p>
+                    <p><strong>Số dư còn lại được phép giao dịch:</strong> <span class="highlight">5,752,000</span> VND</p>
+                </div>
+            </section>
+            <section class="stock-balance">
+                <h2>Số Dư Cổ Phiếu</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã CP</th>
+                            <th>Số lượng</th>
+                            <th>Website</th>
+                            <th>Giá thị trường</th>
+                            <th>Tổng giá trị</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>CT01</td>
+                            <td>250</td>
+                            <td>phugiac.vn</td>
+                            <td>15,000</td>
+                            <td>3,750,000</td>
+                        </tr>
+                        <tr>
+                            <td>CT02</td>
+                            <td>400</td>
+                            <td>phumysc.vn</td>
+                            <td>13,000</td>
+                            <td>5,200,000</td>
+                        </tr>
+                        <tr>
+                            <td>CT03</td>
+                            <td>300</td>
+                            <td>phuthosc.vn</td>
+                            <td>16,000</td>
+                            <td>4,800,000</td>
+                        </tr>
+                        <tr>
+                            <td>CT04</td>
+                            <td>300</td>
+                            <td>phuquocsc.vn</td>
+                            <td>17,000</td>
+                            <td>5,100,000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

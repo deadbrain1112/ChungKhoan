@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/nhanvien")
-public class HomeController {
+public class AdminHomeController {
 
 	// Thoát về trang chủ
 	@GetMapping("")

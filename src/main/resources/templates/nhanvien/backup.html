@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sao lưu - Phục hồi</title>
+    <link rel="stylesheet" href="/css/backup.css">
+</head>
+<body>
+<div class="container">
+    <!-- Thanh menu chức năng -->
+    <div class="menu-bar">
+        <form th:action="@{/backup/save}" method="post" class="inline-form">
+            <button type="submit">Sao lưu</button>
+        </form>
+
+        <form th:action="@{/backup/recovery}" method="post" class="inline-form recovery-form">
+            <label>
+                <input type="checkbox" id="timeRecoveryCheckbox" name="enableTimeRecovery" value="true" onchange="toggleTimeInputs()">
+                Phục hồi theo thời gian
+            </label>
+            <button type="submit">Phục hồi</button>           
+        </form>
+
+        <form th:action="@{/backup/device-create}" method="post" class="inline-form">
+            <button type="submit">Tạo device sao lưu</button>
+        </form>
+
+        <form th:action="@{/nhanvien}" method="get" class="inline-form">
+            <button type="submit" class="danger">Thoát</button>
+        </form>
+    </div>
+
+    <div class="content">
+        <div class="left-panel">
+            <h3>Cơ sở dữ liệu</h3>
+            <!-- (Tùy ý thêm danh sách CSDL) -->
+        </div>
+
+        <div class="main-panel">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bản sao lưu thứ #</th>
+                        <th>Diễn giải</th>
+                        <th>Ngày giờ sao lưu</th>
+                        <th>User sao lưu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="b, iStat : ${backupList}">
+                        <td th:text="${b.position}"></td>
+                        <td th:text="${b.description}"></td>
+                        <td th:text="${#dates.format(b.backupTime, 'dd/MM/yyyy hh:mm:ss a')}"></td>
+                        <td th:text="${b.user}"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <form th:action="@{/backup/save}" method="post" class="options">
+                <label>
+                    <input type="checkbox" name="deleteOld">
+                    Xóa tất cả các bản sao lưu cũ trong File trước khi sao lưu bản mới
+                </label>
+            </form>
+            
+            <div id="timeRecoveryInputs" style="display: none; margin-top: 10px;">
+                <label>Ngày:</label>
+                <input type="date" name="recoveryDate"><br><br>
+
+                <label>Giờ:</label>
+                <input type="time" name="recoveryTime" step="1"><br><br>
+
+                <p class="note">
+                    Ngày giờ ta nhập vào là thời điểm ta muốn phục hồi cơ sở dữ liệu về đó.<br>
+                    Thời điểm này phải sau thời điểm của bản sao lưu đã chọn, và trước thời điểm hiện tại ít nhất là 1 phút.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleTimeInputs() {
+        const checkbox = document.getElementById('timeRecoveryCheckbox');
+        const timeInputs = document.getElementById('timeRecoveryInputs');
+        timeInputs.style.display = checkbox.checked ? 'block' : 'none';
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    background-color: #003b73;
+    color: white;
+    padding: 10px 20px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+header p {
+    margin: 0;
+}
+
+header a {
+    color: #ffc107;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    background-color: #0066cc;
+    margin: 0;
+    padding: 10px 0;
+}
+
+nav ul li {
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+nav ul li:hover {
+    background-color: #004c99;
+}
+
+main {
+    padding: 20px;
+}
+
+.account-info,
+.stock-balance {
+    margin-bottom: 20px;
+}
+
+.account-info h2,
+.stock-balance h2 {
+    background-color: #003b73;
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.info {
+    background-color: #f1f1f1;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+.highlight {
+    color: red;
+    font-weight: bold;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th,
+table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+table th {
+    background-color: #003b73;
+    color: white;
+}
