@@ -11,105 +11,81 @@
     <div class="toolbar">
         <a href="#" onclick="showSubform('add')">Thêm</a>
         <a th:href="@{/nhanvien}">Thoát</a>
-        <!-- <form th:action="@{/employee/undo}" method="post" style="display:inline;">
-        	<button type="submit">Hoàn tác</button>
-    	</form> -->
     </div>
 
     <table class="main-table">
         <thead>
-	        <tr>
-	            <th>Mã</th>
-	            <th>Họ tên</th>
-	            <th>Ngày sinh</th>
-	            <th>Địa chỉ</th>
-	            <th>Số điện thoại</th>
-	            <th>CMND</th>
-	            <th>Giới tính</th>
-	            <th>Email</th>
-	            <!-- <th>Hành động</th> -->
-	        </tr>
-	        </thead>
-	        <tbody>
-		        <tr th:if="${#lists.isEmpty(employees)}">
-		        	<td colspan="9" style="text-align: center;" th:text="${noDataMessage}"></td>
-		        </tr>
-		        
-		        <tr th:each="employee : ${employees}">
-		            <td th:text="${employee.maNV}"></td>
-		            <td th:text="${employee.hoTen}"></td>
-		            <td th:text="${employee.ngaySinh}"></td>
-		            <td th:text="${employee.diaChi}"></td>
-		            <td th:text="${employee.phone}"></td>
-		            <td th:text="${employee.cmnd}"></td>
-		            <td th:text="${employee.gioiTinh}"></td>
-		            <td th:text="${employee.email}"></td>
-		            <!-- <td>
-		                <a href="#" class="edit-link" th:attr="data-maNDT=${investor.maNDT}">Sửa</a> |
-		                <form th:action="@{/investors/delete/{maNDT}(id=${investor.maNDT})}" method="post" style="display: inline;">
-		                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-		                </form>
-		            </td> -->
-		        </tr>
-	        </tbody>
+            <tr>
+                <th>Mã</th>
+                <th>Họ tên</th>
+                <th>Ngày sinh</th>
+                <th>Địa chỉ</th>
+                <th>Số điện thoại</th>
+                <th>CMND</th>
+                <th>Giới tính</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:if="${#lists.isEmpty(employees)}">
+                <td colspan="9" style="text-align: center;" th:text="${noDataMessage}"></td>
+            </tr>
+            <tr th:each="employee : ${employees}">
+                <td th:text="${employee.maNV}"></td>
+                <td th:text="${employee.hoTen}"></td>
+                <td th:text="${employee.ngaySinh}"></td>
+                <td th:text="${employee.diaChi}"></td>
+                <td th:text="${employee.phone}"></td>
+                <td th:text="${employee.cmnd}"></td>
+                <td th:text="${employee.gioiTinh}"></td>
+                <td th:text="${employee.email}"></td>
+            </tr>
+        </tbody>
     </table>
 
     <div id="subform" class="subform-container">
         <h3 id="subform-title"></h3>
-        <form id="investor-form" th:action="@{/employees/add}" th:object="${employee}" method="post">
+        <form id="employee-form" th:action="@{/employees/add}" th:object="${employee}" method="post">
             <table class="subform-table">
-                <tr>
+                <tr id="row-maNV">
                     <td><label>Mã nhân viên:</label></td>
                     <td><input type="text" th:field="*{maNV}" id="maNV" maxlength="20" required /></td>
                 </tr>
-                
                 <tr>
                     <td><label>Họ tên:</label></td>
                     <td><input type="text" th:field="*{hoTen}" maxlength="50" required /></td>
                 </tr>
-                
                 <tr>
                     <td><label>Ngày sinh:</label></td>
                     <td><input type="date" th:field="*{ngaySinh}" required /></td>
                 </tr>
-                
-<!--                 <tr>
-                    <td><label>Mật khẩu giao dịch:</label></td>
-                    <td><input type="password" th:field="*{mkGiaoDich}" th:disabled="${disablePassword}" /></td>
-                </tr> -->
-                
                 <tr>
                     <td><label>Địa chỉ:</label></td>
                     <td><input type="text" th:field="*{diaChi}" maxlength="100" required /></td>
                 </tr>
-                
                 <tr>
                     <td><label>Số điện thoại:</label></td>
                     <td><input type="text" th:field="*{phone}" maxlength="15" required /></td>
                 </tr>
-                
                 <tr>
                     <td><label>CMND:</label></td>
                     <td><input type="text" th:field="*{cmnd}" id="cmnd" maxlength="10" required /></td>
                 </tr>
-                
                 <tr>
-				    <td><label>Giới tính:</label></td>
-				    <td>
-				        <input type="radio" th:field="*{gioiTinh}" value="Nam" id="nam" />
-				        <label for="nam">Nam</label>
-				
-				        <input type="radio" th:field="*{gioiTinh}" value="Nữ" id="nu" style="margin-left: 20px;" />
-				        <label for="nu">Nữ</label>
-				    </td>
-				</tr>
-				
+                    <td><label>Giới tính:</label></td>
+                    <td>
+                        <input type="radio" th:field="*{gioiTinh}" value="Nam" id="nam" />
+                        <label for="nam">Nam</label>
+                        <input type="radio" th:field="*{gioiTinh}" value="Nữ" id="nu" style="margin-left: 20px;" />
+                        <label for="nu">Nữ</label>
+                    </td>
+                </tr>
                 <tr>
                     <td><label>Email:</label></td>
                     <td><input type="email" th:field="*{email}" maxlength="50" required /></td>
                 </tr>
             </table>
-            
+
             <div class="form-actions">
                 <button type="submit">Lưu</button>
                 <button type="button" onclick="hideSubform()">Hủy</button>
@@ -122,49 +98,38 @@
     document.addEventListener("DOMContentLoaded", function () {
         console.log("Trang đã tải xong, sẵn sàng xử lý sự kiện.");
 
-        /* document.querySelectorAll(".edit-link").forEach(function (link) {
-            link.addEventListener("click", function (e) {
-                e.preventDefault();
-                const maNDT = this.getAttribute("data-maNDT");
-                console.log("Nhấn 'Sửa', Mã NDT được chọn:", maNDT);
-                showSubform('edit', maNDT);
-            });
-        }); */
-
-        document.getElementById("investor-form").addEventListener("submit", function(e) {
-            const maNDT = document.getElementById("maNDT").value;
+        document.getElementById("employee-form").addEventListener("submit", function(e) {
+            const maNV = document.getElementById("maNV").value;
             const cmnd = document.getElementById("cmnd").value;
-            console.log("Biểu mẫu được gửi, Mã NDT (input):", maNDT);
+            console.log("Biểu mẫu được gửi, Mã NV (input):", maNV);
             console.log("Biểu mẫu được gửi, CMND (input):", cmnd);
             console.log("Action của form:", this.action);
         });
     });
 
-    function showSubform(action, maNDT = '') {
+    function showSubform(action, maNV = '') {
         const subform = document.getElementById('subform');
         const title = document.getElementById('subform-title');
-        const form = document.getElementById('investor-form');
-        const maNDTInput = document.getElementById('maNDT');
-        /* const mkGiaoDichInput = document.querySelector('[name="mkGiaoDich"]'); */
+        const form = document.getElementById('employee-form');
+        const maNVInput = document.getElementById('maNV');
+        const rowMaNV = document.getElementById('row-maNV');
 
         subform.classList.add('active');
         form.reset();
-        document.getElementById('bank-accounts').innerHTML = '';
 
         if (action === 'add') {
-            title.textContent = 'Thêm nhà đầu tư';
-            form.action = '/investors/add';
-            maNDTInput.disabled = false;
-            maNDTInput.value = '';
-            mkGiaoDichInput.disabled = false;
-        } /* else if (action === 'edit') {
-            title.textContent = 'Sửa nhà đầu tư';
-            form.action = '/investors/edit/' + maNDT;
-            maNDTInput.disabled = true;
-            maNDTInput.value = maNDT;
-            mkGiaoDichInput.disabled = true;
-            populateBankAccounts(maNDT);
-        } */
+            title.textContent = 'Thêm nhân viên';
+            form.action = '/employees/add';
+            maNVInput.disabled = true;
+            maNVInput.value = '';
+            rowMaNV.style.display = 'none'; // Ẩn dòng mã nhân viên
+        }
+        // Nếu cần mở cho 'edit', bạn có thể thêm else if sau này
+    }
+
+    function hideSubform() {
+        const subform = document.getElementById('subform');
+        subform.classList.remove('active');
     }
 </script>
 </body>

@@ -58,7 +58,7 @@
         <h3 id="subform-title"></h3>
         <form id="investor-form" th:action="@{/investors/add}" th:object="${investor}" method="post">
             <table class="subform-table">
-                <tr>
+                <tr id="row-maNDT">
                     <td><label>Mã nhà đầu tư:</label></td>
                     <td><input type="text" th:field="*{maNDT}" id="maNDT" maxlength="20" required /></td>
                 </tr>
@@ -185,6 +185,7 @@
         const title = document.getElementById('subform-title');
         const form = document.getElementById('investor-form');
         const maNDTInput = document.getElementById('maNDT');
+        const rowMaNDT = document.getElementById('row-maNDT');
         /* const mkGiaoDichInput = document.querySelector('[name="mkGiaoDich"]'); */
 
         subform.classList.add('active');
@@ -194,15 +195,17 @@
         if (action === 'add') {
             title.textContent = 'Thêm nhà đầu tư';
             form.action = '/investors/add';
-            maNDTInput.disabled = false;
-            maNDTInput.value = '';
-            mkGiaoDichInput.disabled = false;
+            maNDTInput.disabled = true;
+            maNDTInput.value = ''; // clear
+            rowMaNDT.style.display = 'none'; // Ẩn dòng Mã NDT
+            // mkGiaoDichInput.disabled = false;
         } else if (action === 'edit') {
             title.textContent = 'Sửa nhà đầu tư';
             form.action = '/investors/edit/' + maNDT;
             maNDTInput.disabled = true;
             maNDTInput.value = maNDT;
-            mkGiaoDichInput.disabled = true;
+            rowMaNDT.style.display = ''; // Hiện lại dòng Mã NDT
+            // mkGiaoDichInput.disabled = true;
             populateBankAccounts(maNDT);
         }
     }
