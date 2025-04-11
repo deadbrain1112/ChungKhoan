@@ -29,7 +29,7 @@ public class LenhKhop {
     @Column(name = "giakhop", nullable = false)
     private double giaKhop;
 
-    @Column(name = "kieukhop", columnDefinition = "NVARCHAR(50) CHECK (KieuKhop IN ('Khớp 1 phần', 'Khớp hết'))", nullable = false)
+    @Column(name = "kieukhop", columnDefinition = "NVARCHAR(50) CHECK (KieuKhop IN (N'Khớp 1 phần', N'Khớp hết'))", nullable = false)
     private String kieuKhop;
 
     // Kiểm tra dữ liệu trước khi lưu vào DB

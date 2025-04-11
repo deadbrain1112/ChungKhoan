@@ -1,10 +1,17 @@
 package chungkhoan.service;
 
 import chungkhoan.entity.CoPhieu;
+import chungkhoan.entity.LenhKhop;
+import chungkhoan.entity.LichSuGia;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.repository.CoPhieuRepository;
+import chungkhoan.repository.LenhKhopRepository;
+import chungkhoan.repository.LichSuGiaRepository;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +23,12 @@ public class CoPhieuService {
 
     @Autowired
     private CoPhieuRepository coPhieuRepository;
+    
+    @Autowired
+    private LichSuGiaRepository lichSuGiaRepo;
+    
+    @Autowired
+    private LenhKhopRepository lenhKhopRepo;
 
     public Page<CoPhieu> getPaginated(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("maCP").ascending());

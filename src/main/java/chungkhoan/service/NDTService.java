@@ -96,6 +96,4 @@ public class NDTService {
     public NhaDauTu getNhaDauTuByUsername(String username) {
         return ndtRepository.findByMaNDT(username);
     }
-
-
 }

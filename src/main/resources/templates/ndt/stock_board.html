@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/stock_board.css}">
+    <title>Bảng giá cổ phiếu</title>
+</head>
+<body>
+    <h2>BẢNG GIÁ CỔ PHIẾU TRỰC TUYẾN</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2">Mã CK</th>
+                <th rowspan="2">T.C</th>
+                <th rowspan="2">Trần</th>
+                <th rowspan="2">Sàn</th>
+                <th colspan="6">Bên mua</th>
+                <th colspan="3">Khớp lệnh</th>
+                <th colspan="6">Bên bán</th>
+                <th rowspan="2">Tổng KL</th>
+            </tr>
+            <tr>
+                <th>Giá 3</th><th>KL 3</th>
+                <th>Giá 2</th><th>KL 2</th>
+                <th>Giá 1</th><th>KL 1</th>
+                <th>Giá</th><th>KL</th><th>+/-</th>
+                <th>Giá 1</th><th>KL 1</th>
+                <th>Giá 2</th><th>KL 2</th>
+                <th>Giá 3</th><th>KL 3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="cp : ${dsCP}">
+                <td th:text="${cp.maCP}"></td>
+
+                <!-- Giá tham chiếu, trần, sàn -->
+                <td class="gia-tham-chieu" th:text="${giaTCMap[cp.maCP]}"></td>
+                <td class="gia-tran" th:text="${giaTranMap[cp.maCP]}"></td>
+                <td class="gia-san" th:text="${giaSanMap[cp.maCP]}"></td>
+
+                <!-- Bên mua -->
+                <td th:text="${benMuaMap[cp.maCP]?.size() > 2 ? benMuaMap[cp.maCP][2].gia : '-'}"></td>
+                <td th:text="${benMuaMap[cp.maCP]?.size() > 2 ? benMuaMap[cp.maCP][2].soLuong : '-'}"></td>
+                <td th:text="${benMuaMap[cp.maCP]?.size() > 1 ? benMuaMap[cp.maCP][1].gia : '-'}"></td>
+                <td th:text="${benMuaMap[cp.maCP]?.size() > 1 ? benMuaMap[cp.maCP][1].soLuong : '-'}"></td>
+                <td th:text="${benMuaMap[cp.maCP]?.size() > 0 ? benMuaMap[cp.maCP][0].gia : '-'}"></td>
+                <td th:text="${benMuaMap[cp.maCP]?.size() > 0 ? benMuaMap[cp.maCP][0].soLuong : '-'}"></td>
+
+                <!-- Khớp lệnh -->
+                <td th:text="${lenhKhopMap[cp.maCP]?.giaKhop}"
+                    th:classappend="|${
+                        lenhKhopMap[cp.maCP]?.giaKhop == giaTranMap[cp.maCP] ? 'gia-tran' :
+                        lenhKhopMap[cp.maCP]?.giaKhop == giaSanMap[cp.maCP] ? 'gia-san' :
+                        lenhKhopMap[cp.maCP]?.giaKhop > giaTCMap[cp.maCP] ? 'gia-tang' :
+                        lenhKhopMap[cp.maCP]?.giaKhop < giaTCMap[cp.maCP] ? 'gia-giam' :
+                        'gia-tham-chieu'
+                    }|">
+                </td>
+
+                <td th:text="${lenhKhopMap[cp.maCP]?.soLuongKhop}"></td>
+
+                <td th:if="${lenhKhopMap[cp.maCP]?.giaKhop != null and giaTCMap[cp.maCP] != null}"
+                    th:text="${#numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop - giaTCMap[cp.maCP], 1, 'COMMA', 2, 'POINT')}">
+                </td>
+                <td th:unless="${lenhKhopMap[cp.maCP]?.giaKhop != null and giaTCMap[cp.maCP] != null}">-</td>
+
+                <!-- Bên bán -->
+                <td th:text="${benBanMap[cp.maCP]?.size() > 0 ? benBanMap[cp.maCP][0].gia : '-'}"></td>
+                <td th:text="${benBanMap[cp.maCP]?.size() > 0 ? benBanMap[cp.maCP][0].soLuong : '-'}"></td>
+                <td th:text="${benBanMap[cp.maCP]?.size() > 1 ? benBanMap[cp.maCP][1].gia : '-'}"></td>
+                <td th:text="${benBanMap[cp.maCP]?.size() > 1 ? benBanMap[cp.maCP][1].soLuong : '-'}"></td>
+                <td th:text="${benBanMap[cp.maCP]?.size() > 2 ? benBanMap[cp.maCP][2].gia : '-'}"></td>
+                <td th:text="${benBanMap[cp.maCP]?.size() > 2 ? benBanMap[cp.maCP][2].soLuong : '-'}"></td>
+
+                <td class="tong-kl" th:text="${tongKhopMap[cp.maCP]}"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
