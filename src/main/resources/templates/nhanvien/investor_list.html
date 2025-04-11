@@ -54,6 +54,18 @@
 						            data-cmnd=${investor.cmnd},
 						            data-gioiTinh=${investor.gioiTinh},
 						            data-email=${investor.email}">Sửa</a>|
+						<!-- Tài khoản ngân hàng dạng th:each để lưu trữ dữ liệu cho JS -->
+				        <div class="hidden" th:each="account : ${bankAccountMap[investor.maNDT]}" 
+				             th:data-maNDT="${investor.maNDT}"
+				             th:data-accountNumber="${account.maTK}"
+				             th:data-tenNH="${account.nganHang.tenNH}"
+				             th:data-maNH="${account.nganHang.maNH}"
+				             th:data-soTien="${account.soTien}"
+				             th:data-diaChi="${account.nganHang.diaChi}"
+				             th:data-phone="${account.nganHang.phone}"
+				             th:data-email="${account.nganHang.email}"
+				             style="display:none;">
+				        </div>
 		                <form th:action="@{/investors/delete/{maNDT}(id=${investor.maNDT})}" method="post" style="display: inline;">
 		                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
 		                </form>
@@ -206,6 +218,25 @@
             } else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
                 gioiTinhNu.checked = true;
             }
+            
+         	// Tự fill thông tin ngân hàng
+            const hiddenDivs = document.querySelectorAll(`div[data-maNDT="${maNDT}"]`);
+            const tbody = document.getElementById('bank-accounts');
+
+            hiddenDivs.forEach(div => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" name="bankAccounts[].accountNumber" value="${div.dataset.accountnumber}"></td>
+                    <td><input type="text" name="bankAccounts[].tenNH" value="${div.dataset.tennh}"></td>
+                    <td><input type="text" name="bankAccounts[].maNH" value="${div.dataset.manh}"></td>
+                    <td><input type="number" name="bankAccounts[].soTien" value="${div.dataset.sotien}"></td>
+                    <td><input type="text" name="bankAccounts[].diaChi" value="${div.dataset.diachi}"></td>
+                    <td><input type="text" name="bankAccounts[].phone" value="${div.dataset.phone}"></td>
+                    <td><input type="text" name="bankAccounts[].email" value="${div.dataset.email}"></td>
+                    <td><button type="button" onclick="this.parentElement.parentElement.remove()">Xóa</button></td>
+                `;
+                tbody.appendChild(row);
+            });
 
             populateBankAccounts(maNDT);
         }
@@ -230,44 +261,26 @@
     function populateBankAccounts(maNDT) {
         const tbody = document.getElementById('bank-accounts');
         tbody.innerHTML = '';
-        
-        const sampleData = [
-            {
-                accountNumber: '123456789',
-                tenNH: 'Ngân hàng ACB',
-                maNH: 'ACB001',
-                soTien: 5000000,
-                diaChi: '123 Nguyễn Văn Cừ, Q.5, TP.HCM',
-                phone: '0909123456',
-                email: 'support@acb.com'
-            },
-            {
-                accountNumber: '987654321',
-                tenNH: 'Ngân hàng Vietcombank',
-                maNH: 'VCB002',
-                soTien: 12000000,
-                diaChi: '456 Hai Bà Trưng, Q.3, TP.HCM',
-                phone: '0911222333',
-                email: 'hotro@vietcombank.vn'
-            }
-        ];
 
+        // Lấy dữ liệu tài khoản từ các div ẩn tương ứng với maNDT
+        const hiddenDivs = document.querySelectorAll(`div[data-maNDT="${maNDT}"]`);
 
-        sampleData.forEach(data => {
+        hiddenDivs.forEach(div => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" name="bankAccounts[].accountNumber" value="${data.accountNumber}"></td>
-                <td><input type="text" name="bankAccounts[].tenNH" value="${data.tenNH}"></td>
-                <td><input type="text" name="bankAccounts[].maNH" value="${data.maNH}"></td>
-                <td><input type="number" name="bankAccounts[].soTien" value="${data.soTien}"></td>
-                <td><input type="text" name="bankAccounts[].diaChi" value="${data.diaChi}"></td>
-                <td><input type="text" name="bankAccounts[].phone" value="${data.phone}"></td>
-                <td><input type="text" name="bankAccounts[].email" value="${data.email}"></td>
+                <td><input type="text" name="bankAccounts[].accountNumber" value="${div.dataset.accountnumber}"></td>
+                <td><input type="text" name="bankAccounts[].tenNH" value="${div.dataset.tennh}"></td>
+                <td><input type="text" name="bankAccounts[].maNH" value="${div.dataset.manh}"></td>
+                <td><input type="number" name="bankAccounts[].soTien" value="${div.dataset.sotien}"></td>
+                <td><input type="text" name="bankAccounts[].diaChi" value="${div.dataset.diachi}"></td>
+                <td><input type="text" name="bankAccounts[].phone" value="${div.dataset.phone}"></td>
+                <td><input type="text" name="bankAccounts[].email" value="${div.dataset.email}"></td>
                 <td><button type="button" onclick="this.parentElement.parentElement.remove()">Xóa</button></td>
             `;
             tbody.appendChild(row);
         });
     }
+
     
     function hideSubform() {
         document.getElementById('subform').style.display = 'none';

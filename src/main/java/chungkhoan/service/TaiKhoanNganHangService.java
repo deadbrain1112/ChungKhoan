@@ -13,7 +13,7 @@ public class TaiKhoanNganHangService {
     private TaiKhoanNganHangRepository taiKhoanNganHangRepository;
     
     // Danh sách ngân hàng của nhà đầu tư nhất định
-    public TaiKhoanNganHang getTaiKhoanByNDT(NhaDauTu nhaDauTu) {
-        return taiKhoanNganHangRepository.findByNhaDauTu(nhaDauTu);
-    }
+//    public TaiKhoanNganHang getTaiKhoanByNDT(NhaDauTu nhaDauTu) {
+//        return taiKhoanNganHangRepository.findByNhaDauTu(nhaDauTu);
+//    }
 }

@@ -44,10 +44,10 @@ public class UserHomeController {
         }
 
         // Lấy thông tin tài khoản ngân hàng của NDT
-        TaiKhoanNganHang taiKhoan = taiKhoanNganHangService.getTaiKhoanByNDT(nhaDauTu);
-        if (taiKhoan == null) {
-            model.addAttribute("nullTKNH", "Không tìm thấy thông tin tài khoản!");
-        }
+//        TaiKhoanNganHang taiKhoan = taiKhoanNganHangService.getTaiKhoanByNDT(nhaDauTu);
+//        if (taiKhoan == null) {
+//            model.addAttribute("nullTKNH", "Không tìm thấy thông tin tài khoản!");
+//        }
 
         // Lấy danh sách cổ phiếu thuộc NDT
         List<CoPhieu> danhSachCoPhieu = coPhieuService.getAllCoPhieu();
@@ -56,7 +56,7 @@ public class UserHomeController {
         }
 
         // Đưa dữ liệu vào model để hiển thị trên giao diện
-        model.addAttribute("taiKhoan", taiKhoan);
+        //model.addAttribute("taiKhoan", taiKhoan);
         model.addAttribute("danhSachCoPhieu", danhSachCoPhieu);
         model.addAttribute("nhaDauTu", nhaDauTu);
 
