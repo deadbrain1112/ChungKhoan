@@ -1,12 +1,21 @@
 package chungkhoan.service;
 
+import chungkhoan.repository.DatabaseRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.sql.*;
+import java.util.List;
 
 @Service
 public class DatabaseService {
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=QUANLYGIAODICHCHUNGKHOAN;encrypt=false;trustServerCertificate=true;charset=UTF-8";
 
+    @Autowired
+    private DatabaseRepository repository;
+
+    public List<String> getDatabases() {
+        return repository.getAllUserDatabases();
+    }
     public boolean testConnection(String username, String password) {
         String connectionUrl = URL + ";user=" + username + ";password=" + password;
         try (Connection conn = DriverManager.getConnection(connectionUrl)) {

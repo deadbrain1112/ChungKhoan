@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +25,11 @@ public class InvestorController {
 
 	@Autowired
 	private NDTService ndtService;
-	
+
 	@Autowired
 	private TaiKhoanNganHangService taiKhoanNganHangService;
-	
-	@Autowired 
+
+	@Autowired
 	private TaiKhoanNganHangRepository tkNganHangRepo;
 
 	// Hiển thị danh sách nhà đầu tư và form thêm mới
@@ -61,13 +62,19 @@ public class InvestorController {
 
 	        if (editInvestor != null) {
 	            List<TaiKhoanNganHang> taiKhoans = tkNganHangRepo.findByNhaDauTu(editInvestor);
-	            model.addAttribute("editTaiKhoans", taiKhoans); // Gửi danh sách cho Thymeleaf nếu cần (hoặc tạo data-* trong view)
+	            model.addAttribute("editTaiKhoans", taiKhoans);
 	        } else {
 	            model.addAttribute("nullTKNH", "Không tìm thấy nhà đầu tư hoặc tài khoản!");
 	        }
 	    }
 
 	    return "nhanvien/investor_list";
+	}
+
+	@PostMapping("/investors/undo")
+	public ResponseEntity<String> undoLastAction() {
+		boolean success = ndtService.undoThaoTacCuoi();
+		return success ? ResponseEntity.ok("Undo thành công") : ResponseEntity.badRequest().body("Không có thao tác để hoàn tác");
 	}
 
 	// Xử lý thêm nhà đầu tư (gọi stored procedure)
@@ -88,11 +95,9 @@ public class InvestorController {
 	@PostMapping("/investors/edit/{maNDT}")
 	public String editInvestor(@PathVariable("maNDT") String maNDT,
 							   @ModelAttribute("investor") NhaDauTu updatedInvestor) {
-		// Lấy đối tượng gốc từ DB để giữ lại giá trị mkgd
 		NhaDauTu existingInvestor = ndtRepository.findById(maNDT).orElse(null);
-		
+
 		if (existingInvestor != null) {
-			// Gán lại các giá trị không có trên form để tránh bị null
 			updatedInvestor.setMkGiaoDich(existingInvestor.getMkGiaoDich());
 
 			// Gán lại mã nhà đầu tư
@@ -100,7 +105,7 @@ public class InvestorController {
 
 			ndtRepository.save(updatedInvestor);
 		}
-		
+
 		return "redirect:/investors";
 	}
 }

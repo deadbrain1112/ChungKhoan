@@ -33,10 +33,6 @@ public class EmployeeController {
 		return "nhanvien/employee_list";
 	}
 
-	@PostMapping("/investors/undo")
-	public ResponseEntity<String> undoLastAction() {
-		boolean success = ndtService.undoThaoTacCuoi();
-		return success ? ResponseEntity.ok("Undo thành công") : ResponseEntity.badRequest().body("Không có thao tác để hoàn tác");
-	}
+
 
 }

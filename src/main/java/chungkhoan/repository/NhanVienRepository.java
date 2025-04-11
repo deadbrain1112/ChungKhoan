@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface NhanVienRepository extends JpaRepository<NhanVien, String> {
     List<NhanVien> findAll();
+    NhanVien findByMaNV(String maNV);
 }

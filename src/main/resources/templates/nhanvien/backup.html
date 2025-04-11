@@ -33,8 +33,16 @@
     <div class="content">
         <div class="left-panel">
             <h3>Cơ sở dữ liệu</h3>
-            <!-- (Tùy ý thêm danh sách CSDL) -->
+            <ul>
+                <li th:each="db : ${databases}">
+                    <form th:action="@{/backup}" method="get">
+                        <input type="hidden" name="dbName" th:value="${db}" />
+                        <button type="submit" th:text="${db}" class="db-btn"></button>
+                    </form>
+                </li>
+            </ul>
         </div>
+
 
         <div class="main-panel">
             <table>
