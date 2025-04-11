@@ -12,11 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 
 @Controller
 public class InvestorController {
@@ -26,9 +25,6 @@ public class InvestorController {
 
 	@Autowired
 	private NDTService ndtService;
-
-	@Autowired
-	private TaiKhoanNganHangService taiKhoanNganHangService;
 
 	@Autowired
 	private TaiKhoanNganHangRepository tkNganHangRepo;
@@ -75,20 +71,19 @@ public class InvestorController {
 	@PostMapping("/investors/add")
 	public String addInvestor(@ModelAttribute("investor") NhaDauTu investor) {
 		ndtService.themNhaDauTuBangSP(investor);
-		return "nhanvien/investor_list";
+		return "redirect:/investors";
 	}
 
-	@PostMapping("/investors/delete/{maNDT}")
-	public String deleteInvestor(@PathVariable("maNDT") String maNDT) {
+	@PostMapping("/investors/delete")
+	public String deleteInvestor(@RequestParam("maNDT") String maNDT) {
 		ndtService.xoaNhaDauTu(maNDT);
-		return "nhanvien/investor_list";
+		return "redirect:/investors";
 	}
 
-	@PostMapping("/investors/edit/{maNDT}")
-	public String editInvestor(@PathVariable("maNDT") String maNDT,
+	@PostMapping("/investors/edit")
+	public String editInvestor(@RequestParam("maNDT") String maNDT,
 							   @ModelAttribute("investor") NhaDauTu updatedInvestor) {
 		ndtService.capNhatNhaDauTu(maNDT, updatedInvestor);
-		return "nhanvien/investor_list";
+		return "redirect:/investors";
 	}
-
 }

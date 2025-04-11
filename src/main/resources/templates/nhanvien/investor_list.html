@@ -72,7 +72,8 @@
 				             th:data-email="${account.nganHang.email}"
 				             style="display:none;">
 				        </div>
-		                <form th:action="@{/investors/delete/{maNDT}(id=${investor.maNDT})}" method="post" style="display: inline;">
+		                <form th:action="@{/investors/delete}" method="post" style="display: inline;">
+		                	<input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
 		                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
 		                </form>
 		            </td>
@@ -195,13 +196,13 @@
         if (action === 'add') {
             title.textContent = 'Thêm nhà đầu tư';
             form.action = '/investors/add';
-            maNDTInput.disabled = true;
+            maNDTInput.readOnly = true;
             maNDTInput.value = ''; // clear
             rowMaNDT.style.display = 'none'; // Ẩn dòng Mã NDT
         } else if (action === 'edit') {
             title.textContent = 'Sửa nhà đầu tư';
-            form.action = '/investors/edit/' + maNDT;
-            maNDTInput.disabled = true;
+            form.action = '/investors/edit';
+            maNDTInput.readOnly = true;
             maNDTInput.value = maNDT;
             rowMaNDT.style.display = '';
 

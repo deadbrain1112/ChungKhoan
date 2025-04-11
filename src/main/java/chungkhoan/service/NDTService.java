@@ -6,6 +6,7 @@ import chungkhoan.repository.NDTRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -73,7 +74,7 @@ public class NDTService {
         }
     }
 
-
+    @Transactional
     public boolean undoThaoTacCuoi() {
         if (undoStack.isEmpty()) return false;
 

@@ -44,6 +44,6 @@ public class EmployeeController {
 			redirectAttributes.addFlashAttribute("message", "Không có thao tác để hoàn tác");
 			redirectAttributes.addFlashAttribute("messageType", "error");
 		}
-		return "nhanvien/investor_list";
+		return "redirect:/investors";
 	}
 }
