@@ -13,6 +13,7 @@ import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.NhanVien;
 import chungkhoan.repository.NhanVienRepository;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class EmployeeController {
@@ -33,6 +34,16 @@ public class EmployeeController {
 		return "nhanvien/employee_list";
 	}
 
-
-
+	@PostMapping("/investors/undo")
+	public String undoLastAction(RedirectAttributes redirectAttributes) {
+	    boolean success = ndtService.undoThaoTacCuoi();
+	    if (success) {
+	        redirectAttributes.addFlashAttribute("message", "Hoàn tác thành công");
+	        redirectAttributes.addFlashAttribute("messageType", "success");
+	    } else {
+	        redirectAttributes.addFlashAttribute("message", "Không có thao tác để hoàn tác");
+	        redirectAttributes.addFlashAttribute("messageType", "error");
+	    }
+	    return "redirect:/investors";
+	}
 }
