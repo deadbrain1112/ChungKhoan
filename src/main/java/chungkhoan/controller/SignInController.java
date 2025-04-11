@@ -1,5 +1,6 @@
 package chungkhoan.controller;
 
+import chungkhoan.service.NDTService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,15 +15,15 @@ import java.time.LocalDate;
 
 @Controller
 public class SignInController {
-	@Autowired private NDTRepository ndtRepository;
-	
-	@GetMapping("/sign-in-request")
+    @Autowired private NDTService ndtService;
+
+    @GetMapping("/sign-in-request")
 	public String signInForm() {
 		return "ndt/sign_in_request";
 	}
-	
-	@PostMapping("/sign-in-request")
-	public String handleSignIn(HttpServletRequest request) {
+
+    @PostMapping("/sign-in-request")
+    public String handleSignIn(HttpServletRequest request) {
         String hoTen = request.getParameter("hoTen");
         LocalDate ngaySinh = LocalDate.parse(request.getParameter("ngaySinh"));
         String diaChi = request.getParameter("diaChi");
@@ -39,7 +40,10 @@ public class SignInController {
         ndt.setCmnd(cmnd);
         ndt.setGioiTinh(gioiTinh);
         ndt.setEmail(email);
-        ndtRepository.save(ndt);
+        ndt.setMkGiaoDich("1");
+
+
+        ndtService.themNhaDauTuBangSP(ndt);
 
         return "redirect:/sign-in-request?success";
     }
