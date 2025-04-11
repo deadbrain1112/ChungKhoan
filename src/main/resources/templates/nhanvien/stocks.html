@@ -151,9 +151,20 @@
             form.action = '/stocks/edit/' + maCP;
             maCPInput.disabled = true;
             maCPInput.value = maCP;
-            console.log("Mở subform để sửa, Mã CP được gán:", maCP);
-            // SỬA: Bỏ gán giá trị cho maCPHidden, maCP được gửi qua URL
+
+            // Tìm dòng tương ứng theo data-maCP
+            const row = [...document.querySelectorAll('.edit-link')].find(link => link.getAttribute('data-maCP') === maCP).closest('tr');
+            
+            const tenCty = row.children[1].textContent.trim();
+            const diaChi = row.children[2].textContent.trim();
+            const soLuongPH = row.children[3].textContent.trim();
+
+            // Gán giá trị vào input
+            form.querySelector('[name="tenCty"]').value = tenCty;
+            form.querySelector('[name="diaChi"]').value = diaChi;
+            form.querySelector('[name="soLuongPH"]').value = soLuongPH;
         }
+
     }
 
     function hideSubform() {

@@ -45,7 +45,15 @@
 		            <td th:text="${investor.gioiTinh}"></td>
 		            <td th:text="${investor.email}"></td>
 		            <td>
-		                <a href="#" class="edit-link" th:attr="data-maNDT=${investor.maNDT}">Sửa</a> |
+		                <a href="#" class="edit-link"
+						   th:attr="data-maNDT=${investor.maNDT},
+						            data-hoTen=${investor.hoTen},
+						            data-ngaySinh=${investor.ngaySinh},
+						            data-diaChi=${investor.diaChi},
+						            data-phone=${investor.phone},
+						            data-cmnd=${investor.cmnd},
+						            data-gioiTinh=${investor.gioiTinh},
+						            data-email=${investor.email}">Sửa</a>|
 		                <form th:action="@{/investors/delete/{maNDT}(id=${investor.maNDT})}" method="post" style="display: inline;">
 		                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
 		                </form>
@@ -72,11 +80,7 @@
                     <td><label>Ngày sinh:</label></td>
                     <td><input type="date" th:field="*{ngaySinh}" required /></td>
                 </tr>
-                
-<!--                 <tr>
-                    <td><label>Mật khẩu giao dịch:</label></td>
-                    <td><input type="password" th:field="*{mkGiaoDich}" th:disabled="${disablePassword}" /></td>
-                </tr> -->
+
                 
                 <tr>
                     <td><label>Địa chỉ:</label></td>
@@ -159,34 +163,12 @@
         });
     });
 
-/*     const sampleData = [
-        {
-            accountNumber: '123456789',
-            tenNH: 'Ngân hàng A',
-            maNH: 'NHA',
-            soTien: 1000000,
-            diaChi: '123 ABC',
-            phone: '0901234567',
-            email: 'a@bank.com'
-        },
-        {
-            accountNumber: '987654321',
-            tenNH: 'Ngân hàng B',
-            maNH: 'NHB',
-            soTien: 2000000,
-            diaChi: '456 DEF',
-            phone: '0912345678',
-            email: 'b@bank.com'
-        }
-    ]; */
-
     function showSubform(action, maNDT = '') {
         const subform = document.getElementById('subform');
         const title = document.getElementById('subform-title');
         const form = document.getElementById('investor-form');
         const maNDTInput = document.getElementById('maNDT');
         const rowMaNDT = document.getElementById('row-maNDT');
-        /* const mkGiaoDichInput = document.querySelector('[name="mkGiaoDich"]'); */
 
         subform.classList.add('active');
         form.reset();
@@ -198,14 +180,33 @@
             maNDTInput.disabled = true;
             maNDTInput.value = ''; // clear
             rowMaNDT.style.display = 'none'; // Ẩn dòng Mã NDT
-            // mkGiaoDichInput.disabled = false;
         } else if (action === 'edit') {
             title.textContent = 'Sửa nhà đầu tư';
             form.action = '/investors/edit/' + maNDT;
             maNDTInput.disabled = true;
             maNDTInput.value = maNDT;
-            rowMaNDT.style.display = ''; // Hiện lại dòng Mã NDT
-            // mkGiaoDichInput.disabled = true;
+            rowMaNDT.style.display = '';
+
+            const editLink = document.querySelector(`.edit-link[data-maNDT="${maNDT}"]`);
+
+            form.querySelector('[name="hoTen"]').value = editLink.dataset.hoten;
+            form.querySelector('[name="ngaySinh"]').value = editLink.dataset.ngaysinh;
+            form.querySelector('[name="diaChi"]').value = editLink.dataset.diachi;
+            form.querySelector('[name="phone"]').value = editLink.dataset.phone;
+            form.querySelector('[name="cmnd"]').value = editLink.dataset.cmnd;
+            form.querySelector('[name="email"]').value = editLink.dataset.email;
+
+            const gioiTinhValue = editLink.dataset.gioitinh?.trim().toLowerCase();
+
+            const gioiTinhNam = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nam"]');
+            const gioiTinhNu = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nữ"]');
+
+            if (gioiTinhValue === 'nam' && gioiTinhNam) {
+                gioiTinhNam.checked = true;
+            } else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
+                gioiTinhNu.checked = true;
+            }
+
             populateBankAccounts(maNDT);
         }
     }
@@ -229,6 +230,28 @@
     function populateBankAccounts(maNDT) {
         const tbody = document.getElementById('bank-accounts');
         tbody.innerHTML = '';
+        
+        const sampleData = [
+            {
+                accountNumber: '123456789',
+                tenNH: 'Ngân hàng ACB',
+                maNH: 'ACB001',
+                soTien: 5000000,
+                diaChi: '123 Nguyễn Văn Cừ, Q.5, TP.HCM',
+                phone: '0909123456',
+                email: 'support@acb.com'
+            },
+            {
+                accountNumber: '987654321',
+                tenNH: 'Ngân hàng Vietcombank',
+                maNH: 'VCB002',
+                soTien: 12000000,
+                diaChi: '456 Hai Bà Trưng, Q.3, TP.HCM',
+                phone: '0911222333',
+                email: 'hotro@vietcombank.vn'
+            }
+        ];
+
 
         sampleData.forEach(data => {
             const row = document.createElement('tr');
@@ -245,6 +268,11 @@
             tbody.appendChild(row);
         });
     }
+    
+    function hideSubform() {
+        document.getElementById('subform').style.display = 'none';
+    }
+
 </script>
 </body>
 </html>
