@@ -1,8 +1,10 @@
 package chungkhoan.service;
 
 import chungkhoan.entity.CoPhieu;
+import chungkhoan.entity.NhaDauTu;
 import chungkhoan.repository.CoPhieuRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,5 +43,14 @@ public class CoPhieuService {
 
     public void deleteById(String maCP) {
         coPhieuRepository.deleteById(maCP);
+    }
+    
+    // Danh sách cổ phiếu của nhà đầu tư nhất định
+//    public List<CoPhieu> getCoPhieuByNDT(NhaDauTu nhaDauTu) {
+//        return coPhieuRepository.findByNhaDauTu(nhaDauTu);
+//    }
+    
+    public List<CoPhieu> getAllCoPhieu() {
+    	return coPhieuRepository.findAll();
     }
 }

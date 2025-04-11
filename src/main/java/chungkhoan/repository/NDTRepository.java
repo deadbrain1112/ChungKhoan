@@ -29,5 +29,4 @@ public interface NDTRepository extends JpaRepository<NhaDauTu, String> {
             @Param("gioiTinh") String gioiTinh,
             @Param("email") String email
     );
-
 }

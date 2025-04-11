@@ -1,6 +1,10 @@
 package chungkhoan.repository;
 
 import chungkhoan.entity.CoPhieu;
+import chungkhoan.entity.NhaDauTu;
+
+import java.util.List;
+
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -19,4 +23,6 @@ public interface CoPhieuRepository extends JpaRepository<CoPhieu, String> {
             @Param("diaChi") String diaChi,
             @Param("soLuongPH") int soLuongPH
     );
+    
+    //List<CoPhieu> findByNhaDauTu(NhaDauTu nhaDauTu);
 }

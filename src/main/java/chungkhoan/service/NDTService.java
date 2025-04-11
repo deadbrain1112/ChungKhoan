@@ -36,4 +36,8 @@ public class NDTService {
                 ndt.getEmail()
         );
     }
+    
+    public NhaDauTu getNhaDauTuByUsername(String username) {
+        return ndtRepository.findByMaNDT(username);
+    }
 }

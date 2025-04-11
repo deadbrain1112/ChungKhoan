@@ -14,7 +14,7 @@
                 <p>STOCK EXCHANGE</p>
             </div>
             <div class="header-right">
-                <p>Xin Chào - Trần Đạt</p>
+                <p>Xin Chào - <span th:text="${taiKhoan.nhaDauTu.hoTen}"></span></p>
                 <a href="@{/exit}">Đăng Xuất</a>
             </div>
         </header>
@@ -29,59 +29,44 @@
         </nav>
         <main>
             <section class="account-info">
-                <h2>Tra Cứu Số Dư</h2>
-                <div class="info">
-                    <p><strong>Tên chủ TK:</strong> Trần Đạt</p>
-                    <p><strong>Số dư hiện tại của quý khách:</strong> <span class="highlight">10,582,000</span> VND</p>
-                    <p><strong>Mã Số Tài Khoản:</strong> TKNH01</p>
-                    <p><strong>Ngân Hàng:</strong> Vietcombank</p>
-                    <p><strong>Số dư còn lại được phép giao dịch:</strong> <span class="highlight">5,752,000</span> VND</p>
-                </div>
-            </section>
+			    <h2>Tra Cứu Số Dư</h2>
+			    <div class="info">
+			        <p><strong>Tên chủ TK:</strong> <span th:text="${taiKhoan.nhaDauTu.hoTen}"></span></p>
+			        <p><strong>Số dư hiện tại của quý khách:</strong> 
+			            <span class="highlight" th:text="${#numbers.formatDecimal(taiKhoan.soTien, 0, 'COMMA')}"></span> VND</p>
+			        <p><strong>Mã Số Tài Khoản:</strong> <span th:text="${taiKhoan.maTK}"></span></p>
+			        <p><strong>Ngân Hàng:</strong> <span th:text="${taiKhoan.nganHang.tenNganHang}"></span></p>
+			        <p><strong>Số dư còn lại được phép giao dịch:</strong> 
+			            <span class="highlight" th:text="${#numbers.formatDecimal(taiKhoan.soTien, 0, 'COMMA')}"></span> VND</p>
+			    </div>
+			</section>
+
             <section class="stock-balance">
-                <h2>Số Dư Cổ Phiếu</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mã CP</th>
-                            <th>Số lượng</th>
-                            <th>Website</th>
-                            <th>Giá thị trường</th>
-                            <th>Tổng giá trị</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>CT01</td>
-                            <td>250</td>
-                            <td>phugiac.vn</td>
-                            <td>15,000</td>
-                            <td>3,750,000</td>
-                        </tr>
-                        <tr>
-                            <td>CT02</td>
-                            <td>400</td>
-                            <td>phumysc.vn</td>
-                            <td>13,000</td>
-                            <td>5,200,000</td>
-                        </tr>
-                        <tr>
-                            <td>CT03</td>
-                            <td>300</td>
-                            <td>phuthosc.vn</td>
-                            <td>16,000</td>
-                            <td>4,800,000</td>
-                        </tr>
-                        <tr>
-                            <td>CT04</td>
-                            <td>300</td>
-                            <td>phuquocsc.vn</td>
-                            <td>17,000</td>
-                            <td>5,100,000</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
+			    <h2>Số Dư Cổ Phiếu</h2>
+			    <table>
+			        <thead>
+			            <tr>
+			                <th scope="col">Mã CP</th>
+			                <th>Số lượng</th>
+			                <th>Giá thị trường</th>
+			                <th>Tổng giá trị</th>
+			            </tr>
+			        </thead>
+			        <tbody>
+			        	<!-- Dữ liệu trống -->
+				        <tr th:if="danhSachCoPhieu.empty">
+				        	<td colspan="5" style="text-align: center;" th:text="${nullCP}"></td>
+				        </tr>
+				        
+			            <tr th:each="coPhieu : ${danhSachCoPhieu}">
+			                <td th:text="${coPhieu.maCP}"></td>
+			                <td th:text="${coPhieu.soLuongPH}"></td>
+			                <td th:text="${#numbers.formatDecimal(coPhieu.soLuongPH * 1000, 0, 'COMMA')}"></td>
+			                <td th:text="${#numbers.formatDecimal(coPhieu.soLuongPH * 1000, 0, 'COMMA')}"></td>
+			            </tr>
+			        </tbody>
+			    </table>
+			</section>
         </main>
     </div>
 </body>
