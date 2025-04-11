@@ -15,6 +15,12 @@
         	<button type="submit">Hoàn tác</button>
     	</form>
     </div>
+    
+    <!-- Thông báo hoàn tác -->
+    <div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')" 
+    	role="alert" style="color: red;">
+	    <span th:text="${message}"></span>
+	</div> 
 
     <table class="main-table">
         <thead>
