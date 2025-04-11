@@ -12,9 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class InvestorController {
@@ -24,11 +26,11 @@ public class InvestorController {
 
 	@Autowired
 	private NDTService ndtService;
-	
+
 	@Autowired
 	private TaiKhoanNganHangService taiKhoanNganHangService;
-	
-	@Autowired 
+
+	@Autowired
 	private TaiKhoanNganHangRepository tkNganHangRepo;
 
 	// Hiển thị danh sách nhà đầu tư và form thêm mới
@@ -37,17 +39,15 @@ public class InvestorController {
 	    List<NhaDauTu> list = ndtRepository.findAll();
 	    Map<String, List<TaiKhoanNganHang>> bankAccountMap = new HashMap<>();
 
-	    // Xóa mật khẩu giao dịch trước khi hiển thị
 	    list.forEach(ndt -> ndt.setMkGiaoDich(null));
 	    model.addAttribute("investors", list);
 	    model.addAttribute("investor", new NhaDauTu()); // Dùng cho form thêm
 
-	    // Lấy danh sách tài khoản ngân hàng cho từng nhà đầu tư
 	    for (NhaDauTu ndt : list) {
 	        List<TaiKhoanNganHang> accounts = tkNganHangRepo.findByNhaDauTu(ndt);
 	        bankAccountMap.put(ndt.getMaNDT(), accounts);
 	    }
-	    model.addAttribute("bankAccountMap", bankAccountMap); // Đưa vào model để render data-* trong view
+	    model.addAttribute("bankAccountMap", bankAccountMap);
 
 	    // Nếu không có dữ liệu nhà đầu tư
 	    if (list.isEmpty()) {
@@ -61,7 +61,7 @@ public class InvestorController {
 
 	        if (editInvestor != null) {
 	            List<TaiKhoanNganHang> taiKhoans = tkNganHangRepo.findByNhaDauTu(editInvestor);
-	            model.addAttribute("editTaiKhoans", taiKhoans); // Gửi danh sách cho Thymeleaf nếu cần (hoặc tạo data-* trong view)
+	            model.addAttribute("editTaiKhoans", taiKhoans);
 	        } else {
 	            model.addAttribute("nullTKNH", "Không tìm thấy nhà đầu tư hoặc tài khoản!");
 	        }
@@ -70,37 +70,25 @@ public class InvestorController {
 	    return "nhanvien/investor_list";
 	}
 
+
 	// Xử lý thêm nhà đầu tư (gọi stored procedure)
 	@PostMapping("/investors/add")
 	public String addInvestor(@ModelAttribute("investor") NhaDauTu investor) {
 		ndtService.themNhaDauTuBangSP(investor);
-		return "redirect:/investors";
+		return "nhanvien/investor_list";
 	}
 
-	// Xử lý xóa nhà đầu tư
 	@PostMapping("/investors/delete/{maNDT}")
 	public String deleteInvestor(@PathVariable("maNDT") String maNDT) {
-		ndtRepository.deleteById(maNDT);
-		return "redirect:/investors";
+		ndtService.xoaNhaDauTu(maNDT);
+		return "nhanvien/investor_list";
 	}
 
-	// Xử lý sửa nhà đầu tư
 	@PostMapping("/investors/edit/{maNDT}")
 	public String editInvestor(@PathVariable("maNDT") String maNDT,
 							   @ModelAttribute("investor") NhaDauTu updatedInvestor) {
-		// Lấy đối tượng gốc từ DB để giữ lại giá trị mkgd
-		NhaDauTu existingInvestor = ndtRepository.findById(maNDT).orElse(null);
-		
-		if (existingInvestor != null) {
-			// Gán lại các giá trị không có trên form để tránh bị null
-			updatedInvestor.setMkGiaoDich(existingInvestor.getMkGiaoDich());
-
-			// Gán lại mã nhà đầu tư
-			updatedInvestor.setMaNDT(maNDT);
-
-			ndtRepository.save(updatedInvestor);
-		}
-		
-		return "redirect:/investors";
+		ndtService.capNhatNhaDauTu(maNDT, updatedInvestor);
+		return "nhanvien/investor_list";
 	}
+
 }

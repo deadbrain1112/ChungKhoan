@@ -2,6 +2,7 @@ package chungkhoan.controller;
 
 import chungkhoan.service.NDTService;
 import chungkhoan.service.DatabaseService;
+import chungkhoan.service.NhanVienService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,10 +13,13 @@ import org.springframework.web.bind.annotation.*;
 public class LoginController {
 
 	@Autowired
-	private NDTService userService;
+	private NDTService ndtService;
 
 	@Autowired
 	private DatabaseService databaseService;
+
+	@Autowired
+	private NhanVienService nhanVienService;
 
 	@GetMapping("/login")
 	public String loginForm(@RequestParam(value = "error", required = false) String error, Model model) {
@@ -30,32 +34,46 @@ public class LoginController {
 						@RequestParam("password") String password,
 						HttpSession session) {
 
-		// Bước 1: kiểm tra kết nối thành công
 		boolean authenticated = databaseService.testConnection(username, password);
 		if (!authenticated) {
 			return "redirect:/login?error=invalid_credentials";
 		}
 
-		// Bước 2: lưu user vào session
 		session.setAttribute("username", username);
 		session.setAttribute("password", password);
 
-		// Bước 3: xác định role
 		String role = databaseService.getUserRole(username, password);
+		System.out.println("Role được nhận: " + role);
+
+		// Dùng username làm mã liên kết
+		String maLienKet = username;
+		session.setAttribute("maLienKet", maLienKet);
 
 		switch (role) {
-			case "nhanvien":
-				return "redirect:/nhanvien/layout"; // giao diện nhân viên
-			case "nhadautu":
-				return "redirect:/nhadautu/home"; // giao diện nhà đầu tư
-			case "khong_ro_role":
+			case "nhanvien" -> {
+				var nhanVien = nhanVienService.getNhanVienByUsername(maLienKet);
+				if (nhanVien == null) return "redirect:/login?error=no_nv_found";
+				session.setAttribute("nhanVien", nhanVien);
+				return "redirect:/nhanvien/layout";
+			}
+			case "nhadautu" -> {
+				var nhaDauTu = ndtService.getNhaDauTuByUsername(maLienKet);
+				if (nhaDauTu == null) return "redirect:/login?error=no_ndt_found";
+				session.setAttribute("nhaDauTu", nhaDauTu);
+				return "redirect:/nhadautu/home";
+			}
+			case "khong_ro_role" -> {
 				session.invalidate();
 				return "redirect:/login?error=no_role";
-			default:
+			}
+			default -> {
 				session.invalidate();
 				return "redirect:/login?error=unknown";
+			}
 		}
 	}
+
+
 
 	@GetMapping("/logout")
 	public String logout(HttpSession session) {
