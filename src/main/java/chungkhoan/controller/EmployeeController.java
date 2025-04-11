@@ -25,7 +25,7 @@ public class EmployeeController {
 	public String employeeList(Model model) {
 		List<NhanVien> list = nhanVienRepository.findAll();
 		model.addAttribute("employees", list);
-		model.addAttribute("employee", new NhanVien()); // cho form thêm
+		model.addAttribute("employee", new NhanVien());
 		
 		if (list.isEmpty()) {
 			model.addAttribute("noDataMessage", "Không có dữ liệu nhân viên.");
@@ -36,14 +36,14 @@ public class EmployeeController {
 
 	@PostMapping("/investors/undo")
 	public String undoLastAction(RedirectAttributes redirectAttributes) {
-	    boolean success = ndtService.undoThaoTacCuoi();
-	    if (success) {
-	        redirectAttributes.addFlashAttribute("message", "Hoàn tác thành công");
-	        redirectAttributes.addFlashAttribute("messageType", "success");
-	    } else {
-	        redirectAttributes.addFlashAttribute("message", "Không có thao tác để hoàn tác");
-	        redirectAttributes.addFlashAttribute("messageType", "error");
-	    }
-	    return "redirect:/investors";
+		boolean success = ndtService.undoThaoTacCuoi();
+		if (success) {
+			redirectAttributes.addFlashAttribute("message", "Hoàn tác thành công");
+			redirectAttributes.addFlashAttribute("messageType", "success");
+		} else {
+			redirectAttributes.addFlashAttribute("message", "Không có thao tác để hoàn tác");
+			redirectAttributes.addFlashAttribute("messageType", "error");
+		}
+		return "nhanvien/investor_list";
 	}
 }

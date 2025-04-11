@@ -4,8 +4,11 @@ import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.UndoAction;
 import chungkhoan.repository.NDTRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.Date;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -17,27 +20,36 @@ public class NDTService {
     private NDTRepository NDTRepository;
 
     @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+
+    @Autowired
     private NDTRepository ndtRepository; // Repository dùng cho Stored Procedure
 
     private Deque<UndoAction> undoStack = new ArrayDeque<>();
 
-    public void themNhaDauTu(NhaDauTu ndt) {
-        NDTRepository.save(ndt);
-        undoStack.push(new UndoAction(UndoAction.ActionType.ADD, null, ndt));
-    }
-
     public void themNhaDauTuBangSP(NhaDauTu ndt) {
-        ndtRepository.themNhaDauTu(
-                ndt.getHoTen(),
-                Date.valueOf(ndt.getNgaySinh()),
-                "1", // Giả định mã người dùng tạo mặc định
-                ndt.getDiaChi(),
-                ndt.getPhone(),
-                ndt.getCmnd(),
-                ndt.getGioiTinh(),
-                ndt.getEmail()
+        String maNDTMoi = jdbcTemplate.execute(
+                (Connection conn) -> {
+                    CallableStatement cs = conn.prepareCall("{call sp_ThemNhaDauTu(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+                    cs.setString(1, ndt.getHoTen());
+                    cs.setDate(2, Date.valueOf(ndt.getNgaySinh()));
+                    cs.setString(3, "1"); // MK giao dịch mặc định
+                    cs.setString(4, ndt.getDiaChi());
+                    cs.setString(5, ndt.getPhone());
+                    cs.setString(6, ndt.getCmnd());
+                    cs.setString(7, ndt.getGioiTinh());
+                    cs.setString(8, ndt.getEmail());
+                    cs.registerOutParameter(9, java.sql.Types.NCHAR); // MaNDTMoi
+                    cs.execute();
+                    return cs.getString(9);
+                }
         );
-        // Không undo được do không lấy được MaNDT trả về từ Stored Procedure
+
+        if (maNDTMoi != null) {
+            ndt.setMaNDT(maNDTMoi);
+            undoStack.push(new UndoAction(UndoAction.ActionType.ADD, null, ndt));
+        }
     }
 
     public void xoaNhaDauTu(String maNDT) {
@@ -51,10 +63,16 @@ public class NDTService {
     public void capNhatNhaDauTu(String maNDT, NhaDauTu ndtMoi) {
         NhaDauTu ndtCu = NDTRepository.findById(maNDT).orElse(null);
         if (ndtCu != null) {
+            ndtMoi.setMkGiaoDich(ndtCu.getMkGiaoDich());
+
+            // Đảm bảo không thay đổi mã NDT
+            ndtMoi.setMaNDT(maNDT);
+
             NDTRepository.save(ndtMoi);
             undoStack.push(new UndoAction(UndoAction.ActionType.EDIT, ndtCu, ndtMoi));
         }
     }
+
 
     public boolean undoThaoTacCuoi() {
         if (undoStack.isEmpty()) return false;
