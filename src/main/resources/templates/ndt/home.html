@@ -35,7 +35,15 @@
 			        <p><strong>Số dư hiện tại của quý khách:</strong> 
 			            <span class="highlight" th:text="${#numbers.formatDecimal(taiKhoan.soTien, 0, 'COMMA')}"></span> VND</p>
 			        <p><strong>Mã Số Tài Khoản:</strong> <span th:text="${taiKhoan.maTK}"></span></p>
-			        <p><strong>Ngân Hàng:</strong> <span th:text="${taiKhoan.nganHang.tenNganHang}"></span></p>
+			        <p><strong>Ngân Hàng:</strong>
+			            <select name="nganHang">
+			                <option th:each="nh : ${dsNganHang}"
+			                        th:value="${nh.maNH}"
+			                        th:text="${nh.tenNganHang}"
+			                        th:selected="${nh.maNH == taiKhoan.nganHang.maNH}">
+			                </option>
+			            </select>
+			        </p>
 			        <p><strong>Số dư còn lại được phép giao dịch:</strong> 
 			            <span class="highlight" th:text="${#numbers.formatDecimal(taiKhoan.soTien, 0, 'COMMA')}"></span> VND</p>
 			    </div>

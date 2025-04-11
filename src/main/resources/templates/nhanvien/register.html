@@ -12,7 +12,7 @@
 		<form th:action="@{/create}" method="post">
 			<!-- Tên đăng nhập & mật khẩu -->
 			<label for="tenDangNhap">Tên đăng nhập:</label>
-			<input type="text" id="tenDangNhap" name="tenDangNhap" required>
+			<input type="text" id="tenDangNhap" name="tenDangNhap" readonly required>
 
 			<label for="matKhau">Mật khẩu:</label>
 			<input type="password" id="matKhau" name="matKhau" required>
@@ -26,18 +26,28 @@
 
 			<!-- Dropdown Nhân viên -->
 			<div id="nhanvienDropdown" style="display:none;">
-				<label for="maNV">Chọn nhân viên:</label>
-				<select id="maNV" name="maLienKet">
-					<option th:each="nv : ${nhanViens}" th:text="${nv.hoTen}" th:value="${nv.maNV}"></option>
-				</select>
+			    <label for="maNV">Chọn nhân viên:</label>
+			    <select id="maNV" name="maLienKet" onchange="updateUsername(this)">
+			        <option value="" disabled selected>-- Chọn nhân viên --</option>
+			        <option th:each="nv : ${nhanViens}" 
+			                th:text="${nv.hoTen}" 
+			                th:value="${nv.maNV}"
+			                th:attr="data-ma=${nv.maNV}">
+			        </option>
+			    </select>
 			</div>
-
+			
 			<!-- Dropdown Nhà đầu tư -->
 			<div id="nhadautuDropdown" style="display:none;">
-				<label for="maNDT">Chọn nhà đầu tư:</label>
-				<select id="maNDT" name="maLienKet">
-					<option th:each="ndt : ${nhaDauTus}" th:text="${ndt.hoTen}" th:value="${ndt.maNDT}"></option>
-				</select>
+			    <label for="maNDT">Chọn nhà đầu tư:</label>
+			    <select id="maNDT" name="maLienKet" onchange="updateUsername(this)">
+			        <option value="" disabled selected>-- Chọn nhà đầu tư --</option>
+			        <option th:each="ndt : ${nhaDauTus}" 
+			                th:text="${ndt.hoTen}" 
+			                th:value="${ndt.maNDT}"
+			                th:attr="data-ma=${ndt.maNDT}">
+			        </option>
+			    </select>
 			</div>
 
 			<button type="submit">Tạo tài khoản</button>
@@ -50,17 +60,36 @@
 </body>
 
 <script th:inline="javascript">
-    function toggleFields() {
-        const isNDT = document.getElementById('roleNhaDauTu').checked;
-        document.getElementById('nhanvienDropdown').style.display = !isNDT ? 'block' : 'none';
-        document.getElementById('nhadautuDropdown').style.display = isNDT ? 'block' : 'none';
-    }
+function toggleFields() {
+    const isNDT = document.getElementById('roleNhaDauTu').checked;
+    document.getElementById('nhanvienDropdown').style.display = !isNDT ? 'block' : 'none';
+    document.getElementById('nhadautuDropdown').style.display = isNDT ? 'block' : 'none';
 
-    document.addEventListener('DOMContentLoaded', () => {
-        toggleFields();
-        document.getElementById('roleNhanVien').addEventListener('change', toggleFields);
-        document.getElementById('roleNhaDauTu').addEventListener('change', toggleFields);
+    // Cập nhật username khi đổi radio
+    const dropdown = isNDT ? document.getElementById('maNDT') : document.getElementById('maNV');
+    updateUsername(dropdown);
+}
+
+function updateUsername(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    if (selectedOption) {
+        const ma = selectedOption.getAttribute("data-ma");
+        document.getElementById('tenDangNhap').value = ma || '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    toggleFields();
+    document.getElementById('roleNhanVien').addEventListener('change', toggleFields);
+    document.getElementById('roleNhaDauTu').addEventListener('change', toggleFields);
+
+    document.getElementById('maNV').addEventListener('change', function() {
+        updateUsername(this);
     });
+    document.getElementById('maNDT').addEventListener('change', function() {
+        updateUsername(this);
+    });
+});
 </script>
 
 </html>
