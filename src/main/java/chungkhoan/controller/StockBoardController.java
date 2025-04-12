@@ -39,7 +39,7 @@ public class StockBoardController {
         for (CoPhieu cp : dsCP) {
             String maCP = cp.getMaCP();
 
-            // Lấy giá TC / Trần / Sàn từ lịch sử giá
+            // Lấy giá TC - Trần - Sàn từ lịch sử giá
             LichSuGiaKey key = new LichSuGiaKey(maCP, Timestamp.valueOf(today.atStartOfDay()));
             lichSuGiaRepo.findById(key).ifPresent(gia -> {
                 giaTCMap.put(maCP, gia.getGiaTC());
@@ -57,7 +57,7 @@ public class StockBoardController {
                     cp, "B"
             ));
 
-            // Lấy lệnh khớp mới nhất
+            // Lấy lệnh khớp mới nhất theo ngayGioKhop
             lenhKhopMoiNhatMap.put(maCP, lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp));
 
             // Tính tổng khối lượng khớp
