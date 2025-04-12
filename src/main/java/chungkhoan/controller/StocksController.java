@@ -67,7 +67,7 @@ public class StocksController {
     @PostMapping("/stocks/edit/{maCP}")
     public String editStock(@PathVariable String maCP,
                             @ModelAttribute("stock") CoPhieu coPhieu) {
-        coPhieu.setMaCP(maCP); // Đảm bảo giữ đúng mã cổ phiếu
+        coPhieu.setMaCP(maCP);
         coPhieuService.save(coPhieu);
         return "redirect:/stocks";
     }
@@ -82,8 +82,6 @@ public class StocksController {
     // Tìm kiếm (placeholder)
     @PostMapping("/stocks/search")
     public String searchStock(@RequestParam("query") String query, Model model) {
-        // Bạn có thể thực hiện tìm kiếm thực sự ở đây
-        // Tạm thời redirect về trang stocks
         return "redirect:/stocks";
     }
 }

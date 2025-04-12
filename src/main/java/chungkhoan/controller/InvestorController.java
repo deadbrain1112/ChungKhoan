@@ -32,38 +32,38 @@ public class InvestorController {
 	// Hiển thị danh sách nhà đầu tư và form thêm mới
 	@GetMapping("/investors")
 	public String investorsList(@RequestParam(value = "edit", required = false) String maNDT, Model model) {
-	    List<NhaDauTu> list = ndtRepository.findAll();
-	    Map<String, List<TaiKhoanNganHang>> bankAccountMap = new HashMap<>();
+		List<NhaDauTu> list = ndtRepository.findAll();
+		Map<String, List<TaiKhoanNganHang>> bankAccountMap = new HashMap<>();
 
-	    list.forEach(ndt -> ndt.setMkGiaoDich(null));
-	    model.addAttribute("investors", list);
-	    model.addAttribute("investor", new NhaDauTu()); // Dùng cho form thêm
+		list.forEach(ndt -> ndt.setMkGiaoDich(null));
+		model.addAttribute("investors", list);
+		model.addAttribute("investor", new NhaDauTu()); // Dùng cho form thêm
 
-	    for (NhaDauTu ndt : list) {
-	        List<TaiKhoanNganHang> accounts = tkNganHangRepo.findByNhaDauTu(ndt);
-	        bankAccountMap.put(ndt.getMaNDT(), accounts);
-	    }
-	    model.addAttribute("bankAccountMap", bankAccountMap);
+		for (NhaDauTu ndt : list) {
+			List<TaiKhoanNganHang> accounts = tkNganHangRepo.findByNhaDauTu(ndt);
+			bankAccountMap.put(ndt.getMaNDT(), accounts);
+		}
+		model.addAttribute("bankAccountMap", bankAccountMap);
 
-	    // Nếu không có dữ liệu nhà đầu tư
-	    if (list.isEmpty()) {
-	        model.addAttribute("noDataMessage", "Không có dữ liệu nhà đầu tư.");
-	    }
+		// Nếu không có dữ liệu nhà đầu tư
+		if (list.isEmpty()) {
+			model.addAttribute("noDataMessage", "Không có dữ liệu nhà đầu tư.");
+		}
 
-	    // Nếu có yêu cầu sửa
-	    if (maNDT != null) {
-	        NhaDauTu editInvestor = ndtRepository.findById(maNDT).orElse(null);
-	        model.addAttribute("editInvestor", editInvestor);
+		// Nếu có yêu cầu sửa
+		if (maNDT != null) {
+			NhaDauTu editInvestor = ndtRepository.findById(maNDT).orElse(null);
+			model.addAttribute("editInvestor", editInvestor);
 
-	        if (editInvestor != null) {
-	            List<TaiKhoanNganHang> taiKhoans = tkNganHangRepo.findByNhaDauTu(editInvestor);
-	            model.addAttribute("editTaiKhoans", taiKhoans);
-	        } else {
-	            model.addAttribute("nullTKNH", "Không tìm thấy nhà đầu tư hoặc tài khoản!");
-	        }
-	    }
+			if (editInvestor != null) {
+				List<TaiKhoanNganHang> taiKhoans = tkNganHangRepo.findByNhaDauTu(editInvestor);
+				model.addAttribute("editTaiKhoans", taiKhoans);
+			} else {
+				model.addAttribute("nullTKNH", "Không tìm thấy nhà đầu tư hoặc tài khoản!");
+			}
+		}
 
-	    return "nhanvien/investor_list";
+		return "nhanvien/investor_list";
 	}
 
 

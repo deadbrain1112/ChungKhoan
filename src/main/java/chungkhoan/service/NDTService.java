@@ -35,13 +35,13 @@ public class NDTService {
                     CallableStatement cs = conn.prepareCall("{call sp_ThemNhaDauTu(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
                     cs.setString(1, ndt.getHoTen());
                     cs.setDate(2, Date.valueOf(ndt.getNgaySinh()));
-                    cs.setString(3, "1"); // MK giao dịch mặc định
+                    cs.setString(3, "1");
                     cs.setString(4, ndt.getDiaChi());
                     cs.setString(5, ndt.getPhone());
                     cs.setString(6, ndt.getCmnd());
                     cs.setString(7, ndt.getGioiTinh());
                     cs.setString(8, ndt.getEmail());
-                    cs.registerOutParameter(9, java.sql.Types.NCHAR); // MaNDTMoi
+                    cs.registerOutParameter(9, java.sql.Types.NCHAR);
                     cs.execute();
                     return cs.getString(9);
                 }
@@ -56,21 +56,22 @@ public class NDTService {
     public void xoaNhaDauTu(String maNDT) {
         NhaDauTu existing = NDTRepository.findById(maNDT).orElse(null);
         if (existing != null) {
+            NhaDauTu copy = new NhaDauTu(existing);
             NDTRepository.deleteById(maNDT);
-            undoStack.push(new UndoAction(UndoAction.ActionType.DELETE, existing, null));
+            undoStack.push(new UndoAction(UndoAction.ActionType.DELETE, copy, null));
         }
     }
 
     public void capNhatNhaDauTu(String maNDT, NhaDauTu ndtMoi) {
         NhaDauTu ndtCu = NDTRepository.findById(maNDT).orElse(null);
         if (ndtCu != null) {
-            ndtMoi.setMkGiaoDich(ndtCu.getMkGiaoDich());
+            NhaDauTu copy = new NhaDauTu(ndtCu);
 
-            // Đảm bảo không thay đổi mã NDT
+            ndtMoi.setMkGiaoDich(ndtCu.getMkGiaoDich());
             ndtMoi.setMaNDT(maNDT);
 
             NDTRepository.save(ndtMoi);
-            undoStack.push(new UndoAction(UndoAction.ActionType.EDIT, ndtCu, ndtMoi));
+            undoStack.push(new UndoAction(UndoAction.ActionType.EDIT, copy, ndtMoi));
         }
     }
 
@@ -79,6 +80,7 @@ public class NDTService {
         if (undoStack.isEmpty()) return false;
 
         UndoAction action = undoStack.pop();
+
         switch (action.getActionType()) {
             case ADD:
                 NDTRepository.deleteById(action.getNewData().getMaNDT());
@@ -90,10 +92,14 @@ public class NDTService {
                 NDTRepository.save(action.getOldData());
                 break;
         }
+
         return true;
     }
-    
+
+
     public NhaDauTu getNhaDauTuByUsername(String username) {
         return ndtRepository.findByMaNDT(username);
     }
+
+
 }
