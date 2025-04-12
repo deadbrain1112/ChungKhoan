@@ -17,20 +17,20 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class EmployeeController {
-	
+
 	@Autowired NhanVienRepository nhanVienRepository;
 	@Autowired NDTService ndtService;
-	
+
 	@GetMapping("/employees")
 	public String employeeList(Model model) {
 		List<NhanVien> list = nhanVienRepository.findAll();
 		model.addAttribute("employees", list);
 		model.addAttribute("employee", new NhanVien());
-		
+
 		if (list.isEmpty()) {
 			model.addAttribute("noDataMessage", "Không có dữ liệu nhân viên.");
 		}
-		
+
 		return "nhanvien/employee_list";
 	}
 

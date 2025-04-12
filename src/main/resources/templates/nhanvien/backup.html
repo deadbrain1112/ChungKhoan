@@ -9,25 +9,37 @@
 <div class="container">
     <!-- Thanh menu chức năng -->
     <div class="menu-bar">
+        <!-- Form sao lưu -->
         <form th:action="@{/backup/save}" method="post" class="inline-form">
+            <input type="hidden" name="dbName" th:value="${selectedDb}" />
             <button type="submit">Sao lưu</button>
         </form>
 
+        <!-- Form phục hồi -->
         <form th:action="@{/backup/recovery}" method="post" class="inline-form recovery-form">
+            <input type="hidden" name="dbName" th:value="${selectedDb}" />
             <label>
                 <input type="checkbox" id="timeRecoveryCheckbox" name="enableTimeRecovery" value="true" onchange="toggleTimeInputs()">
                 Phục hồi theo thời gian
             </label>
-            <button type="submit">Phục hồi</button>           
+            <button type="submit">Phục hồi</button>
         </form>
 
+        <!-- Form tạo device sao lưu -->
         <form th:action="@{/backup/device-create}" method="post" class="inline-form">
+            <input type="hidden" name="dbName" th:value="${selectedDb}" />
             <button type="submit">Tạo device sao lưu</button>
         </form>
 
-        <form th:action="@{/nhanvien}" method="get" class="inline-form">
-            <button type="submit" class="danger">Thoát</button>
+        <!-- Form xóa bản sao lưu cũ -->
+        <form th:action="@{/backup/save}" method="post" class="options">
+            <input type="hidden" name="dbName" th:value="${selectedDb}" />
+            <label>
+                <input type="checkbox" name="deleteOld">
+                Xóa tất cả các bản sao lưu cũ trong File trước khi sao lưu bản mới
+            </label>
         </form>
+
     </div>
 
     <div class="content">
@@ -63,13 +75,6 @@
                     </tr>
                 </tbody>
             </table>
-
-            <form th:action="@{/backup/save}" method="post" class="options">
-                <label>
-                    <input type="checkbox" name="deleteOld">
-                    Xóa tất cả các bản sao lưu cũ trong File trước khi sao lưu bản mới
-                </label>
-            </form>
             
             <div id="timeRecoveryInputs" style="display: none; margin-top: 10px;">
                 <label>Ngày:</label>

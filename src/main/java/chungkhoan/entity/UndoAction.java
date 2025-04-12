@@ -1,5 +1,8 @@
 package chungkhoan.entity;
 
+import lombok.Getter;
+
+@Getter
 public class UndoAction {
     public enum ActionType { ADD, DELETE, EDIT }
 
@@ -13,15 +16,4 @@ public class UndoAction {
         this.newData = newData;
     }
 
-    public ActionType getActionType() {
-        return actionType;
-    }
-
-    public NhaDauTu getOldData() {
-        return oldData;
-    }
-
-    public NhaDauTu getNewData() {
-        return newData;
-    }
 }

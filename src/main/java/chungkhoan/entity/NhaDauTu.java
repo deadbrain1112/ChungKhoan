@@ -38,4 +38,17 @@ public class NhaDauTu {
 
     @Column(name = "Email", columnDefinition = "NVARCHAR(50)")
     private String email;
+
+    public NhaDauTu(NhaDauTu other) {
+        this.maNDT = other.maNDT;
+        this.hoTen = other.hoTen;
+        this.ngaySinh = other.ngaySinh;
+        this.mkGiaoDich = other.mkGiaoDich;
+        this.diaChi = other.diaChi;
+        this.phone = other.phone;
+        this.cmnd = other.cmnd;
+        this.gioiTinh = other.gioiTinh;
+        this.email = other.email;
+    }
+
 }
