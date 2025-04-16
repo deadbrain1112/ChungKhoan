@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 public class LichSuGiaKey implements Serializable {
     private String maCP;
-    private Timestamp ngay; // Dùng Timestamp thay vì LocalDateTime để tránh lỗi khi mapping với SQL Server
+    private Timestamp ngay;
 
     @Override
     public boolean equals(Object o) {

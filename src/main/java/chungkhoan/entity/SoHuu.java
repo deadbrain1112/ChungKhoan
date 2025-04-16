@@ -19,6 +19,14 @@ public class SoHuu {
     @Column(name = "MaCP", columnDefinition = "NCHAR(10)")
     private String maCP;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MaNDT", insertable = false, updatable = false)
+    private NhaDauTu nhaDauTu;  // Mối quan hệ với Nhà Đầu Tư
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MaCP", insertable = false, updatable = false)
+    private CoPhieu coPhieu;  // Mối quan hệ với Cổ Phiếu
+
     @Column(name = "SoLuong", nullable = false)
     private int soLuong;
 }

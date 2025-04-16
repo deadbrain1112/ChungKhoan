@@ -4,42 +4,76 @@
     <meta charset="UTF-8">
     <title>Sao lưu - Phục hồi</title>
     <link rel="stylesheet" href="/css/backup.css">
+    <style>
+        .alert-success { color: green; }
+        .alert-error { color: red; }
+        .menu-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .inline-form { display: inline-block; }
+        .content { display: flex; }
+        .left-panel { width: 20%; }
+        .main-panel { width: 80%; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
 </head>
 <body>
 <div class="container">
+    <!-- Hiển thị thông báo -->
+    <div th:if="${msg}" class="alert" th:class="${msg.contains('thành công') ? 'alert-success' : 'alert-error'}">
+        <span th:text="${msg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-error">
+        <span th:text="${errorMsg}"></span>
+    </div>
+
     <!-- Thanh menu chức năng -->
     <div class="menu-bar">
         <!-- Form sao lưu -->
-        <form th:action="@{/backup/save}" method="post" class="inline-form">
-            <input type="hidden" name="dbName" th:value="${selectedDb}" />
-            <button type="submit">Sao lưu</button>
-        </form>
-
-        <!-- Form phục hồi -->
-        <form th:action="@{/backup/recovery}" method="post" class="inline-form recovery-form">
-            <input type="hidden" name="dbName" th:value="${selectedDb}" />
-            <label>
-                <input type="checkbox" id="timeRecoveryCheckbox" name="enableTimeRecovery" value="true" onchange="toggleTimeInputs()">
-                Phục hồi theo thời gian
-            </label>
-            <button type="submit">Phục hồi</button>
-        </form>
-
-        <!-- Form tạo device sao lưu -->
-        <form th:action="@{/backup/device-create}" method="post" class="inline-form">
-            <input type="hidden" name="dbName" th:value="${selectedDb}" />
-            <button type="submit">Tạo device sao lưu</button>
-        </form>
-
-        <!-- Form xóa bản sao lưu cũ -->
-        <form th:action="@{/backup/save}" method="post" class="options">
+        <form th:action="@{/backup/save}" method="post" class="inline-form"
+              onsubmit="return confirm('Bạn có chắc muốn sao lưu cơ sở dữ liệu này?');">
             <input type="hidden" name="dbName" th:value="${selectedDb}" />
             <label>
                 <input type="checkbox" name="deleteOld">
-                Xóa tất cả các bản sao lưu cũ trong File trước khi sao lưu bản mới
+                Xóa bản sao lưu cũ trước khi sao lưu mới
             </label>
+            <button type="submit" th:disabled="${selectedDb == null}">Sao lưu</button>
         </form>
 
+        <!-- Form phục hồi -->
+        <form th:action="@{/backup/recovery}" method="post" class="inline-form recovery-form"
+              onsubmit="return confirm('Bạn có chắc muốn phục hồi cơ sở dữ liệu này? Hành động này không thể hoàn tác.');">
+            <input type="hidden" name="dbName" th:value="${selectedDb}" />
+            <label>
+                <input type="checkbox" id="timeRecoveryCheckbox" name="enableTimeRecovery" value="true"
+                       onchange="toggleTimeInputs()">
+                Phục hồi theo thời gian
+            </label>
+            <div id="timeRecoveryInputs" style="display: none; margin-top: 10px;">
+                <label>Ngày:</label>
+                <input type="date" name="recoveryDate"><br><br>
+                <label>Giờ:</label>
+                <input type="time" name="recoveryTime" step="1"><br><br>
+                <p class="note">
+                    Ngày giờ nhập vào là thời điểm muốn phục hồi cơ sở dữ liệu.<br>
+                    Thời điểm này phải sau bản sao lưu đã chọn và trước hiện tại ít nhất 1 phút.
+                </p>
+            </div>
+            <button type="submit" th:disabled="${selectedDb == null}">Phục hồi</button>
+        </form>
+
+        <!-- Form tạo device sao lưu -->
+        <form th:action="@{/backup/device-create}" method="post" class="inline-form"
+              onsubmit="return confirm('Bạn có chắc muốn tạo thiết bị sao lưu cho cơ sở dữ liệu này?');">
+            <input type="hidden" name="dbName" th:value="${selectedDb}" />
+            <button type="submit" th:disabled="${selectedDb == null}">Tạo device sao lưu</button>
+        </form>
+
+        <!-- Form xóa toàn bộ sao lưu -->
+        <form th:action="@{/backup/delete-all}" method="post" class="inline-form"
+              onsubmit="return confirm('Bạn có chắc muốn xóa toàn bộ sao lưu? Hành động này không thể hoàn tác.');">
+            <button type="submit">Xóa toàn bộ sao lưu</button>
+        </form>
     </div>
 
     <div class="content">
@@ -55,39 +89,28 @@
             </ul>
         </div>
 
-
         <div class="main-panel">
             <table>
                 <thead>
-                    <tr>
-                        <th>Bản sao lưu thứ #</th>
-                        <th>Diễn giải</th>
-                        <th>Ngày giờ sao lưu</th>
-                        <th>User sao lưu</th>
-                    </tr>
+                <tr>
+                    <th>Bản sao lưu thứ #</th>
+                    <th>Diễn giải</th>
+                    <th>Ngày giờ sao lưu</th>
+                    <th>User sao lưu</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="b, iStat : ${backupList}">
-                        <td th:text="${b.position}"></td>
-                        <td th:text="${b.description}"></td>
-                        <td th:text="${#dates.format(b.backupTime, 'dd/MM/yyyy hh:mm:ss a')}"></td>
-                        <td th:text="${b.user}"></td>
-                    </tr>
+                <tr th:each="b : ${backupList}">
+                    <td th:text="${b.position}"></td>
+                    <td th:text="${b.description}"></td>
+                    <td th:text="${b.backupTime}"></td>
+                    <td th:text="${b.user}"></td>
+                </tr>
+                <tr th:if="${backupList == null or backupList.isEmpty}">
+                    <td colspan="4">Không có bản sao lưu nào.</td>
+                </tr>
                 </tbody>
             </table>
-            
-            <div id="timeRecoveryInputs" style="display: none; margin-top: 10px;">
-                <label>Ngày:</label>
-                <input type="date" name="recoveryDate"><br><br>
-
-                <label>Giờ:</label>
-                <input type="time" name="recoveryTime" step="1"><br><br>
-
-                <p class="note">
-                    Ngày giờ ta nhập vào là thời điểm ta muốn phục hồi cơ sở dữ liệu về đó.<br>
-                    Thời điểm này phải sau thời điểm của bản sao lưu đã chọn, và trước thời điểm hiện tại ít nhất là 1 phút.
-                </p>
-            </div>
         </div>
     </div>
 </div>
@@ -99,6 +122,5 @@
         timeInputs.style.display = checkbox.checked ? 'block' : 'none';
     }
 </script>
-
 </body>
 </html>

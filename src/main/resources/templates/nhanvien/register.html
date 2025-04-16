@@ -1,95 +1,94 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng ký</title>
-    <link rel="stylesheet" th:href="@{/css/register.css}">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Đăng ký</title>
+	<link rel="stylesheet" th:href="@{/css/register.css}">
 </head>
 <body>
-    <div class="register-container">
-        <h2>Tạo tài khoản đăng nhập</h2>
-		<form th:action="@{/create}" method="post">
-			<!-- Tên đăng nhập & mật khẩu -->
-			<label for="tenDangNhap">Tên đăng nhập:</label>
-			<input type="text" id="tenDangNhap" name="tenDangNhap" readonly required>
+<div class="register-container">
+	<h2>Tạo tài khoản đăng nhập</h2>
+	<form th:action="@{/create}" method="post">
+		<!-- Tên đăng nhập & mật khẩu -->
+		<label for="tenDangNhap">Tên đăng nhập:</label>
+		<input type="text" id="tenDangNhap" name="tenDangNhap" readonly required>
 
-			<label for="matKhau">Mật khẩu:</label>
-			<input type="password" id="matKhau" name="matKhau" required>
+		<label for="matKhau">Mật khẩu:</label>
+		<input type="password" id="matKhau" name="matKhau" required>
 
-			<!-- Nhóm -->
-			<div class="radio-group">
-				<label>Thuộc nhóm:</label>
-				<input type="radio" id="roleNhanVien" name="loai" value="nhanvien" required> Nhân viên
-				<input type="radio" id="roleNhaDauTu" name="loai" value="nhadautu"> Nhà đầu tư
-			</div>
+		<!-- Nhóm -->
+		<div class="radio-group">
+			<label>Thuộc nhóm:</label>
+			<input type="radio" id="roleNhanVien" name="loai" value="nhanvien" required> Nhân viên
+			<input type="radio" id="roleNhaDauTu" name="loai" value="nhadautu"> Nhà đầu tư
+		</div>
 
-			<!-- Dropdown Nhân viên -->
-			<div id="nhanvienDropdown" style="display:none;">
-			    <label for="maNV">Chọn nhân viên:</label>
-			    <select id="maNV" name="maLienKet" onchange="updateUsername(this)">
-			        <option value="" disabled selected>-- Chọn nhân viên --</option>
-			        <option th:each="nv : ${nhanViens}" 
-			                th:text="${nv.hoTen}" 
-			                th:value="${nv.maNV}"
-			                th:attr="data-ma=${nv.maNV}">
-			        </option>
-			    </select>
-			</div>
-			
-			<!-- Dropdown Nhà đầu tư -->
-			<div id="nhadautuDropdown" style="display:none;">
-			    <label for="maNDT">Chọn nhà đầu tư:</label>
-			    <select id="maNDT" name="maLienKet" onchange="updateUsername(this)">
-			        <option value="" disabled selected>-- Chọn nhà đầu tư --</option>
-			        <option th:each="ndt : ${nhaDauTus}" 
-			                th:text="${ndt.hoTen}" 
-			                th:value="${ndt.maNDT}"
-			                th:attr="data-ma=${ndt.maNDT}">
-			        </option>
-			    </select>
-			</div>
+		<!-- Dropdown Nhân viên -->
+		<div id="nhanvienDropdown" style="display:none;">
+			<label for="maNV">Chọn nhân viên:</label>
+			<select id="maNV" name="maLienKet" onchange="updateUsername(this)">
+				<option value="" disabled selected>-- Chọn nhân viên --</option>
+				<option th:each="nv : ${nhanViens}"
+						th:text="${nv.hoTen}"
+						th:value="${nv.maNV}"
+						th:attr="data-ma=${nv.maNV}">
+				</option>
+			</select>
+		</div>
 
-			<button type="submit">Tạo tài khoản</button>
-		</form>
+		<!-- Dropdown Nhà đầu tư -->
+		<div id="nhadautuDropdown" style="display:none;">
+			<label for="maNDT">Chọn nhà đầu tư:</label>
+			<select id="maNDT" name="maLienKet" onchange="updateUsername(this)">
+				<option value="" disabled selected>-- Chọn nhà đầu tư --</option>
+				<option th:each="ndt : ${nhaDauTus}"
+						th:text="${ndt.hoTen}"
+						th:value="${ndt.maNDT}"
+						th:attr="data-ma=${ndt.maNDT}">
+				</option>
+			</select>
+		</div>
 
+		<button type="submit">Tạo tài khoản</button>
+	</form>
 
-		<p th:if="${error}" class="error" th:text="${error}"></p>
-        <p th:if="${success}" class="success" th:text="${success}"></p>
-    </div>
+	<p th:if="${error}" class="error" th:text="${error}"></p>
+	<p th:if="${success}" class="success" th:text="${success}"></p>
+</div>
 </body>
 
 <script th:inline="javascript">
-function toggleFields() {
-    const isNDT = document.getElementById('roleNhaDauTu').checked;
-    document.getElementById('nhanvienDropdown').style.display = !isNDT ? 'block' : 'none';
-    document.getElementById('nhadautuDropdown').style.display = isNDT ? 'block' : 'none';
+	function toggleFields() {
+		const isNDT = document.getElementById('roleNhaDauTu').checked;
+		document.getElementById('nhanvienDropdown').style.display = !isNDT ? 'block' : 'none';
+		document.getElementById('nhadautuDropdown').style.display = isNDT ? 'block' : 'none';
 
-    // Cập nhật username khi đổi radio
-    const dropdown = isNDT ? document.getElementById('maNDT') : document.getElementById('maNV');
-    updateUsername(dropdown);
-}
+		// Cập nhật username khi đổi radio
+		const dropdown = isNDT ? document.getElementById('maNDT') : document.getElementById('maNV');
+		updateUsername(dropdown);
+	}
 
-function updateUsername(selectElement) {
-    const selectedOption = selectElement.options[selectElement.selectedIndex];
-    if (selectedOption) {
-        const ma = selectedOption.getAttribute("data-ma");
-        document.getElementById('tenDangNhap').value = ma || '';
-    }
-}
+	function updateUsername(selectElement) {
+		const selectedOption = selectElement.options[selectElement.selectedIndex];
+		if (selectedOption) {
+			const ma = selectedOption.getAttribute("data-ma");
+			document.getElementById('tenDangNhap').value = ma ? ma.trim() : ''; // Sử dụng trim để loại bỏ khoảng trắng
+		}
+	}
 
-document.addEventListener('DOMContentLoaded', () => {
-    toggleFields();
-    document.getElementById('roleNhanVien').addEventListener('change', toggleFields);
-    document.getElementById('roleNhaDauTu').addEventListener('change', toggleFields);
+	document.addEventListener('DOMContentLoaded', () => {
+		toggleFields();
+		document.getElementById('roleNhanVien').addEventListener('change', toggleFields);
+		document.getElementById('roleNhaDauTu').addEventListener('change', toggleFields);
 
-    document.getElementById('maNV').addEventListener('change', function() {
-        updateUsername(this);
-    });
-    document.getElementById('maNDT').addEventListener('change', function() {
-        updateUsername(this);
-    });
-});
+		document.getElementById('maNV').addEventListener('change', function() {
+			updateUsername(this);
+		});
+		document.getElementById('maNDT').addEventListener('change', function() {
+			updateUsername(this);
+		});
+	});
 </script>
 
 </html>
