@@ -66,4 +66,8 @@ public class CoPhieuService {
     public List<CoPhieu> getAllCoPhieu() {
     	return coPhieuRepository.findAll();
     }
+    
+    public List<CoPhieu> findByMaCPIn(List<String> maCPs) {
+        return coPhieuRepository.findByMaCPIn(maCPs);
+    }
 }

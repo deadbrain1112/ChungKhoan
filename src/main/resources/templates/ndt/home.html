@@ -14,67 +14,84 @@
                 <p>STOCK EXCHANGE</p>
             </div>
             <div class="header-right">
-                <p>Xin Chào - <span th:text="${taiKhoan.nhaDauTu.hoTen}"></span></p>
+                <!-- Kiểm tra xem nhà đầu tư có tồn tại không -->
+                <p th:if="${taiKhoan != null}">
+                    Xin Chào - <span th:text="${taiKhoan.nhaDauTu.hoTen}"></span>
+                </p>
+                <p th:if="${taiKhoan == null}">
+                    Xin Chào - <span>Thông tin nhà đầu tư không tồn tại</span>
+                </p>
                 <a href="@{/exit}">Đăng Xuất</a>
             </div>
         </header>
         <nav>
-            <ul>
-                <li>Tra Cứu Số Dư</li>
-                <li>Sao Kê GDCK</li>
-                <li>Đặt Lệnh</li>
-                <li>Ứng Tiền</li>
-                <li>Bảng Giá Điện Tử</li>
-            </ul>
-        </nav>
+		    <nav>
+			    <div class="nav-buttons">
+			        <a th:href="@{/nhadautu/tra-cuu-so-du}" class="nav-button active">Tra Cứu Số Dư</a>
+			        <a th:href="@{/nhadautu/sao-ke-gdck}" class="nav-button">Sao Kê GDCK</a>
+			        <a th:href="@{/nhadautu/dat-lenh}" class="nav-button">Đặt Lệnh</a>
+			        <a th:href="@{/nhadautu/ung-tien}" class="nav-button">Ứng Tiền</a>
+			        <a th:href="@{/stock-board}" class="nav-button">Bảng Giao Dịch Chứng Khoán</a>
+			    </div>
+			</nav>
+		</nav>
         <main>
             <section class="account-info">
-			    <h2>Tra Cứu Số Dư</h2>
-			    <div class="info">
-			        <p><strong>Tên chủ TK:</strong> <span th:text="${taiKhoan.nhaDauTu.hoTen}"></span></p>
-			        <p><strong>Số dư hiện tại của quý khách:</strong> 
-			            <span class="highlight" th:text="${#numbers.formatDecimal(taiKhoan.soTien, 0, 'COMMA')}"></span> VND</p>
-			        <p><strong>Mã Số Tài Khoản:</strong> <span th:text="${taiKhoan.maTK}"></span></p>
-			        <p><strong>Ngân Hàng:</strong>
-			            <select name="nganHang">
-			                <option th:each="nh : ${dsNganHang}"
-			                        th:value="${nh.maNH}"
-			                        th:text="${nh.tenNganHang}"
-			                        th:selected="${nh.maNH == taiKhoan.nganHang.maNH}">
-			                </option>
-			            </select>
-			        </p>
-			        <p><strong>Số dư còn lại được phép giao dịch:</strong> 
-			            <span class="highlight" th:text="${#numbers.formatDecimal(taiKhoan.soTien, 0, 'COMMA')}"></span> VND</p>
-			    </div>
-			</section>
+                <h2>Tra Cứu Số Dư</h2>
+                <div class="info">
+                    <!-- Kiểm tra taiKhoan và soTien không null trước khi hiển thị -->
+                    <p><strong>Tên chủ TK:</strong> <span th:text="${taiKhoan != null ? taiKhoan.nhaDauTu.hoTen : 'Chưa có thông tin'}"></span></p>
+                    <p><strong>Số dư hiện tại của quý khách:</strong>
+                        <span class="highlight" th:if="${taiKhoan != null and taiKhoan.soTien != null}" th:text="${formattedSoTien}"></span>
+                        <span class="highlight" th:if="${taiKhoan == null or taiKhoan.soTien == null}" th:text="'0'"></span> VND
+                    </p>
+                    <p><strong>Mã Số Tài Khoản:</strong> <span th:text="${taiKhoan != null ? taiKhoan.maTK : 'Chưa có thông tin'}"></span></p>
+                    <p><strong>Ngân Hàng:</strong>
+                        <select name="nganHang" th:if="${taiKhoan != null}">
+                            <option th:each="tk : ${danhSachTaiKhoan}"
+                                    th:value="${tk.nganHang.maNH}"
+                                    th:text="${tk.nganHang.tenNH}"
+                                    th:selected="${tk.nganHang.maNH == taiKhoan.nganHang.maNH}">
+                            </option>
+                        </select>
+                        <span th:if="${taiKhoan == null}">Không có ngân hàng</span>
+                    </p>
+                    <p><strong>Số dư còn lại được phép giao dịch:</strong> 
+                        <span class="highlight" th:if="${taiKhoan != null and taiKhoan.soTien != null}" 
+                              th:text="${formattedSoTien}"></span>
+                        <span class="highlight" th:if="${taiKhoan == null or taiKhoan.soTien == null}">0</span> VND
+                    </p>
+                </div>
+            </section>
 
+            <!-- Phần cổ phiếu có thể hiển thị dữ liệu hoặc thông báo không có dữ liệu -->
             <section class="stock-balance">
-			    <h2>Số Dư Cổ Phiếu</h2>
-			    <table>
-			        <thead>
-			            <tr>
-			                <th scope="col">Mã CP</th>
-			                <th>Số lượng</th>
-			                <th>Giá thị trường</th>
-			                <th>Tổng giá trị</th>
-			            </tr>
-			        </thead>
-			        <tbody>
-			        	<!-- Dữ liệu trống -->
-				        <tr th:if="danhSachCoPhieu.empty">
-				        	<td colspan="5" style="text-align: center;" th:text="${nullCP}"></td>
-				        </tr>
-				        
-			            <tr th:each="coPhieu : ${danhSachCoPhieu}">
-			                <td th:text="${coPhieu.maCP}"></td>
-			                <td th:text="${coPhieu.soLuongPH}"></td>
-			                <td th:text="${#numbers.formatDecimal(coPhieu.soLuongPH * 1000, 0, 'COMMA')}"></td>
-			                <td th:text="${#numbers.formatDecimal(coPhieu.soLuongPH * 1000, 0, 'COMMA')}"></td>
-			            </tr>
-			        </tbody>
-			    </table>
-			</section>
+                <h2>Số Dư Cổ Phiếu</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col">Mã CP</th>
+                            <th>Số lượng</th>
+                            <th>Giá thị trường</th>
+                            <th>Tổng giá trị</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Nếu danh sách cổ phiếu trống -->
+                        <tr th:if="${danhSachCoPhieu.isEmpty()}">
+                            <td colspan="4" style="text-align: center;" th:text="${nullCP}"></td>
+                        </tr>
+
+                        <!-- Hiển thị danh sách cổ phiếu -->
+                        <tr th:each="soHuu : ${danhSachCoPhieu}">
+                            <td th:text="${soHuu.maCP}"></td>
+                            <td th:text="${soHuu.soLuong}"></td>
+                            <td th:text="${giaThiTruongMap[soHuu.maCP]}"></td>
+                            <td th:text="${tongGiaTriMap[soHuu.maCP]}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
         </main>
     </div>
 </body>

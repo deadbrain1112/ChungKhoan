@@ -3,6 +3,9 @@ package chungkhoan.service;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.TaiKhoanNganHang;
 import chungkhoan.repository.TaiKhoanNganHangRepository;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,4 +19,7 @@ public class TaiKhoanNganHangService {
 //    public TaiKhoanNganHang getTaiKhoanByNDT(NhaDauTu nhaDauTu) {
 //        return taiKhoanNganHangRepository.findByNhaDauTu(nhaDauTu);
 //    }
+    public List<TaiKhoanNganHang> getAllByNDT(NhaDauTu nhaDauTu) {
+        return taiKhoanNganHangRepository.findByNhaDauTu(nhaDauTu);
+    }
 }

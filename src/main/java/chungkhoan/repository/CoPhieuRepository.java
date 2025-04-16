@@ -25,4 +25,5 @@ public interface CoPhieuRepository extends JpaRepository<CoPhieu, String> {
     );
     
     //List<CoPhieu> findByNhaDauTu(NhaDauTu nhaDauTu);
+    List<CoPhieu> findByMaCPIn(List<String> maCPs);
 }

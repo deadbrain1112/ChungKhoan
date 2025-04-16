@@ -98,8 +98,10 @@ public class NDTService {
 
 
     public NhaDauTu getNhaDauTuByUsername(String username) {
-        return ndtRepository.findByMaNDT(username);
+        NhaDauTu nhaDauTu = ndtRepository.findByUsername(username);
+        if (nhaDauTu == null) {
+            throw new RuntimeException("Không tìm thấy nhà đầu tư với username: " + username);
+        }
+        return nhaDauTu;
     }
-
-
 }

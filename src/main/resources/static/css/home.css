@@ -37,22 +37,33 @@ header a {
     font-weight: bold;
 }
 
-nav ul {
-    list-style: none;
+.nav-buttons {
     display: flex;
-    background-color: #0066cc;
-    margin: 0;
+    justify-content: center; /* Căn giữa các nút */
+    gap: 15px; /* Khoảng cách giữa các nút */
     padding: 10px 0;
+    background-color: #0066cc; /* Màu nền giống phần nav cũ */
 }
 
-nav ul li {
-    color: white;
+.nav-button {
+    display: inline-block;
     padding: 10px 20px;
-    cursor: pointer;
+    background-color: #003b73; /* Màu nền nút */
+    color: white; /* Màu chữ */
+    text-decoration: none; /* Bỏ gạch chân của link */
+    border-radius: 5px; /* Bo góc nút */
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s ease; /* Hiệu ứng chuyển màu khi hover */
 }
 
-nav ul li:hover {
-    background-color: #004c99;
+.nav-button:hover {
+    background-color: #004c99; /* Màu nền khi hover */
+}
+
+.nav-button.active {
+    background-color: #ffc107; /* Màu vàng để nổi bật nút active */
+    color: #003b73; /* Màu chữ của nút active */
 }
 
 main {

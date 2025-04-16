@@ -27,4 +27,7 @@ public interface NDTRepository extends JpaRepository<NhaDauTu, String> {
             @Param("gioiTinh") String gioiTinh,
             @Param("email") String email
     );
+    
+    @Query("SELECT n FROM NhaDauTu n WHERE n.maNDT = :username")
+    NhaDauTu findByUsername(@Param("username") String username);
 }
