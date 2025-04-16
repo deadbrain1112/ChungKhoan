@@ -18,13 +18,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class RegisterController {
 	private final NhanVienRepository nhanVienRepository;
     private final NDTRepository  ndtRepository;
+    private final TaiKhoanService taiKhoanService;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public RegisterController(NhanVienRepository nhanVienRepo, NDTRepository nhaDauTuRepo, EntityManager entityManager, TaiKhoanService taiKhoanService) {
+    public RegisterController(NhanVienRepository nhanVienRepo, NDTRepository nhaDauTuRepo, EntityManager entityManager, TaiKhoanService taiKhoanService, TaiKhoanService taiKhoanService1) {
         this.nhanVienRepository = nhanVienRepo;
         this.ndtRepository = nhaDauTuRepo;
-
+        this.taiKhoanService = taiKhoanService1;
     }
 
     @GetMapping("/register")
@@ -41,8 +42,7 @@ public class RegisterController {
                                 @RequestParam("maLienKet") String maLienKet,
                                 Model model) {
         try {
-            String sql = "EXEC sp_TaoTaiKhoan ?, ?, ?, ?";
-            jdbcTemplate.update(sql, tenDangNhap, matKhau, loai, maLienKet);
+            taiKhoanService.taoTaiKhoan(tenDangNhap, matKhau, loai, maLienKet);
             model.addAttribute("success", "Tạo tài khoản thành công!");
         } catch (Exception e) {
             model.addAttribute("error", "Lỗi khi tạo tài khoản: " + e.getMessage());

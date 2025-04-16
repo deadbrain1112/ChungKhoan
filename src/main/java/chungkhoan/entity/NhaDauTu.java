@@ -3,6 +3,7 @@ package chungkhoan.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Table(name = "ndt")
@@ -38,6 +39,9 @@ public class NhaDauTu {
 
     @Column(name = "Email", columnDefinition = "NVARCHAR(50)")
     private String email;
+
+    @OneToMany(mappedBy = "nhaDauTu", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<SoHuu> soHuus;  // Một nhà đầu tư có thể sở hữu nhiều cổ phiếu
 
     public NhaDauTu(NhaDauTu other) {
         this.maNDT = other.maNDT;

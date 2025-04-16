@@ -3,26 +3,41 @@ package chungkhoan;
 import chungkhoan.service.DatabaseService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
-import java.util.Scanner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.beans.factory.annotation.Value;
+
+import javax.sql.DataSource;
 
 @SpringBootApplication
 public class ChungKhoanApplication {
+
+    @Value("${spring.datasource.url}")
+    private String dbUrl;
+
+    @Value("${spring.datasource.driver-class-name}")
+    private String dbDriverClassName;
+
     public static void main(String[] args) {
-        ApplicationContext context = SpringApplication.run(ChungKhoanApplication.class, args);
-        DatabaseService databaseService = context.getBean(DatabaseService.class);
+        SpringApplication.run(ChungKhoanApplication.class, args);
+    }
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Nhập tên đăng nhập: ");
-        String username = scanner.nextLine();
-        System.out.print("Nhập mật khẩu: ");
-        String password = scanner.nextLine();
+    @Bean
+    public DataSource dataSource(@Value("${DB_USERNAME}") String dbUsername,
+                                 @Value("${DB_PASSWORD}") String dbPassword) {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setUrl(dbUrl);
+        dataSource.setDriverClassName(dbDriverClassName);
+        dataSource.setUsername(dbUsername);
+        dataSource.setPassword(dbPassword);
+        return dataSource;
+    }
 
-        boolean success = databaseService.testConnection(username, password);
-        if (success) {
-            System.out.println("Đăng nhập thành công");
-        } else {
-            System.out.println("Không thể đăng nhập");
-        }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 }

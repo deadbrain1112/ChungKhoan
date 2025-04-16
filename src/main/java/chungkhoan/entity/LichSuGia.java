@@ -29,4 +29,8 @@ public class LichSuGia {
 
     @Column(name = "GiaTC", nullable = false)
     private float giaTC;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MaCP", insertable = false, updatable = false)
+    private CoPhieu coPhieu;
 }

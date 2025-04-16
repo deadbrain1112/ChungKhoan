@@ -3,6 +3,8 @@ package chungkhoan.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Set;
+
 @Entity
 @Table(name = "cophieu")
 @Data
@@ -22,6 +24,9 @@ public class CoPhieu {
 
     @Column(name = "soluongph", nullable = false)
     private int soLuongPH;
+
+    @OneToMany(mappedBy = "coPhieu", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<SoHuu> soHuus;  // Một cổ phiếu có thể thuộc về nhiều nhà đầu tư
 
     @PrePersist
     @PreUpdate
