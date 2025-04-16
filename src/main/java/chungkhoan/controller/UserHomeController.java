@@ -21,8 +21,6 @@ import chungkhoan.service.NDTService;
 import chungkhoan.service.SoHuuService;
 import chungkhoan.service.TaiKhoanNganHangService;
 
-import jakarta.servlet.http.HttpSession;
-
 @Controller
 public class UserHomeController {
 
@@ -42,33 +40,35 @@ public class UserHomeController {
     private SoHuuService soHuuService;
 
     @GetMapping("/nhadautu/home")
-    public String home(Model model, HttpSession session) {
-        // Kiểm tra trạng thái đăng nhập
-        NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
-        if (nhaDauTu == null) {
-            // Nếu chưa đăng nhập, chuyển hướng đến trang login
-            return "redirect:/login?error=not_logged_in";
-        }
+    public String home(Model model) {
+        // Tạm hardcode username (trong thực tế lấy từ session hoặc Spring Security)
+        String username = "NDT01";
 
-        // Lấy thông tin nhà đầu tư từ session (đã được lưu trong LoginController)
-        String maNDT = nhaDauTu.getMaNDT();
+        // Lấy thông tin nhà đầu tư
+        NhaDauTu nhaDauTu;
+        try {
+            nhaDauTu = ndtService.getNhaDauTuByUsername(username);
+        } catch (Exception e) {
+            model.addAttribute("error", "Lỗi: Không thể tìm thấy nhà đầu tư duy nhất với username: " + username);
+            return "ndt/home";
+        }
 
         // Lấy danh sách tài khoản ngân hàng của nhà đầu tư
         List<TaiKhoanNganHang> danhSachTaiKhoan = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
 
-        // Kiểm tra danh sách tài khoản và tạo đối tượng mặc định nếu cần
+        // Kiểm tra xem danh sách tài khoản có trống hay không và tạo đối tượng mặc định
         TaiKhoanNganHang taiKhoan = danhSachTaiKhoan.isEmpty() ? new TaiKhoanNganHang() : danhSachTaiKhoan.get(0);
 
-        // Đảm bảo số tiền không null
-        if (taiKhoan.getSoTien() == null) {
-            taiKhoan.setSoTien(BigDecimal.ZERO);
+        // Kiểm tra taiKhoan và soTien trong controller
+        if (taiKhoan == null || taiKhoan.getSoTien() == null) {
+            taiKhoan.setSoTien(BigDecimal.ZERO); // Gán giá trị mặc định cho số tiền
         }
 
         // Lấy danh sách mã cổ phiếu mà nhà đầu tư sở hữu từ SoHuu
-        List<String> danhSachMaCP = soHuuService.getMaCPByNDT(maNDT);
+        List<String> danhSachMaCP = soHuuService.getMaCPByNDT(nhaDauTu.getMaNDT());
 
         // Lấy danh sách sở hữu của nhà đầu tư
-        List<SoHuu> danhSachSoHuu = soHuuService.getSoHuuByNDT(maNDT);
+        List<SoHuu> danhSachSoHuu = soHuuService.getSoHuuByNDT(nhaDauTu.getMaNDT());
 
         // Lấy thông tin cổ phiếu tương ứng với danh sách mã cổ phiếu
         List<CoPhieu> danhSachCP = coPhieuService.findByMaCPIn(danhSachMaCP);
@@ -86,9 +86,9 @@ public class UserHomeController {
                 : "0";
 
         // Tính giá trị thị trường và tổng giá trị của từng cổ phiếu
-        Map<String, String> giaThiTruongMap = new HashMap<>();
+        Map<String, String> giaThiTruongMap = new HashMap<>(); // Đổi kiểu từ Float sang String để lưu giá trị đã định dạng
         Map<String, String> tongGiaTriMap = new HashMap<>();
-        Map<String, Integer> soLuongMap = new HashMap<>();
+        Map<String, Integer> soLuongMap = new HashMap<>(); // Lưu số lượng cổ phiếu sở hữu
 
         // Lưu số lượng từ SoHuu vào map để sử dụng
         for (SoHuu soHuu : danhSachSoHuu) {
