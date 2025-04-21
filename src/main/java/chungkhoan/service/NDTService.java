@@ -95,7 +95,11 @@ public class NDTService {
 
         return true;
     }
-
+    
+    // Kiểm tra stack rỗng
+    public boolean isUndoStackEmpty() {
+    	return undoStack.isEmpty();
+    }
 
     public NhaDauTu getNhaDauTuByUsername(String username) {
         NhaDauTu nhaDauTu = ndtRepository.findByUsername(username);

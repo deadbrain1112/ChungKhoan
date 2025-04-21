@@ -12,7 +12,7 @@
 		<a href="#" onclick="showSubform('add')">Thêm</a>
 		<a th:href="@{/nhanvien}">Thoát</a>
 		<form th:action="@{/investors/undo}" method="post" style="display:inline;">
-			<button type="submit">Hoàn tác</button>
+			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
 		</form>
 	</div>
 
@@ -60,7 +60,7 @@
 						            data-cmnd=${investor.cmnd},
 						            data-gioiTinh=${investor.gioiTinh},
 						            data-email=${investor.email}">Sửa</a>|
-				<!-- Tài khoản ngân hàng dạng th:each để lưu trữ dữ liệu cho JS -->
+				<a>Ghi</a> |
 				<div class="hidden" th:each="account : ${bankAccountMap[investor.maNDT]}"
 					 th:data-maNDT="${investor.maNDT}"
 					 th:data-accountNumber="${account.maTK}"

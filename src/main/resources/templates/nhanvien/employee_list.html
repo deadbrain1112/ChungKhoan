@@ -10,8 +10,17 @@
 <div>
     <div class="toolbar">
         <a href="#" onclick="showSubform('add')">Thêm</a>
+        <form th:action="@{/employee/undo}" method="post" style="display:inline;">
+			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
+		</form>
         <a th:href="@{/nhanvien}">Thoát</a>
     </div>
+    
+    <!-- Thông báo hoàn tác -->
+	<div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')"
+		 role="alert" style="color: red;">
+		<span th:text="${message}"></span>
+	</div>
 
     <table class="main-table">
         <thead>
@@ -24,6 +33,7 @@
                 <th>CMND</th>
                 <th>Giới tính</th>
                 <th>Email</th>
+                <th>Hành động</th>
             </tr>
         </thead>
         <tbody>
@@ -39,6 +49,22 @@
                 <td th:text="${employee.cmnd}"></td>
                 <td th:text="${employee.gioiTinh}"></td>
                 <td th:text="${employee.email}"></td>
+                <td>
+				    <a href="#" class="edit-link"
+				       th:attr="data-maNV=${employee.maNV},
+				                data-hoTen=${employee.hoTen},
+				                data-ngaySinh=${employee.ngaySinh},
+				                data-diaChi=${employee.diaChi},
+				                data-phone=${employee.phone},
+				                data-cmnd=${employee.cmnd},
+				                data-gioiTinh=${employee.gioiTinh},
+				                data-email=${employee.email}">Sửa</a> |
+				     <a>Ghi</a> |           
+				     <form th:action="@{/employees/delete}" method="post" style="display:inline;">
+					    <input type="hidden" name="maNV" th:value="${employee.maNV}" />
+					    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+					</form>
+				</td>          
             </tr>
         </tbody>
     </table>
@@ -95,42 +121,73 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        console.log("Trang đã tải xong, sẵn sàng xử lý sự kiện.");
+document.addEventListener("DOMContentLoaded", function () {
+	console.log("Trang đã tải xong, sẵn sàng xử lý sự kiện.");
 
-        document.getElementById("employee-form").addEventListener("submit", function(e) {
-            const maNV = document.getElementById("maNV").value;
-            const cmnd = document.getElementById("cmnd").value;
-            console.log("Biểu mẫu được gửi, Mã NV (input):", maNV);
-            console.log("Biểu mẫu được gửi, CMND (input):", cmnd);
-            console.log("Action của form:", this.action);
-        });
-    });
+	document.querySelectorAll(".edit-link").forEach(function (link) {
+		link.addEventListener("click", function (e) {
+			e.preventDefault();
+			const maNV = this.getAttribute("data-maNV");
+			console.log("Nhấn 'Sửa', Mã NV được chọn:", maNV);
+			showSubform('edit', maNV);
+		});
+	});
 
-    function showSubform(action, maNV = '') {
-        const subform = document.getElementById('subform');
-        const title = document.getElementById('subform-title');ndt
-        const form = document.getElementById('employee-form');
-        const maNVInput = document.getElementById('maNV');
-        const rowMaNV = document.getElementById('row-maNV');
+	document.getElementById("employee-form").addEventListener("submit", function (e) {
+		const maNV = document.getElementById("maNV").value;
+		console.log("Biểu mẫu được gửi, Mã NV (input):", maNV);
+		console.log("Action của form:", this.action);
+	});
+});
 
-        subform.classList.add('active');
-        form.reset();
+function showSubform(action, maNV = '') {
+	const subform = document.getElementById('subform');
+	const title = document.getElementById('subform-title');
+	const form = document.getElementById('employee-form');
+	const maNVInput = document.getElementById('maNV');
+	const rowMaNV = document.getElementById('row-maNV');
 
-        if (action === 'add') {
-            title.textContent = 'Thêm nhân viên';
-            form.action = '/employees/add';
-            maNVInput.disabled = true;
-            maNVInput.value = '';
-            rowMaNV.style.display = 'none'; // Ẩn dòng mã nhân viên
-        }
-        // Nếu cần mở cho 'edit', bạn có thể thêm else if sau này
-    }
+	subform.classList.add('active');
+	form.reset();
 
-    function hideSubform() {
-        const subform = document.getElementById('subform');
-        subform.classList.remove('active');
-    }
+	if (action === 'add') {
+		title.textContent = 'Thêm nhân viên';
+		form.action = '/employees/add';
+		maNVInput.readOnly = true;
+		maNVInput.value = '';
+		rowMaNV.style.display = 'none';
+	} else if (action === 'edit') {
+		title.textContent = 'Sửa nhân viên';
+		form.action = '/employees/edit';
+		maNVInput.readOnly = true;
+		maNVInput.value = maNV;
+		rowMaNV.style.display = '';
+
+		const editLink = document.querySelector(`.edit-link[data-maNV="${maNV}"]`);
+
+		form.querySelector('[name="hoTen"]').value = editLink.dataset.hoten;
+		form.querySelector('[name="ngaySinh"]').value = editLink.dataset.ngaysinh;
+		form.querySelector('[name="diaChi"]').value = editLink.dataset.diachi;
+		form.querySelector('[name="phone"]').value = editLink.dataset.phone;
+		form.querySelector('[name="cmnd"]').value = editLink.dataset.cmnd;
+		form.querySelector('[name="email"]').value = editLink.dataset.email;
+
+		const gioiTinhValue = editLink.dataset.gioitinh?.trim().toLowerCase();
+		const gioiTinhNam = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nam"]');
+		const gioiTinhNu = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nữ"]');
+
+		if (gioiTinhValue === 'nam' && gioiTinhNam) {
+			gioiTinhNam.checked = true;
+		} else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
+			gioiTinhNu.checked = true;
+		}
+	}
+}
+
+function hideSubform() {
+	document.getElementById('subform').classList.remove('active');
+}
 </script>
+
 </body>
 </html>

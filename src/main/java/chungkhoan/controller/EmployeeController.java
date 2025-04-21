@@ -2,14 +2,13 @@ package chungkhoan.controller;
 
 import java.util.List;
 
-import chungkhoan.service.NDTService;
+import chungkhoan.service.NhanVienService;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.NhanVien;
 import chungkhoan.repository.NhanVienRepository;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class EmployeeController {
 
 	@Autowired NhanVienRepository nhanVienRepository;
-	@Autowired NDTService ndtService;
+	@Autowired NhanVienService nhanVienService;
 
 	@GetMapping("/employees")
 	public String employeeList(Model model) {
@@ -30,13 +29,16 @@ public class EmployeeController {
 		if (list.isEmpty()) {
 			model.addAttribute("noDataMessage", "Không có dữ liệu nhân viên.");
 		}
+		
+		// Vô hiệu hóa nút Hoàn tác nếu stack rỗng
+		model.addAttribute("canUndo", !nhanVienService.isUndoStackEmpty());
 
 		return "nhanvien/employee_list";
 	}
-
-	@PostMapping("/investors/undo")
+	
+	@PostMapping("/employee/undo")
 	public String undoLastAction(RedirectAttributes redirectAttributes) {
-		boolean success = ndtService.undoThaoTacCuoi();
+		boolean success = nhanVienService.undoThaoTacCuoi();
 		if (success) {
 			redirectAttributes.addFlashAttribute("message", "Hoàn tác thành công");
 			redirectAttributes.addFlashAttribute("messageType", "success");
@@ -44,6 +46,6 @@ public class EmployeeController {
 			redirectAttributes.addFlashAttribute("message", "Không có thao tác để hoàn tác");
 			redirectAttributes.addFlashAttribute("messageType", "error");
 		}
-		return "redirect:/investors";
+		return "redirect:/employees";
 	}
 }

@@ -12,7 +12,7 @@
         <a th:href="@{/stocks}">Reload</a> |
         
         <form th:action="@{/stocks/undo}" method="post" style="display:inline;">
-        	<button type="submit">Hoàn tác</button>
+        	<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
     	</form>  	
     		
         <form th:action="@{/stocks/search}" method="post" style="display: inline;">
@@ -22,6 +22,12 @@
         
         <a th:href="@{/nhanvien}">Thoát</a>
     </div>
+    
+    <!-- Thông báo hoàn tác -->
+	<div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')"
+		 role="alert" style="color: red;">
+		<span th:text="${message}"></span>
+	</div>
 
     <table class="table">
         <thead>
@@ -45,7 +51,8 @@
 			            <td th:text="${stock.diaChi}"></td>
 			            <td th:text="${stock.soLuongPH}"></td>
 			            <td>
-			                <a href="@{/stocks(action='edit', maCP=${stock.maCP})}" class="edit-link" th:attr="data-maCP=${stock.maCP}">Ghi</a> |
+			                <a href="@{/stocks(action='edit', maCP=${stock.maCP})}" class="edit-link" th:attr="data-maCP=${stock.maCP}">Sửa</a> |
+			                <a>Ghi</a> |
 			                <form th:action="@{/stocks/delete/{maCP}(maCP=${stock.maCP})}" method="post" style="display:inline;">
 			                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
 			                </form>

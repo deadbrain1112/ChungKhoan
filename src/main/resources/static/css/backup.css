@@ -30,6 +30,8 @@ button {
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    margin: 10px;
+    font-size: 13px;
 }
 
 button.danger {

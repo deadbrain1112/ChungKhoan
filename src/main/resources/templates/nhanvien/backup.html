@@ -74,6 +74,11 @@
               onsubmit="return confirm('Bạn có chắc muốn xóa toàn bộ sao lưu? Hành động này không thể hoàn tác.');">
             <button type="submit">Xóa toàn bộ sao lưu</button>
         </form>
+        
+        <!-- Thoát -->
+        <form th:action="@{/nhanvien}" method="get" class="inline-form">
+            <button type="submit">Thoát</button>
+        </form>
     </div>
 
     <div class="content">

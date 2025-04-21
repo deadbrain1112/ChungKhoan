@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import chungkhoan.entity.CoPhieu;
 import chungkhoan.service.CoPhieuService;
@@ -45,6 +46,9 @@ public class StocksController {
             // Trường hợp không có action, vẫn cần có stock để Thymeleaf không lỗi
             model.addAttribute("stock", new CoPhieu());
         }
+        
+        // Vô hiệu hóa nút Hoàn tác nếu stack rỗng
+     	model.addAttribute("canUndo", !coPhieuService.isUndoStackEmpty());
 
         return "nhanvien/stocks";
     }
@@ -84,4 +88,18 @@ public class StocksController {
     public String searchStock(@RequestParam("query") String query, Model model) {
         return "redirect:/stocks";
     }
+    
+    // Hoàn tác cổ phiếu
+    @PostMapping("/stocks/undo")
+	public String undoLastAction(RedirectAttributes redirectAttributes) {
+		boolean success = coPhieuService.undoThaoTacCuoi();
+		if (success) {
+			redirectAttributes.addFlashAttribute("message", "Hoàn tác thành công");
+			redirectAttributes.addFlashAttribute("messageType", "success");
+		} else {
+			redirectAttributes.addFlashAttribute("message", "Không có thao tác để hoàn tác");
+			redirectAttributes.addFlashAttribute("messageType", "error");
+		}
+		return "redirect:/stocks";
+	}
 }

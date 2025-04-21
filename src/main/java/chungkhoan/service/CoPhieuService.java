@@ -1,34 +1,26 @@
 package chungkhoan.service;
 
 import chungkhoan.entity.CoPhieu;
-import chungkhoan.entity.LenhKhop;
-import chungkhoan.entity.LichSuGia;
-import chungkhoan.entity.NhaDauTu;
+import chungkhoan.entity.UndoAction;
 import chungkhoan.repository.CoPhieuRepository;
-import chungkhoan.repository.LenhKhopRepository;
-import chungkhoan.repository.LichSuGiaRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CoPhieuService {
 
     @Autowired
-    private CoPhieuRepository coPhieuRepository;
+    private CoPhieuRepository coPhieuRepository;  
     
-    @Autowired
-    private LichSuGiaRepository lichSuGiaRepo;
-    
-    @Autowired
-    private LenhKhopRepository lenhKhopRepo;
+    private Deque<UndoAction> undoStack = new ArrayDeque<>();
 
     public Page<CoPhieu> getPaginated(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("maCP").ascending());
@@ -58,16 +50,38 @@ public class CoPhieuService {
         coPhieuRepository.deleteById(maCP);
     }
     
-    // Danh sách cổ phiếu của nhà đầu tư nhất định
-//    public List<CoPhieu> getCoPhieuByNDT(NhaDauTu nhaDauTu) {
-//        return coPhieuRepository.findByNhaDauTu(nhaDauTu);
-//    }
-    
     public List<CoPhieu> getAllCoPhieu() {
     	return coPhieuRepository.findAll();
     }
     
     public List<CoPhieu> findByMaCPIn(List<String> maCPs) {
         return coPhieuRepository.findByMaCPIn(maCPs);
+    }
+    
+    // Hoàn tác
+    @Transactional
+    public boolean undoThaoTacCuoi() {
+        if (undoStack.isEmpty()) return false;
+
+        UndoAction action = undoStack.pop();
+
+        switch (action.getActionType()) {
+            case ADD:
+            	coPhieuRepository.deleteById(action.getCpNewData().getMaCP());
+                break;
+            case DELETE:
+            	coPhieuRepository.save(action.getCpOldData());
+                break;
+            case EDIT:
+            	coPhieuRepository.save(action.getCpOldData());
+                break;
+        }
+
+        return true;
+    }
+    
+    // Kiểm tra stack rỗng
+    public boolean isUndoStackEmpty() {
+    	return undoStack.isEmpty();
     }
 }
