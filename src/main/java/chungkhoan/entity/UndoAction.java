@@ -4,34 +4,33 @@ import lombok.Getter;
 
 @Getter
 public class UndoAction {
+
     public enum ActionType { ADD, DELETE, EDIT }
+    public enum EntityType { NHA_DAU_TU, CO_PHIEU, NHAN_VIEN }
 
-    private ActionType actionType;
-    
-    private NhaDauTu oldData;
-    private NhaDauTu newData;
-    
-    private CoPhieu cpOldData;
-    private CoPhieu cpNewData;
-    
-    private NhanVien nvOldData;
-    private NhanVien nvNewData;
+    private final ActionType actionType;
+    private final EntityType entityType;
 
-    public UndoAction(ActionType actionType, NhaDauTu oldData, NhaDauTu newData) {
+    private final Object oldData;
+    private final Object newData;
+
+    public UndoAction(ActionType actionType, EntityType entityType, Object oldData, Object newData) {
         this.actionType = actionType;
+        this.entityType = entityType;
         this.oldData = oldData;
         this.newData = newData;
     }
-    
-    public UndoAction(ActionType actionType, CoPhieu cpOldData, CoPhieu cpNewData) {
-        this.actionType = actionType;
-        this.cpOldData = cpOldData;
-        this.cpNewData = cpNewData;
+
+    public NhaDauTu getOldNhaDauTu() {
+        return entityType == EntityType.NHA_DAU_TU ? (NhaDauTu) oldData : null;
     }
-    
-    public UndoAction(ActionType actionType, NhanVien nvOldData, NhanVien nvNewData) {
-    	this.actionType = actionType;
-        this.nvOldData = nvOldData;
-        this.nvNewData = nvNewData;
+
+    public CoPhieu getOldCoPhieu() {
+        return entityType == EntityType.CO_PHIEU ? (CoPhieu) oldData : null;
     }
+
+    public NhanVien getOldNhanVien() {
+        return entityType == EntityType.NHAN_VIEN ? (NhanVien) oldData : null;
+    }
+
 }

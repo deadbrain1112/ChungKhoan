@@ -10,69 +10,67 @@
     <div class="toolbar">
         <a href="#" onclick="showSubform('add'); return false;">Thêm</a> |
         <a th:href="@{/stocks}">Reload</a> |
-        
         <form th:action="@{/stocks/undo}" method="post" style="display:inline;">
-        	<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
-    	</form>  	
-    		
+            <button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
+        </form>
         <form th:action="@{/stocks/search}" method="post" style="display: inline;">
             <input type="text" name="query" placeholder="Tìm kiếm...">
             <button type="submit">Tìm</button>
         </form> |
-        
-        <a th:href="@{/nhanvien}">Thoát</a>
+        <form th:action="@{/stocks/undo}" method="post" style="display:inline;">
+			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
+		</form>
     </div>
-    
-    <!-- Thông báo hoàn tác -->
-	<div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')"
-		 role="alert" style="color: red;">
-		<span th:text="${message}"></span>
-	</div>
+
+    <div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')"
+         role="alert" style="color: red;">
+        <span th:text="${message}"></span>
+    </div>
 
     <table class="table">
         <thead>
-	        <tr>
-	            <th>Mã CP</th>
-	            <th>Tên công ty</th>
-	            <th>Địa chỉ</th>
-	            <th>Số lượng phát hành</th>
-	            <th>Hành động</th>
-	        </tr>
-	        
-	        </thead>
-		        <tbody>
-			        <tr th:if="stocks.empty">
-			        	<td colspan="5" style="text-align: center;" th:text="${noDataMessage}"></td>
-			        </tr>
-			        
-			        <tr th:each="stock : ${stocks.content}">
-			            <td th:text="${stock.maCP}"></td>
-			            <td th:text="${stock.tenCty}"></td>
-			            <td th:text="${stock.diaChi}"></td>
-			            <td th:text="${stock.soLuongPH}"></td>
-			            <td>
-			                <a href="@{/stocks(action='edit', maCP=${stock.maCP})}" class="edit-link" th:attr="data-maCP=${stock.maCP}">Sửa</a> |
-			                <a>Ghi</a> |
-			                <form th:action="@{/stocks/delete/{maCP}(maCP=${stock.maCP})}" method="post" style="display:inline;">
-			                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-			                </form>
-			            </td>
-			        </tr>
-	        </tbody>
+        <tr>
+            <th>Mã CP</th>
+            <th>Tên công ty</th>
+            <th>Địa chỉ</th>
+            <th>Số lượng phát hành</th>
+            <th>Hành động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${stocks.empty}">
+            <td colspan="5" style="text-align: center;" th:text="${noDataMessage}"></td>
+        </tr>
+        <tr th:each="stock : ${stocks.content}">
+            <td th:text="${stock.maCP}"></td>
+            <td th:text="${stock.tenCty}"></td>
+            <td th:text="${stock.diaChi}"></td>
+            <td th:text="${stock.soLuongPH}"></td>
+            <td>
+                <a href="#" class="edit-link"
+                   th:attr="data-maCP=${stock.maCP},
+                            data-tenCty=${stock.tenCty},
+                            data-diaChi=${stock.diaChi},
+                            data-soLuongPH=${stock.soLuongPH}">Sửa</a> |
+                <a href="#" onclick="showSubform('add'); return false;">Ghi</a> |
+                <form th:action="@{/stocks/delete}" method="post" style="display:inline;">
+                    <input type="hidden" name="maCP" th:value="${stock.maCP}" />
+                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
     </table>
 
-    <!-- Phân trang -->
     <div class="pagination">
         <span th:if="${stocks.hasPrevious()}">
             <a th:href="@{/stocks(page=${stocks.number - 1})}">« Trước</a>
         </span>
-        
         <span th:each="i : ${#numbers.sequence(0, stocks.totalPages - 1)}">
             <a th:href="@{/stocks(page=${i})}"
                th:text="${i + 1}"
                th:classappend="${i == stocks.number} ? 'active'"></a>
         </span>
-        
         <span th:if="${stocks.hasNext()}">
             <a th:href="@{/stocks(page=${stocks.number + 1})}">Sau »</a>
         </span>
@@ -85,25 +83,21 @@
             <table class="subform-table">
                 <tr>
                     <td><label>Mã cổ phiếu:</label></td>
-                    <td><input type="text" th:field="*{maCP}" id="maCP" /></td>
+                    <td><input type="text" th:field="*{maCP}" id="maCP" name="maCP" /></td>
                 </tr>
-                
                 <tr>
                     <td><label>Tên công ty:</label></td>
-                    <td><input type="text" th:field="*{tenCty}" /></td>
+                    <td><input type="text" th:field="*{tenCty}" name="tenCty" /></td>
                 </tr>
-                
                 <tr>
                     <td><label>Địa chỉ:</label></td>
-                    <td><input type="text" th:field="*{diaChi}" /></td>
+                    <td><input type="text" th:field="*{diaChi}" name="diaChi" /></td>
                 </tr>
-                
                 <tr>
                     <td><label>Số lượng phát hành:</label></td>
-                    <td><input type="text" th:field="*{soLuongPH}" /></td>
+                    <td><input type="text" th:field="*{soLuongPH}" name="soLuongPH" /></td>
                 </tr>
             </table>
-
             <div class="form-actions">
                 <button type="submit">Lưu</button>
                 <button type="button" onclick="hideSubform()">Hủy</button>
@@ -113,71 +107,53 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Log khi trang tải xong
-        console.log("Trang đã tải xong, sẵn sàng xử lý sự kiện.");
+function showSubform(action, data = {}) {
+    const subform = document.getElementById('subform');
+    const title = document.getElementById('subform-title');
+    const form = document.getElementById('stock-form');
+    const maCPInput = document.getElementById('maCP');
 
-        // Log khi nhấn nút "Ghi" để sửa
-        document.querySelectorAll(".edit-link").forEach(function (link) {
-            link.addEventListener("click", function (e) {
-                e.preventDefault();
-                const maCP = this.getAttribute("data-maCP");
-                console.log("Nhấn 'Ghi', Mã CP được chọn để sửa:", maCP);
-                showSubform('edit', maCP);
-            });
-        });
+    subform.classList.add('active');
+    form.reset();
 
-        // Log khi biểu mẫu được gửi
-        document.getElementById("stock-form").addEventListener("submit", function(e) {
-            const maCP = document.getElementById("maCP").value;
-            console.log("Biểu mẫu được gửi, Mã CP (input):", maCP);
-            console.log("Action của form:", this.action);
-            // SỬA: Bỏ log cho maCPHidden vì trường ẩn đã bị xóa
+    maCPInput.disabled = false; // Cho phép sửa mã CP trong mọi trường hợp
+
+    // Xóa input hidden nếu có (đề phòng lần trước dùng hidden)
+    const oldHidden = document.getElementById("hiddenMaCP");
+    if (oldHidden) oldHidden.remove();
+
+    if (action === 'add') {
+        title.textContent = 'Thêm cổ phiếu';
+        form.action = '/stocks/add';
+    } else if (action === 'edit') {
+        title.textContent = 'Sửa cổ phiếu';
+        form.action = '/stocks/edit';
+
+        maCPInput.value = data.maCP;
+        form.querySelector('[name="tenCty"]').value = data.tenCty;
+        form.querySelector('[name="diaChi"]').value = data.diaChi;
+        form.querySelector('[name="soLuongPH"]').value = data.soLuongPH;
+    }
+}
+
+function hideSubform() {
+    const subform = document.getElementById('subform');
+    subform.classList.remove('active');
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".edit-link").forEach(function (link) {
+        link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const maCP = this.getAttribute("data-maCP");
+            const tenCty = this.getAttribute("data-tenCty");
+            const diaChi = this.getAttribute("data-diaChi");
+            const soLuongPH = this.getAttribute("data-soLuongPH");
+
+            showSubform('edit', { maCP, tenCty, diaChi, soLuongPH });
         });
     });
-
-    function showSubform(action, maCP = '') {
-        const subform = document.getElementById('subform');
-        const title = document.getElementById('subform-title');
-        const form = document.getElementById('stock-form');
-        const maCPInput = document.getElementById('maCP');
-        // SỬA: Bỏ biến maCPHidden vì không còn trường ẩn
-
-        subform.classList.add('active');
-        form.reset();
-
-        if (action === 'add') {
-            title.textContent = 'Thêm cổ phiếu';
-            form.action = '/stocks/add';
-            maCPInput.disabled = false;
-            maCPInput.value = '';
-            console.log("Mở subform để thêm, Mã CP được reset thành rỗng.");
-            // SỬA: Bỏ gán giá trị cho maCPHidden
-        } else if (action === 'edit') {
-            title.textContent = 'Sửa cổ phiếu';
-            form.action = '/stocks/edit/' + maCP;
-            maCPInput.disabled = true;
-            maCPInput.value = maCP;
-
-            // Tìm dòng tương ứng theo data-maCP
-            const row = [...document.querySelectorAll('.edit-link')].find(link => link.getAttribute('data-maCP') === maCP).closest('tr');
-            
-            const tenCty = row.children[1].textContent.trim();
-            const diaChi = row.children[2].textContent.trim();
-            const soLuongPH = row.children[3].textContent.trim();
-
-            // Gán giá trị vào input
-            form.querySelector('[name="tenCty"]').value = tenCty;
-            form.querySelector('[name="diaChi"]').value = diaChi;
-            form.querySelector('[name="soLuongPH"]').value = soLuongPH;
-        }
-
-    }
-
-    function hideSubform() {
-        document.getElementById('subform').classList.remove('active');
-        console.log("Đóng subform.");
-    }
+});
 </script>
 
 </body>

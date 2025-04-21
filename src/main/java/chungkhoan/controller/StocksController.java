@@ -18,7 +18,6 @@ public class StocksController {
     @Autowired
     private CoPhieuService coPhieuService;
 
-    // Trang chính: hiển thị danh sách, có thể truyền form nếu đang "thêm" hoặc "ghi"
     @GetMapping("/stocks")
     public String listStocks(@RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "5") int size,
@@ -27,11 +26,12 @@ public class StocksController {
                              Model model) {
         Page<CoPhieu> stockPage = coPhieuService.getPaginated(page, size);
         model.addAttribute("stocks", stockPage);
-        
+
         if (stockPage.isEmpty()) {
-        	model.addAttribute("noDataMessage", "Không có dữ liệu cổ phiếu.");
+            model.addAttribute("noDataMessage", "Không có dữ liệu cổ phiếu.");
         }
 
+        // Đối với hành động "edit"
         if ("edit".equals(action) && maCP != null) {
             Optional<CoPhieu> optional = coPhieuService.findById(maCP);
             optional.ifPresentOrElse(
@@ -43,63 +43,67 @@ public class StocksController {
             model.addAttribute("stock", new CoPhieu());
             model.addAttribute("formMode", "add");
         } else {
-            // Trường hợp không có action, vẫn cần có stock để Thymeleaf không lỗi
             model.addAttribute("stock", new CoPhieu());
         }
-        
-        // Vô hiệu hóa nút Hoàn tác nếu stack rỗng
-     	model.addAttribute("canUndo", !coPhieuService.isUndoStackEmpty());
 
+        model.addAttribute("canUndo", !coPhieuService.isUndoStackEmpty());
         return "nhanvien/stocks";
     }
 
-    // Thêm cổ phiếu
     @PostMapping("/stocks/add")
     public String addStock(@ModelAttribute("stock") CoPhieu coPhieu) {
         try {
-
             coPhieuService.themCoPhieuBangSP(coPhieu);
         } catch (Exception e) {
-            // Có thể ghi log hoặc hiển thị lỗi nếu muốn
             e.printStackTrace();
         }
         return "redirect:/stocks";
     }
 
-
-    // Ghi (chỉnh sửa) cổ phiếu
-    @PostMapping("/stocks/edit/{maCP}")
-    public String editStock(@PathVariable String maCP,
+    @PostMapping("/stocks/edit")
+    public String editStock(@RequestParam("maCP") String maCP,
                             @ModelAttribute("stock") CoPhieu coPhieu) {
-        coPhieu.setMaCP(maCP);
-        coPhieuService.save(coPhieu);
+        // Sửa cổ phiếu với mã cổ phiếu
+        coPhieuService.capNhatCoPhieu(maCP, coPhieu);
         return "redirect:/stocks";
     }
 
-    // Xóa cổ phiếu
-    @PostMapping("/stocks/delete/{maCP}")
-    public String deleteStock(@PathVariable String maCP) {
-        coPhieuService.deleteById(maCP);
+    @PostMapping("/stocks/delete")
+    public String deleteStock(@RequestParam("maCP") String maCP, RedirectAttributes redirectAttributes) {
+        try {
+            // Xóa cổ phiếu
+            coPhieuService.xoaCoPhieu(maCP);
+            redirectAttributes.addFlashAttribute("message", "Cổ phiếu đã được xóa thành công!");
+            redirectAttributes.addFlashAttribute("messageType", "success");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", "Cổ phiếu này đã được đặt");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+        }
         return "redirect:/stocks";
     }
 
-    // Tìm kiếm (placeholder)
     @PostMapping("/stocks/search")
     public String searchStock(@RequestParam("query") String query, Model model) {
+        // Chức năng tìm kiếm (hiện tại chỉ điều hướng lại trang)
+        return "redirect:/stocks";
+    }
+
+    @PostMapping("/stocks/undo")
+    public String undoLastAction(RedirectAttributes redirectAttributes) {
+        boolean success = coPhieuService.undoThaoTacCuoi();
+        if (success) {
+            redirectAttributes.addFlashAttribute("message", "Hoàn tác thành công");
+            redirectAttributes.addFlashAttribute("messageType", "success");
+        } else {
+            redirectAttributes.addFlashAttribute("message", "Không có thao tác để hoàn tác");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+        }
         return "redirect:/stocks";
     }
     
-    // Hoàn tác cổ phiếu
-    @PostMapping("/stocks/undo")
-	public String undoLastAction(RedirectAttributes redirectAttributes) {
-		boolean success = coPhieuService.undoThaoTacCuoi();
-		if (success) {
-			redirectAttributes.addFlashAttribute("message", "Hoàn tác thành công");
-			redirectAttributes.addFlashAttribute("messageType", "success");
-		} else {
-			redirectAttributes.addFlashAttribute("message", "Không có thao tác để hoàn tác");
-			redirectAttributes.addFlashAttribute("messageType", "error");
-		}
-		return "redirect:/stocks";
+    @PostMapping("/stocks/clear-undo")
+	public String clearUndoStackAndExit() {
+    	coPhieuService.clearUndoStack();
+	    return "redirect:/nhanvien/layout"; // hoặc bất kỳ trang nào bạn muốn về khi thoát
 	}
 }

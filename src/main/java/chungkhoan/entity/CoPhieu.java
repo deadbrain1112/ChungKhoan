@@ -35,4 +35,11 @@ public class CoPhieu {
             throw new IllegalArgumentException("Số lượng cổ phiếu phát hành phải lớn hơn 0!");
         }
     }
+    
+    public CoPhieu(CoPhieu other) {
+        this.maCP = other.maCP;
+        this.tenCty = other.tenCty;
+        this.diaChi = other.diaChi;
+        this.soLuongPH = other.soLuongPH;
+    }
 }

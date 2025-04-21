@@ -18,16 +18,12 @@ import java.util.Deque;
 public class NDTService {
 
     @Autowired
-    private NDTRepository NDTRepository;
+    private NDTRepository ndtRepository;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-
-    @Autowired
-    private NDTRepository ndtRepository; // Repository dùng cho Stored Procedure
-
-    private Deque<UndoAction> undoStack = new ArrayDeque<>();
+    private final Deque<UndoAction> undoStack = new ArrayDeque<>();
 
     public void themNhaDauTuBangSP(NhaDauTu ndt) {
         String maNDTMoi = jdbcTemplate.execute(
@@ -49,29 +45,44 @@ public class NDTService {
 
         if (maNDTMoi != null) {
             ndt.setMaNDT(maNDTMoi);
-            undoStack.push(new UndoAction(UndoAction.ActionType.ADD, null, ndt));
+            undoStack.push(new UndoAction(
+                    UndoAction.ActionType.ADD,
+                    UndoAction.EntityType.NHA_DAU_TU,
+                    null,
+                    ndt
+            ));
         }
     }
 
     public void xoaNhaDauTu(String maNDT) {
-        NhaDauTu existing = NDTRepository.findById(maNDT).orElse(null);
+        NhaDauTu existing = ndtRepository.findById(maNDT).orElse(null);
         if (existing != null) {
             NhaDauTu copy = new NhaDauTu(existing);
-            NDTRepository.deleteById(maNDT);
-            undoStack.push(new UndoAction(UndoAction.ActionType.DELETE, copy, null));
+            ndtRepository.deleteById(maNDT);
+            undoStack.push(new UndoAction(
+                    UndoAction.ActionType.DELETE,
+                    UndoAction.EntityType.NHA_DAU_TU,
+                    copy,
+                    null
+            ));
         }
     }
 
     public void capNhatNhaDauTu(String maNDT, NhaDauTu ndtMoi) {
-        NhaDauTu ndtCu = NDTRepository.findById(maNDT).orElse(null);
+        NhaDauTu ndtCu = ndtRepository.findById(maNDT).orElse(null);
         if (ndtCu != null) {
             NhaDauTu copy = new NhaDauTu(ndtCu);
 
-            ndtMoi.setMkGiaoDich(ndtCu.getMkGiaoDich());
             ndtMoi.setMaNDT(maNDT);
+            ndtMoi.setMkGiaoDich(ndtCu.getMkGiaoDich());
 
-            NDTRepository.save(ndtMoi);
-            undoStack.push(new UndoAction(UndoAction.ActionType.EDIT, copy, ndtMoi));
+            ndtRepository.save(ndtMoi);
+            undoStack.push(new UndoAction(
+                    UndoAction.ActionType.EDIT,
+                    UndoAction.EntityType.NHA_DAU_TU,
+                    copy,
+                    ndtMoi
+            ));
         }
     }
 
@@ -81,24 +92,34 @@ public class NDTService {
 
         UndoAction action = undoStack.pop();
 
+        if (action.getEntityType() != UndoAction.EntityType.NHA_DAU_TU) {
+            return false; // chưa hỗ trợ undo cho entity khác
+        }
+
+        NhaDauTu oldNDT = (NhaDauTu) action.getOldData();
+        NhaDauTu newNDT = (NhaDauTu) action.getNewData();
+
         switch (action.getActionType()) {
             case ADD:
-                NDTRepository.deleteById(action.getNewData().getMaNDT());
+                ndtRepository.deleteById(newNDT.getMaNDT());
                 break;
             case DELETE:
-                NDTRepository.save(action.getOldData());
+                ndtRepository.save(oldNDT);
                 break;
             case EDIT:
-                NDTRepository.save(action.getOldData());
+                ndtRepository.save(oldNDT);
                 break;
         }
 
         return true;
     }
-    
-    // Kiểm tra stack rỗng
+
     public boolean isUndoStackEmpty() {
-    	return undoStack.isEmpty();
+        return undoStack.isEmpty();
+    }
+    
+    public void clearUndoStack() {
+        undoStack.clear();
     }
 
     public NhaDauTu getNhaDauTuByUsername(String username) {

@@ -35,4 +35,15 @@ public class NhanVien {
 
     @Column(name = "Email", columnDefinition = "NVARCHAR(50)")
     private String email;
+    
+    public NhanVien(NhanVien other) {
+        this.maNV = other.maNV;
+        this.hoTen = other.hoTen;
+        this.ngaySinh = other.ngaySinh;
+        this.diaChi = other.diaChi;
+        this.phone = other.phone;
+        this.cmnd = other.cmnd;
+        this.gioiTinh = other.gioiTinh;
+        this.email = other.email;
+    }
 }

@@ -102,4 +102,10 @@ public class InvestorController {
 		}
 		return "redirect:/investors";
 	}
+	
+	@PostMapping("/investors/clear-undo")
+	public String clearUndoStackAndExit() {
+	    ndtService.clearUndoStack();
+	    return "redirect:/nhanvien/layout"; // hoặc bất kỳ trang nào bạn muốn về khi thoát
+	}
 }

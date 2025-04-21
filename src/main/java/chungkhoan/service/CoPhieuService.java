@@ -27,11 +27,6 @@ public class CoPhieuService {
         return coPhieuRepository.findAll(pageable);
     }
 
-    // Ghi hoặc cập nhật
-    public CoPhieu save(CoPhieu stock) {
-        return coPhieuRepository.save(stock);
-    }
-
     // Thêm mới sử dụng stored procedure
     public void themCoPhieuBangSP(CoPhieu stock) {
         coPhieuRepository.themCoPhieu(
@@ -41,13 +36,41 @@ public class CoPhieuService {
                 stock.getSoLuongPH()
         );
     }
+    
+    // Xóa cổ phiếu
+    public void xoaCoPhieu(String maCP) {
+        CoPhieu cp = coPhieuRepository.findById(maCP).orElse(null);
+        if (cp != null) {
+            coPhieuRepository.deleteById(maCP);
+            undoStack.push(new UndoAction(
+                UndoAction.ActionType.DELETE,
+                UndoAction.EntityType.CO_PHIEU,
+                cp,  // oldData: trước khi xóa
+                null
+            ));
+        }
+    }
+
+    // Cập nhật cổ phiếu
+    public void capNhatCoPhieu(String maCP, CoPhieu cpMoi) {
+        CoPhieu cpCu = coPhieuRepository.findById(maCP).orElse(null);
+        if (cpCu != null) {
+            CoPhieu copy = new CoPhieu(cpCu); 
+
+            cpMoi.setMaCP(maCP); 
+
+            coPhieuRepository.save(cpMoi);
+            undoStack.push(new UndoAction(
+                UndoAction.ActionType.EDIT,
+                UndoAction.EntityType.CO_PHIEU,
+                copy,
+                cpMoi
+            ));
+        }
+    }
 
     public Optional<CoPhieu> findById(String maCP) {
         return coPhieuRepository.findById(maCP);
-    }
-
-    public void deleteById(String maCP) {
-        coPhieuRepository.deleteById(maCP);
     }
     
     public List<CoPhieu> getAllCoPhieu() {
@@ -57,31 +80,39 @@ public class CoPhieuService {
     public List<CoPhieu> findByMaCPIn(List<String> maCPs) {
         return coPhieuRepository.findByMaCPIn(maCPs);
     }
-    
-    // Hoàn tác
+
     @Transactional
     public boolean undoThaoTacCuoi() {
         if (undoStack.isEmpty()) return false;
 
         UndoAction action = undoStack.pop();
+        if (action.getEntityType() != UndoAction.EntityType.CO_PHIEU) return false;
+
+        CoPhieu oldCP = (CoPhieu) action.getOldData();
+        CoPhieu newCP = (CoPhieu) action.getNewData();
 
         switch (action.getActionType()) {
             case ADD:
-            	coPhieuRepository.deleteById(action.getCpNewData().getMaCP());
+                coPhieuRepository.deleteById(newCP.getMaCP());
                 break;
             case DELETE:
-            	coPhieuRepository.save(action.getCpOldData());
+                coPhieuRepository.save(oldCP);
                 break;
             case EDIT:
-            	coPhieuRepository.save(action.getCpOldData());
+                coPhieuRepository.save(oldCP);
                 break;
         }
 
         return true;
     }
-    
+
+
     // Kiểm tra stack rỗng
     public boolean isUndoStackEmpty() {
     	return undoStack.isEmpty();
+    }
+    
+    public void clearUndoStack() {
+        undoStack.clear();
     }
 }

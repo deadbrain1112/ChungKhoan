@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
+import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.NhanVien;
 import chungkhoan.repository.NhanVienRepository;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -36,7 +39,26 @@ public class EmployeeController {
 		return "nhanvien/employee_list";
 	}
 	
-	@PostMapping("/employee/undo")
+	@PostMapping("/employees/add")
+	public String addEmployee(@ModelAttribute("employee") NhanVien nv) {
+		nhanVienService.themNhanVienBangSP(nv);
+		return "redirect:/employees";
+	}
+	
+	@PostMapping("/employees/delete")
+	public String deleteEmployee(@RequestParam("maNV") String maNV) {
+		nhanVienService.xoaNhanVien(maNV);
+		return "redirect:/employees";
+	}
+
+	@PostMapping("/employees/edit")
+	public String editEmployee(@RequestParam("maNV") String maNV,
+							   @ModelAttribute("employee") NhanVien updatedEmployee) {
+		nhanVienService.capNhatNhanVien(maNV, updatedEmployee);
+		return "redirect:/employees";
+	}
+	
+	@PostMapping("/employees/undo")
 	public String undoLastAction(RedirectAttributes redirectAttributes) {
 		boolean success = nhanVienService.undoThaoTacCuoi();
 		if (success) {
@@ -47,5 +69,11 @@ public class EmployeeController {
 			redirectAttributes.addFlashAttribute("messageType", "error");
 		}
 		return "redirect:/employees";
+	}
+	
+	@PostMapping("/employees/clear-undo")
+	public String clearUndoStackAndExit() {
+		nhanVienService.clearUndoStack();
+	    return "redirect:/nhanvien/layout"; // hoặc bất kỳ trang nào bạn muốn về khi thoát
 	}
 }
