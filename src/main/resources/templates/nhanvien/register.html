@@ -50,7 +50,8 @@
 			</select>
 		</div>
 
-		<button type="submit">Tạo tài khoản</button>
+		<button type="submit" name="action" value="create">Tạo tài khoản</button>
+		<button type="submit" name="action" value="delete">Xóa tài khoản</button>
 	</form>
 
 	<p th:if="${error}" class="error" th:text="${error}"></p>
