@@ -32,4 +32,7 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
     );
+    
+    @Query(value = "EXEC sp_TimLenhDatTheoNhaDauTu :maNDT", nativeQuery = true)
+    List<LenhDat> timLenhDatTheoMaNDT(@Param("maNDT") String maNDT);
 }

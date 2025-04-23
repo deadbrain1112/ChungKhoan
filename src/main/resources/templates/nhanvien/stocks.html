@@ -20,6 +20,9 @@
         <form th:action="@{/stocks/undo}" method="post" style="display:inline;">
 			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
 		</form>
+		<form th:action="@{/stocks/clear-undo}" method="post" style="display:inline;">
+		    <button type="submit" class="btn btn-danger">Thoát</button>
+		</form>
     </div>
 
     <div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')"

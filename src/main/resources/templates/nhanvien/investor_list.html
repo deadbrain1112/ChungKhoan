@@ -10,11 +10,12 @@
 <div>
 	<div class="toolbar">
 		<a href="#" onclick="showSubform('add')">Thêm</a>
-		<form th:action="@{/investors/clear-undo}" method="post" style="display:inline;">
-		    <button type="submit" class="btn btn-danger">Thoát</button>
-		</form>
+		<a th:href="@{/investors}">Reload</a> 
 		<form th:action="@{/investors/undo}" method="post" style="display:inline;">
 			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
+		</form>
+		<form th:action="@{/investors/clear-undo}" method="post" style="display:inline;">
+		    <button type="submit" class="btn btn-danger">Thoát</button>
 		</form>
 	</div>
 

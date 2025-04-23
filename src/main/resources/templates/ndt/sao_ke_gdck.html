@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sao Kê Giao Dịch</title>
+    <link rel="stylesheet" th:href="@{/css/sao_ke_gdck.css}">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+<div class="container">
+	<div th:replace="~{ndt/header :: menu(taiKhoan)}"></div>
+
+    <main class="sao-ke-container">
+        <h2>Sao Kê Giao Dịch Chứng Khoán</h2>
+
+        <div th:if="${lenhDatList != null and #lists.isEmpty(lenhDatList)}">
+            <p>Không tìm thấy giao dịch nào cho nhà đầu tư.</p>
+        </div>
+
+        <div th:if="${lenhDatList != null and !#lists.isEmpty(lenhDatList)}">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã Lệnh</th>
+                        <th>Loại Lệnh</th>
+                        <th>Mã Cổ Phiếu</th>
+                        <th>Giá</th>
+                        <th>Khối Lượng</th>
+                        <th>Ngày Đặt</th>
+                        <th>Trạng Thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+				    <tr th:each="lenh : ${lenhDatList}">
+				        <td th:text="${lenh.maGD}"></td>
+				        <td th:text="${lenh.loaiLenh}"></td>
+				        <td th:text="${lenh.coPhieu.maCP}"></td>
+				        <td th:text="${#numbers.formatDecimal(lenh.gia, 1, 'COMMA', 2, 'POINT')}"></td>
+				        <td th:text="${lenh.soLuong}"></td>
+				        <td th:text="${#temporals.format(lenh.ngayGD, 'dd/MM/yyyy')}"></td>
+				        <td th:text="${lenh.trangThai}"></td>
+				    </tr>
+				</tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -24,6 +24,10 @@ public class NDTService {
     private JdbcTemplate jdbcTemplate;
 
     private final Deque<UndoAction> undoStack = new ArrayDeque<>();
+    
+    public NhaDauTu findByMaNDT(String maNDT) {
+    	return ndtRepository.findByMaNDT(maNDT);
+    }
 
     public void themNhaDauTuBangSP(NhaDauTu ndt) {
         String maNDTMoi = jdbcTemplate.execute(

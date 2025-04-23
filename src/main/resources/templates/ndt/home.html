@@ -8,33 +8,8 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="header-left">
-                <h1>GIAO DỊCH CHỨNG KHOÁN</h1>
-                <p>STOCK EXCHANGE</p>
-            </div>
-            <div class="header-right">
-                <!-- Kiểm tra xem nhà đầu tư có tồn tại không -->
-                <p th:if="${taiKhoan != null}">
-                    Xin Chào - <span th:text="${taiKhoan.nhaDauTu.hoTen}"></span>
-                </p>
-                <p th:if="${taiKhoan == null}">
-                    Xin Chào - <span>Thông tin nhà đầu tư không tồn tại</span>
-                </p>
-                <a href="@{/exit}">Đăng Xuất</a>
-            </div>
-        </header>
-        <nav>
-		    <nav>
-			    <div class="nav-buttons">
-			        <a th:href="@{/nhadautu/tra-cuu-so-du}" class="nav-button active">Tra Cứu Số Dư</a>
-			        <a th:href="@{/nhadautu/sao-ke-gdck}" class="nav-button">Sao Kê GDCK</a>
-			        <a th:href="@{/nhadautu/dat-lenh}" class="nav-button">Đặt Lệnh</a>
-			        <a th:href="@{/nhadautu/ung-tien}" class="nav-button">Ứng Tiền</a>
-			        <a th:href="@{/stock-board}" class="nav-button">Bảng Giao Dịch Chứng Khoán</a>
-			    </div>
-			</nav>
-		</nav>
+        <div th:replace="~{ndt/header :: menu(${taiKhoan})}"></div>
+        
         <main>
             <section class="account-info">
                 <h2>Tra Cứu Số Dư</h2>
@@ -94,5 +69,6 @@
             </section>
         </main>
     </div>
+            
 </body>
 </html>

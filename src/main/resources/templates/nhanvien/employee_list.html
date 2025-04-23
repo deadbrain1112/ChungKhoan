@@ -10,6 +10,7 @@
 <div>
     <div class="toolbar">
         <a href="#" onclick="showSubform('add')">Thêm</a>
+        <a th:href="@{/employees}">Reload</a> 
         <form th:action="@{/employees/undo}" method="post" style="display:inline;">
 			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
 		</form>

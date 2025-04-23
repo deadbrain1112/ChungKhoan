@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giao Dịch Chứng Khoán</title>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+<div th:fragment="menu(taiKhoan)">
+    <header>
+        <div class="header-left">
+            <h1>GIAO DỊCH CHỨNG KHOÁN</h1>
+            <p>STOCK EXCHANGE</p>
+        </div>
+        <div class="header-right">
+            <p th:if="${nhaDauTu != null}">
+			    Xin Chào - <span th:text="${nhaDauTu.hoTen}"></span>
+			</p>
+            <p th:if="${nhaDauTu == null}">
+			    Xin Chào - <span>Thông tin nhà đầu tư không tồn tại</span>
+			</p>
+            <a href="@{/exit}">Đăng Xuất</a>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-buttons">
+            <a th:href="@{/nhadautu/tra-cuu-so-du}" class="nav-button active">Tra Cứu Số Dư</a>
+            <form th:action="@{/nhadautu/sao-ke-gdck}" method="post" class="nav-button">
+                <button type="submit" style="all: unset; cursor: pointer;">Sao Kê GDCK</button>
+            </form>
+            <a th:href="@{/nhadautu/dat-lenh}" class="nav-button">Đặt Lệnh</a>
+            <a th:href="@{/nhadautu/ung-tien}" class="nav-button">Ứng Tiền</a>
+            <a th:href="@{/stock-board}" class="nav-button">Bảng Giao Dịch Chứng Khoán</a>
+        </div>
+    </nav>
+</div>
+</body>
+</html>

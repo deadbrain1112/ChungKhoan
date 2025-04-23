@@ -1,0 +1,30 @@
+.sao-ke-container {
+    max-width: 900px;
+    margin: auto;
+    
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background-color: #f0f0f0;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+p {
+    color: #888;
+    text-align: center;
+}

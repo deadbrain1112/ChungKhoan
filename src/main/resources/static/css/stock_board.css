@@ -32,7 +32,7 @@ thead {
 
 /* Giá màu */
 .gia-tran {
-    color: #ee82ee; /* violet */
+    color: purple; 
     font-weight: bold;
 }
 
@@ -42,17 +42,17 @@ thead {
 }
 
 .gia-tang {
-    color: #00ff7f; /* spring green */
+    color: green; 
     font-weight: bold;
 }
 
 .gia-giam {
-    color: #ff6347; /* tomato red */
+    color: red; 
     font-weight: bold;
 }
 
 .gia-tham-chieu {
-    color: #ffa500; /* orange */
+    color: yellow; 
     font-weight: bold;
 }
 
