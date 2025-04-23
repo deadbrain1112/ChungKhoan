@@ -11,6 +11,7 @@
 	<div class="toolbar">
 		<a href="#" onclick="showSubform('add')">Thêm</a>
 		<a th:href="@{/investors}">Reload</a> 
+		<a th:href="@{}">Ghi</a>	<!-- Gán mapping của controller vào href -->
 		<form th:action="@{/investors/undo}" method="post" style="display:inline;">
 			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
 		</form>
@@ -63,7 +64,6 @@
 						            data-cmnd=${investor.cmnd},
 						            data-gioiTinh=${investor.gioiTinh},
 						            data-email=${investor.email}">Sửa</a>|
-				<a>Ghi</a> |
 				<div class="hidden" th:each="account : ${bankAccountMap[investor.maNDT]}"
 					 th:data-maNDT="${investor.maNDT}"
 					 th:data-accountNumber="${account.maTK}"

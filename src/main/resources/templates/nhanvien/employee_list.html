@@ -11,6 +11,7 @@
     <div class="toolbar">
         <a href="#" onclick="showSubform('add')">Thêm</a>
         <a th:href="@{/employees}">Reload</a> 
+        <a th:href="@{}">Ghi</a>	<!-- Gán mapping của controller vào href -->
         <form th:action="@{/employees/undo}" method="post" style="display:inline;">
 			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
 		</form>
@@ -61,8 +62,7 @@
 				                data-phone=${employee.phone},
 				                data-cmnd=${employee.cmnd},
 				                data-gioiTinh=${employee.gioiTinh},
-				                data-email=${employee.email}">Sửa</a> |
-				     <a>Ghi</a> |           
+				                data-email=${employee.email}">Sửa</a> |      
 				     <form th:action="@{/employees/delete}" method="post" style="display:inline;">
 					    <input type="hidden" name="maNV" th:value="${employee.maNV}" />
 					    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
