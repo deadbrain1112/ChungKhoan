@@ -53,6 +53,7 @@
                             data-tenCty=${stock.tenCty},
                             data-diaChi=${stock.diaChi},
                             data-soLuongPH=${stock.soLuongPH}">Sửa</a> |
+                <a>Ghi</a> |	<!-- Gán mapping của controller vào href -->            
                 <form th:action="@{/stocks/delete}" method="post" style="display:inline;">
                     <input type="hidden" name="maCP" th:value="${stock.maCP}" />
                     <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>

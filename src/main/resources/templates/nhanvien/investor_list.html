@@ -64,6 +64,7 @@
 						            data-cmnd=${investor.cmnd},
 						            data-gioiTinh=${investor.gioiTinh},
 						            data-email=${investor.email}">Sửa</a>|
+				<a>Ghi</a> |	<!-- Gán mapping của controller vào href --> 		            
 				<div class="hidden" th:each="account : ${bankAccountMap[investor.maNDT]}"
 					 th:data-maNDT="${investor.maNDT}"
 					 th:data-accountNumber="${account.maTK}"
