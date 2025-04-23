@@ -11,7 +11,7 @@
 	<div class="toolbar">
 		<a href="#" onclick="showSubform('add')">Thêm</a>
 		<a th:href="@{/investors}">Reload</a> 
-		<a th:href="@{}">Ghi</a>	<!-- Gán mapping của controller vào href -->
+		<a>Ghi</a>	<!-- Gán mapping của controller vào href -->
 		<form th:action="@{/investors/undo}" method="post" style="display:inline;">
 			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
 		</form>

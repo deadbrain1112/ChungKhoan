@@ -10,7 +10,7 @@
     <div class="toolbar">
         <a href="#" onclick="showSubform('add'); return false;">Thêm</a> |
         <a th:href="@{/stocks}">Reload</a> |
-        <a th:href="@{}">Ghi</a>	<!-- Gán mapping của controller vào href -->
+        <a>Ghi</a>	<!-- Gán mapping của controller vào href -->
         <form th:action="@{/stocks/search}" method="post" style="display: inline;">
             <input type="text" name="query" placeholder="Tìm kiếm...">
             <button type="submit">Tìm</button>
