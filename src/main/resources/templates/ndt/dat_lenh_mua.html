@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt lệnh mua</title>
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/dat_lenh_mua.css}">
+</head>
+<body>
+<div class="container">
+    <div th:replace="~{ndt/header :: menu(${taiKhoan})}"></div>
+
+    <section class="buy-container">
+        <form th:action="@{/nhadautu/dat-lenh-mua}" method="get">
+            <table class="buy-table">
+                <tbody>
+                    <!-- Số dư -->
+                    <tr>
+                        <th>Số dư tiền được phép giao dịch</th>
+                        <td><span id="soDuTien" th:text="${formattedSoTien} + ' VND'">0 VND</span></td>
+                    </tr>
+
+                    <!-- Mã cổ phiếu và nút Xem giá -->
+                    <tr>
+                        <th>Chứng khoán</th>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <input type="text" name="maCP" id="maCP" placeholder="Nhập mã cổ phiếu..." style="flex: 1; margin-right: 10px;" />
+                                <button type="submit" id="xemGiaBtn">Xem giá</button>
+                            </div>
+                            
+                            <!-- Kết quả hiển thị giá cổ phiếu -->
+                            <div id="giaHienThi" th:if="${coPhieu != null}" style="margin-top: 10px;">
+                                <div><strong>Mã cổ phiếu: </strong><span id="maCPHienThi" th:text="${coPhieu.maCP}"></span></div>
+                                <div><strong>Giá tham chiếu: </strong><span id="giaThamChieu" th:text="${coPhieu.giaTC}"></span> VND</div>
+                                <div><strong>Giá trần: </strong><span id="giaTran" th:text="${coPhieu.giaTran}"></span> VND</div>
+                                <div><strong>Giá sàn: </strong><span id="giaSan" th:text="${coPhieu.giaSan}"></span> VND</div>
+                            </div>
+                            
+                            <!-- Thông báo không tìm thấy mã cổ phiếu -->
+                            <div th:if="${khongTimThay}" style="margin-top: 10px; color: red;">Không tìm thấy cổ phiếu!</div>
+                        </td>
+                    </tr>
+
+                    <!-- Tài khoản tiền -->
+                    <tr>
+                        <th>Tài khoản tiền</th>
+                        <td>
+                            <select id="taiKhoanSelect" name="nganHang">
+                                <option th:each="tk : ${danhSachTaiKhoan}"
+                                        th:value="${tk.nganHang.maNH}"
+                                        th:text="${tk.nganHang.tenNH}"
+                                        th:data-sodu="${tk.soTien}"
+                                        th:selected="${tk.nganHang.maNH == taiKhoan?.nganHang?.maNH}"></option>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <!-- Loại lệnh -->
+                    <tr>
+                        <th>Loại lệnh</th>
+                        <td>
+                            <input type="radio" id="lo" name="loaiLenh" value="LO" checked />
+                            <label for="lo">LO</label>
+                            <input type="radio" id="ato" name="loaiLenh" value="ATO" />
+                            <label for="ato">ATO</label>
+                            <input type="radio" id="atc" name="loaiLenh" value="ATC" />
+                            <label for="atc">ATC</label>
+                        </td>
+                    </tr>
+
+                    <!-- Số lượng -->
+                    <tr>
+                        <th>Số lượng</th>
+                        <td><input type="number" name="soLuong" id="soLuong" /></td>
+                    </tr>
+
+                    <!-- Giá -->
+                    <tr>
+                        <th>Giá</th>
+                        <td><input type="number" name="gia" id="gia" /></td>
+                    </tr>
+
+                    <!-- Mật khẩu -->
+                    <tr>
+                        <th>Mật khẩu đặt lệnh</th>
+                        <td><input type="password" name="matKhau" /></td>
+                    </tr>
+
+                    <!-- Tổng tiền -->
+                    <tr>
+                        <th>Tổng số tiền mua</th>
+                        <td><span id="tongTienMua">0 VND</span></td>
+                    </tr>
+
+                    <!-- Nút Đặt lệnh mua và Xóa -->
+                    <tr>
+                    	<th>Hành động</th>
+                        <td colspan="2" class="action-buttons">
+                            <button type="submit" class="submit-btn">Đặt lệnh mua</button>
+                            <button type="button" id="xoaBtn" class="reset-btn">Xóa</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </section>
+</div>
+
+<!-- JavaScript xử lý -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const xemGiaBtn = document.getElementById("xemGiaBtn");
+    const giaHienThi = document.getElementById("giaHienThi");
+    const khongTimThay = document.getElementById("khongTimThay");
+    const maCPInput = document.getElementById("maCP");
+
+    // Dữ liệu giá cổ phiếu từ server (được gửi vào model từ controller)
+    const coPhieu = {};  // Dữ liệu giá cổ phiếu từ backend (Thymeleaf sẽ thay giá trị tại đây)
+
+    // Xử lý sự kiện nhấn nút "Xem giá"
+    xemGiaBtn.addEventListener("click", function() {
+        const maCP = maCPInput.value.trim();  // Mã cổ phiếu nhập vào
+
+        if (maCP === coPhieu.maCP) {
+            document.getElementById("maCPHienThi").textContent = coPhieu.maCP;
+            document.getElementById("giaThamChieu").textContent = coPhieu.giaThamChieu.toLocaleString("vi-VN");
+            document.getElementById("giaTran").textContent = coPhieu.giaTran.toLocaleString("vi-VN");
+            document.getElementById("giaSan").textContent = coPhieu.giaSan.toLocaleString("vi-VN");
+
+            giaHienThi.style.display = "block";
+            khongTimThay.style.display = "none";
+        } else {
+            giaHienThi.style.display = "none";
+            khongTimThay.style.display = "block";
+        }
+    });
+
+    // Cập nhật số dư khi chọn tài khoản
+    const select = document.getElementById("taiKhoanSelect");
+    const soDuDisplay = document.getElementById("soDuTien");
+
+    function updateSoDu() {
+        const selectedOption = select.options[select.selectedIndex];
+        const soDu = selectedOption.getAttribute("data-sodu");
+        soDuDisplay.textContent = soDu
+            ? parseFloat(soDu).toLocaleString("vi-VN") + " VND"
+            : "0 VND";
+    }
+
+    select.addEventListener("change", updateSoDu);
+    updateSoDu(); // Gọi lúc trang load
+
+    // Tính tổng tiền
+    function tinhTongTien() {
+        const sl = parseFloat(document.getElementById("soLuong").value) || 0;
+        const gia = parseFloat(document.getElementById("gia").value) || 0;
+        const tong = sl * gia;
+        document.getElementById("tongTienMua").textContent = tong.toLocaleString("vi-VN") + " VND";
+    }
+
+    document.getElementById("soLuong").addEventListener("input", tinhTongTien);
+    document.getElementById("gia").addEventListener("input", tinhTongTien);
+
+    // Nút Xóa - Xóa các dữ liệu input
+    document.getElementById("xoaBtn").addEventListener("click", function() {
+        // Reset các ô input
+        maCPInput.value = "";
+        document.getElementById("giaHienThi").style.display = "none";
+        document.getElementById("khongTimThay").style.display = "none";
+        document.getElementById("soLuong").value = ""; // Reset số lượng
+        document.getElementById("gia").value = ""; // Reset giá
+        document.getElementById("tongTienMua").textContent = "0 VND";
+        updateSoDu(); // Cập nhật lại số dư
+    });
+});
+</script>
+</body>
+</html>

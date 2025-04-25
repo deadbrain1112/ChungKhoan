@@ -8,24 +8,27 @@
 </head>
 <body>
 <div>
+    <!-- Toolbar -->
     <div class="toolbar">
-        <a href="#" onclick="showSubform('add')">Thêm</a>
-        <a th:href="@{/employees}">Reload</a> 
-        <a>Ghi</a>	<!-- Gán mapping của controller vào href -->
+        <button type="button" onclick="showSubform('add')" style="display:inline;">Thêm</button> |
+        <button type="button" style="display:inline;">Reload</button> |
+        <form method="post" style="display:inline;">
+            <button type="submit">Ghi tất cả</button>
+        </form> |
         <form th:action="@{/employees/undo}" method="post" style="display:inline;">
-			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
-		</form>
+            <button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
+        </form> |
         <form th:action="@{/employees/clear-undo}" method="post" style="display:inline;">
-		    <button type="submit" class="btn btn-danger">Thoát</button>
-		</form>
+            <button type="submit" class="btn btn-danger">Thoát</button>
+        </form>
     </div>
-    
-    <!-- Thông báo hoàn tác -->
-	<div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')"
-		 role="alert" style="color: red;">
-		<span th:text="${message}"></span>
-	</div>
 
+    <!-- Thông báo -->
+    <div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')" role="alert" style="color: red;">
+        <span th:text="${message}"></span>
+    </div>
+
+    <!-- Bảng dữ liệu -->
     <table class="main-table">
         <thead>
             <tr>
@@ -42,7 +45,7 @@
         </thead>
         <tbody>
             <tr th:if="${#lists.isEmpty(employees)}">
-                <td colspan="9" style="text-align: center;" th:text="${noDataMessage}"></td>
+                <td colspan="9" style="text-align:center;" th:text="${noDataMessage}"></td>
             </tr>
             <tr th:each="employee : ${employees}">
                 <td th:text="${employee.maNV}"></td>
@@ -54,25 +57,25 @@
                 <td th:text="${employee.gioiTinh}"></td>
                 <td th:text="${employee.email}"></td>
                 <td>
-				    <a href="#" class="edit-link"
-				       th:attr="data-maNV=${employee.maNV},
-				                data-hoTen=${employee.hoTen},
-				                data-ngaySinh=${employee.ngaySinh},
-				                data-diaChi=${employee.diaChi},
-				                data-phone=${employee.phone},
-				                data-cmnd=${employee.cmnd},
-				                data-gioiTinh=${employee.gioiTinh},
-				                data-email=${employee.email}">Sửa</a> |
-				     <a>Ghi</a> |	<!-- Gán mapping của controller vào href -->                  
-				     <form th:action="@{/employees/delete}" method="post" style="display:inline;">
-					    <input type="hidden" name="maNV" th:value="${employee.maNV}" />
-					    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-					</form>
-				</td>          
+					<button type="button" class="edit-link"
+                        th:attr="data-maNV=${employee.maNV},
+                                data-hoTen=${employee.hoTen},
+                                data-ngaySinh=${employee.ngaySinh},
+                                data-diaChi=${employee.diaChi},
+                                data-phone=${employee.phone},
+                                data-cmnd=${employee.cmnd},
+                                data-gioiTinh=${employee.gioiTinh},
+                                data-email=${employee.email}">Sửa</button> |
+                    <form th:action="@{/employees/delete}" method="post" style="display:inline;">
+                        <input type="hidden" name="maNV" th:value="${employee.maNV}" />
+                        <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                    </form>
+                </td>
             </tr>
         </tbody>
     </table>
 
+    <!-- Form Thêm / Sửa -->
     <div id="subform" class="subform-container">
         <h3 id="subform-title"></h3>
         <form id="employee-form" th:action="@{/employees/add}" th:object="${employee}" method="post">
@@ -124,74 +127,70 @@
     </div>
 </div>
 
+<!-- Script -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-	console.log("Trang đã tải xong, sẵn sàng xử lý sự kiện.");
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".edit-link").forEach(function (link) {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const maNV = this.getAttribute("data-maNV");
+                showSubform('edit', maNV);
+            });
+        });
 
-	document.querySelectorAll(".edit-link").forEach(function (link) {
-		link.addEventListener("click", function (e) {
-			e.preventDefault();
-			const maNV = this.getAttribute("data-maNV");
-			console.log("Nhấn 'Sửa', Mã NV được chọn:", maNV);
-			showSubform('edit', maNV);
-		});
-	});
+        document.getElementById("employee-form").addEventListener("submit", function (e) {
+            const maNV = document.getElementById("maNV").value;
+            console.log("Gửi form với mã NV:", maNV);
+        });
+    });
 
-	document.getElementById("employee-form").addEventListener("submit", function (e) {
-		const maNV = document.getElementById("maNV").value;
-		console.log("Biểu mẫu được gửi, Mã NV (input):", maNV);
-		console.log("Action của form:", this.action);
-	});
-});
+    function showSubform(action, maNV = '') {
+        const subform = document.getElementById('subform');
+        const title = document.getElementById('subform-title');
+        const form = document.getElementById('employee-form');
+        const maNVInput = document.getElementById('maNV');
+        const rowMaNV = document.getElementById('row-maNV');
 
-function showSubform(action, maNV = '') {
-	const subform = document.getElementById('subform');
-	const title = document.getElementById('subform-title');
-	const form = document.getElementById('employee-form');
-	const maNVInput = document.getElementById('maNV');
-	const rowMaNV = document.getElementById('row-maNV');
+        subform.classList.add('active');
+        form.reset();
 
-	subform.classList.add('active');
-	form.reset();
+        if (action === 'add') {
+            title.textContent = 'Thêm nhân viên';
+            form.action = '/employees/add';
+            maNVInput.readOnly = true;
+            maNVInput.value = '';
+            rowMaNV.style.display = 'none';
+        } else if (action === 'edit') {
+            title.textContent = 'Sửa nhân viên';
+            form.action = '/employees/edit';
+            maNVInput.readOnly = true;
+            maNVInput.value = maNV;
+            rowMaNV.style.display = '';
 
-	if (action === 'add') {
-		title.textContent = 'Thêm nhân viên';
-		form.action = '/employees/add';
-		maNVInput.readOnly = true;
-		maNVInput.value = '';
-		rowMaNV.style.display = 'none';
-	} else if (action === 'edit') {
-		title.textContent = 'Sửa nhân viên';
-		form.action = '/employees/edit';
-		maNVInput.readOnly = true;
-		maNVInput.value = maNV;
-		rowMaNV.style.display = '';
+            const editLink = document.querySelector(`.edit-link[data-maNV="${maNV}"]`);
 
-		const editLink = document.querySelector(`.edit-link[data-maNV="${maNV}"]`);
+            form.querySelector('[name="hoTen"]').value = editLink.dataset.hoten;
+            form.querySelector('[name="ngaySinh"]').value = editLink.dataset.ngaysinh;
+            form.querySelector('[name="diaChi"]').value = editLink.dataset.diachi;
+            form.querySelector('[name="phone"]').value = editLink.dataset.phone;
+            form.querySelector('[name="cmnd"]').value = editLink.dataset.cmnd;
+            form.querySelector('[name="email"]').value = editLink.dataset.email;
 
-		form.querySelector('[name="hoTen"]').value = editLink.dataset.hoten;
-		form.querySelector('[name="ngaySinh"]').value = editLink.dataset.ngaysinh;
-		form.querySelector('[name="diaChi"]').value = editLink.dataset.diachi;
-		form.querySelector('[name="phone"]').value = editLink.dataset.phone;
-		form.querySelector('[name="cmnd"]').value = editLink.dataset.cmnd;
-		form.querySelector('[name="email"]').value = editLink.dataset.email;
+            const gioiTinhValue = editLink.dataset.gioitinh?.trim().toLowerCase();
+            const gioiTinhNam = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nam"]');
+            const gioiTinhNu = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nữ"]');
 
-		const gioiTinhValue = editLink.dataset.gioitinh?.trim().toLowerCase();
-		const gioiTinhNam = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nam"]');
-		const gioiTinhNu = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nữ"]');
+            if (gioiTinhValue === 'nam' && gioiTinhNam) {
+                gioiTinhNam.checked = true;
+            } else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
+                gioiTinhNu.checked = true;
+            }
+        }
+    }
 
-		if (gioiTinhValue === 'nam' && gioiTinhNam) {
-			gioiTinhNam.checked = true;
-		} else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
-			gioiTinhNu.checked = true;
-		}
-	}
-}
-
-function hideSubform() {
-	document.getElementById('subform').classList.remove('active');
-}
+    function hideSubform() {
+        document.getElementById('subform').classList.remove('active');
+    }
 </script>
-
 </body>
 </html>

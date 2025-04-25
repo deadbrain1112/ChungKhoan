@@ -1,0 +1,125 @@
+@charset "UTF-8";
+
+body {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif; /* Cải thiện font chữ */
+}
+
+.buy-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.buy-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.buy-table th,
+.buy-table td {
+    border: 1px solid #ddd;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.buy-table th {
+    background-color: #003b73;
+    color: white;
+}
+
+.buy-table input[type="number"],
+.buy-table input[type="text"],
+.buy-table input[type="password"],
+.buy-table select {
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    width: 100%;
+    box-sizing: border-box; /* Đảm bảo padding không làm rộng các ô */
+}
+
+.buy-table input[type="number"]:focus,
+.buy-table input[type="text"]:focus,
+.buy-table input[type="password"]:focus,
+.buy-table select:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+}
+
+.submit-btn,
+.reset-btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.submit-btn:hover {
+    background-color: #218838;
+}
+
+.reset-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.reset-btn:hover {
+    background-color: #c82333;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:focus {
+    outline: none;
+}
+
+/* Cải thiện khoảng cách giữa các ô input */
+.buy-table td {
+    padding: 15px;
+}
+
+/* Đảm bảo các phần tử trong bảng có thể căn chỉnh theo chiều dọc */
+td, th {
+    vertical-align: middle;
+}
+
+/* New color styles for specific elements */
+#soDuTien {
+    color: red; /* Red color for available balance */
+}
+
+#tongTienMua {
+    color: red; /* Red color for total money */
+}
+
+#giaThamChieu {
+    color: yellow; /* Yellow color for reference price */
+}
+
+#giaSan {
+    color: green; /* Green color for floor price */
+}
+
+#giaTran {
+    color: purple; /* Purple color for ceiling price */
+}

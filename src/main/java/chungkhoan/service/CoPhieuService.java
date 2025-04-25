@@ -1,8 +1,10 @@
 package chungkhoan.service;
 
 import chungkhoan.entity.CoPhieu;
+import chungkhoan.entity.LichSuGia;
 import chungkhoan.entity.UndoAction;
 import chungkhoan.repository.CoPhieuRepository;
+import chungkhoan.repository.LichSuGiaRepository;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -19,6 +21,9 @@ public class CoPhieuService {
 
     @Autowired
     private CoPhieuRepository coPhieuRepository;  
+    
+    @Autowired
+    private LichSuGiaRepository lichSuGiaRepository;
     
     private Deque<UndoAction> undoStack = new ArrayDeque<>();
 
@@ -68,15 +73,18 @@ public class CoPhieuService {
             ));
         }
     }
-
+    
+    // Tìm cổ phiếu theo ID
     public Optional<CoPhieu> findById(String maCP) {
         return coPhieuRepository.findById(maCP);
     }
     
+    // Lấy tất cả cổ phiểu
     public List<CoPhieu> getAllCoPhieu() {
     	return coPhieuRepository.findAll();
     }
     
+    //
     public List<CoPhieu> findByMaCPIn(List<String> maCPs) {
         return coPhieuRepository.findByMaCPIn(maCPs);
     }

@@ -1,7 +1,10 @@
 package chungkhoan.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -21,89 +24,139 @@ public class StocksController {
     @GetMapping("/stocks")
     public String listStocks(@RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "5") int size,
-                             @RequestParam(name = "action", required = false) String action,
-                             @RequestParam(name = "maCP", required = false) String maCP,
-                             Model model) {
+                             Model model,
+                             HttpSession session) {
         Page<CoPhieu> stockPage = coPhieuService.getPaginated(page, size);
         model.addAttribute("stocks", stockPage);
-
         if (stockPage.isEmpty()) {
             model.addAttribute("noDataMessage", "Không có dữ liệu cổ phiếu.");
         }
-
-        // Đối với hành động "edit"
-        if ("edit".equals(action) && maCP != null) {
-            Optional<CoPhieu> optional = coPhieuService.findById(maCP);
-            optional.ifPresentOrElse(
-                stock -> model.addAttribute("stock", stock),
-                () -> model.addAttribute("stock", new CoPhieu())
-            );
-            model.addAttribute("formMode", "edit");
-        } else if ("add".equals(action)) {
-            model.addAttribute("stock", new CoPhieu());
-            model.addAttribute("formMode", "add");
-        } else {
-            model.addAttribute("stock", new CoPhieu());
-        }
-
+        @SuppressWarnings("unchecked")
+        List<CoPhieu> tempList = (List<CoPhieu>) session.getAttribute("temporaryStocks");
+        if (tempList == null) tempList = new ArrayList<>();
+        model.addAttribute("temporaryStocks", tempList);
         model.addAttribute("canUndo", !coPhieuService.isUndoStackEmpty());
         return "nhanvien/stocks";
     }
 
-    @PostMapping("/stocks/add")
-    public String addStock(@ModelAttribute("stock") CoPhieu coPhieu) {
-        try {
-            coPhieuService.themCoPhieuBangSP(coPhieu);
-        } catch (Exception e) {
-            e.printStackTrace();
+    @PostMapping("/stocks/add-temp")
+    public String addTempStock(@ModelAttribute CoPhieu stock,
+                               HttpSession session,
+                               RedirectAttributes ra) {
+        @SuppressWarnings("unchecked")
+        List<CoPhieu> tempList = (List<CoPhieu>) session.getAttribute("temporaryStocks");
+        if (tempList == null) tempList = new ArrayList<>();
+        tempList.add(stock);
+        session.setAttribute("temporaryStocks", tempList);
+        ra.addFlashAttribute("message", "Đã thêm tạm cổ phiếu " + stock.getMaCP());
+        ra.addFlashAttribute("messageType", "success");
+        return "redirect:/stocks";
+    }
+
+    @PostMapping("/stocks/edit-temp")
+    public String editTempStock(@ModelAttribute CoPhieu stock,
+                                HttpSession session,
+                                RedirectAttributes ra) {
+        @SuppressWarnings("unchecked")
+        List<CoPhieu> tempList = (List<CoPhieu>) session.getAttribute("temporaryStocks");
+        if (tempList == null) tempList = new ArrayList<>();
+        boolean replaced = false;
+        for (int i = 0; i < tempList.size(); i++) {
+            if (tempList.get(i).getMaCP().equals(stock.getMaCP())) {
+                tempList.set(i, stock);
+                replaced = true;
+                break;
+            }
+        }
+        if (!replaced) {
+            tempList.add(stock);
+        }
+        session.setAttribute("temporaryStocks", tempList);
+        ra.addFlashAttribute("message", "Đã cập nhật tạm cổ phiếu " + stock.getMaCP());
+        ra.addFlashAttribute("messageType", "success");
+        return "redirect:/stocks";
+    }
+
+    @PostMapping("/stocks/save-all")
+    public String saveAllStocks(HttpSession session, RedirectAttributes ra) {
+        @SuppressWarnings("unchecked")
+        List<CoPhieu> tempList = (List<CoPhieu>) session.getAttribute("temporaryStocks");
+        if (tempList != null && !tempList.isEmpty()) {
+            for (CoPhieu stock : tempList) {
+                Optional<CoPhieu> existing = coPhieuService.findById(stock.getMaCP());
+                if (existing.isPresent()) {
+                    coPhieuService.capNhatCoPhieu(stock.getMaCP(), stock);
+                } else {
+                    coPhieuService.themCoPhieuBangSP(stock);
+                }
+            }
+            session.removeAttribute("temporaryStocks");
+            ra.addFlashAttribute("message", "Đã ghi vào cơ sở dữ liệu!");
+            ra.addFlashAttribute("messageType", "success");
+        } else {
+            ra.addFlashAttribute("message", "Không có cổ phiếu tạm để ghi.");
+            ra.addFlashAttribute("messageType", "error");
         }
         return "redirect:/stocks";
     }
 
-    @PostMapping("/stocks/edit")
-    public String editStock(@RequestParam("maCP") String maCP,
-                            @ModelAttribute("stock") CoPhieu coPhieu) {
-        // Sửa cổ phiếu với mã cổ phiếu
-        coPhieuService.capNhatCoPhieu(maCP, coPhieu);
-        return "redirect:/stocks";
-    }
 
     @PostMapping("/stocks/delete")
-    public String deleteStock(@RequestParam("maCP") String maCP, RedirectAttributes redirectAttributes) {
+    public String deleteStock(@RequestParam String maCP, RedirectAttributes ra) {
         try {
-            // Xóa cổ phiếu
             coPhieuService.xoaCoPhieu(maCP);
-            redirectAttributes.addFlashAttribute("message", "Cổ phiếu đã được xóa thành công!");
-            redirectAttributes.addFlashAttribute("messageType", "success");
+            ra.addFlashAttribute("message", "Đã xóa cổ phiếu " + maCP);
+            ra.addFlashAttribute("messageType", "success");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", "Cổ phiếu này đã được đặt");
-            redirectAttributes.addFlashAttribute("messageType", "error");
+            ra.addFlashAttribute("message", "Xóa thất bại");
+            ra.addFlashAttribute("messageType", "error");
         }
         return "redirect:/stocks";
     }
 
-    @PostMapping("/stocks/search")
-    public String searchStock(@RequestParam("query") String query, Model model) {
-        // Chức năng tìm kiếm (hiện tại chỉ điều hướng lại trang)
-        return "redirect:/stocks";
-    }
+    @PostMapping("/stocks/remove-temp")
+    public String removeTempStock(@RequestParam String maCP, HttpSession session, RedirectAttributes ra) {
+        @SuppressWarnings("unchecked")
+        List<CoPhieu> tempList = (List<CoPhieu>) session.getAttribute("temporaryStocks");
 
-    @PostMapping("/stocks/undo")
-    public String undoLastAction(RedirectAttributes redirectAttributes) {
-        boolean success = coPhieuService.undoThaoTacCuoi();
-        if (success) {
-            redirectAttributes.addFlashAttribute("message", "Hoàn tác thành công");
-            redirectAttributes.addFlashAttribute("messageType", "success");
+        if (tempList != null) {
+            tempList.removeIf(stock -> stock.getMaCP().equals(maCP));
+            session.setAttribute("temporaryStocks", tempList);
+            ra.addFlashAttribute("message", "Đã xóa cổ phiếu tạm có mã " + maCP);
+            ra.addFlashAttribute("messageType", "success");
         } else {
-            redirectAttributes.addFlashAttribute("message", "Không có thao tác để hoàn tác");
-            redirectAttributes.addFlashAttribute("messageType", "error");
+            ra.addFlashAttribute("message", "Không tìm thấy cổ phiếu tạm nào để xóa.");
+            ra.addFlashAttribute("messageType", "error");
         }
+
         return "redirect:/stocks";
     }
     
+    @GetMapping("/stocks/reload")
+    public String reloadStocks(HttpSession session) {
+        session.removeAttribute("temporaryStocks");
+        return "redirect:/stocks";
+    }
+
+
+    @PostMapping("/stocks/undo")
+    public String undo(RedirectAttributes ra) {
+        boolean ok = coPhieuService.undoThaoTacCuoi();
+        if (ok) {
+            ra.addFlashAttribute("message", "Hoàn tác thành công");
+            ra.addFlashAttribute("messageType", "success");
+        } else {
+            ra.addFlashAttribute("message", "Không có thao tác để hoàn tác");
+            ra.addFlashAttribute("messageType", "error");
+        }
+        return "redirect:/stocks";
+    }
+
     @PostMapping("/stocks/clear-undo")
-	public String clearUndoStackAndExit() {
-    	coPhieuService.clearUndoStack();
-	    return "redirect:/nhanvien/layout"; // hoặc bất kỳ trang nào bạn muốn về khi thoát
-	}
+    public String clearUndo() {
+        coPhieuService.clearUndoStack();
+        return "redirect:/nhanvien/layout";
+    }
+
+
 }

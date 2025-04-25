@@ -19,23 +19,6 @@ public class SaoKeController {
 	@Autowired
 	private LenhDatService lenhDatService;
 	
-//	@PostMapping("/nhadautu/sao-ke-gdck")
-//	public String hienThiLenhDatTheoNDT(Model model, HttpSession session) {
-//	    TaiKhoanNganHang taiKhoan = (TaiKhoanNganHang) session.getAttribute("taiKhoan");
-//	    
-//	    if (taiKhoan == null || taiKhoan.getNhaDauTu() == null) {
-//	        model.addAttribute("message", "Không tìm thấy thông tin tài khoản đăng nhập!");
-//	        return "error"; // bạn có thể tạo trang thông báo lỗi
-//	    }
-//
-//	    String maNDT = taiKhoan.getNhaDauTu().getMaNDT();
-//	    List<LenhDat> danhSach = lenhDatService.timTheoMaNhaDauTu(maNDT);
-//
-//	    model.addAttribute("lenhDatList", danhSach);
-//	    return "ndt/sao_ke_gdck";
-//	}
-	
-	// Test maNDT : NDT001
 	@PostMapping("/nhadautu/sao-ke-gdck")
 	public String hienThiLenhDatTheoNDT(Model model, HttpSession session) {
 	    NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");

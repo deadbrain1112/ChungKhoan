@@ -24,10 +24,6 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class UserHomeController {
-
-    @Autowired
-    private NDTService ndtService;
-
     @Autowired
     private TaiKhoanNganHangService taiKhoanNganHangService;
 

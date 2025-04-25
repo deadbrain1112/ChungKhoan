@@ -55,12 +55,20 @@ form {
 	border: 1px solid #ccc;
 	background: #f9f9f9;
 }
+
 .subform-container.active {
 	display: block;
 }
+
 .subform-table td {
 	padding: 5px;
 }
+
 .form-actions {
 	margin-top: 10px;
+}
+
+tr.unsaved {
+	background-color: #fff3cd;
+	font-style: italic;
 }

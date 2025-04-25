@@ -1,302 +1,232 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" th:href="@{/css/investor_list.css}">
-	<title>Cập nhật nhà đầu tư</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/css/investor_list.css}">
+    <title>Cập nhật nhà đầu tư</title>
 </head>
 <body>
 <div>
-	<div class="toolbar">
-		<a href="#" onclick="showSubform('add')">Thêm</a>
-		<a th:href="@{/investors}">Reload</a> 
-		<a>Ghi</a>	<!-- Gán mapping của controller vào href -->
-		<form th:action="@{/investors/undo}" method="post" style="display:inline;">
-			<button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
-		</form>
-		<form th:action="@{/investors/clear-undo}" method="post" style="display:inline;">
-		    <button type="submit" class="btn btn-danger">Thoát</button>
-		</form>
-	</div>
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <button type="button" onclick="showSubform('add')" style="display:inline;">Thêm</button> |
+        <button type="button" style="display:inline;">Reload</button> |
+        <form  method="post" style="display:inline;">
+            <button type="submit" >Ghi tất cả</button>
+        </form> |
+        <form th:action="@{/investors/undo}" method="post" style="display:inline;">
+            <button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
+        </form> |
+        <form th:action="@{/investors/clear-undo}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-danger">Thoát</button>
+        </form>
+    </div>
 
-	<!-- Thông báo hoàn tác -->
-	<div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')"
-		 role="alert" style="color: red;">
-		<span th:text="${message}"></span>
-	</div>
+    <!-- Thông báo hoàn tác -->
+    <div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')"
+         role="alert" style="color: red;">
+        <span th:text="${message}"></span>
+    </div>
 
-	<table class="main-table">
-		<thead>
-		<tr>
-			<th>Mã</th>
-			<th>Họ tên</th>
-			<th>Ngày sinh</th>
-			<th>Địa chỉ</th>
-			<th>Số điện thoại</th>
-			<th>CMND</th>
-			<th>Giới tính</th>
-			<th>Email</th>
-			<th>Hành động</th>
-		</tr>
-		</thead>
-		<tbody>
-		<tr th:if="${#lists.isEmpty(investors)}">
-			<td colspan="9" style="text-align: center;" th:text="${noDataMessage}"></td>
-		</tr>
+    <!-- Bảng dữ liệu -->
+    <table class="main-table">
+        <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Họ tên</th>
+            <th>Ngày sinh</th>
+            <th>Địa chỉ</th>
+            <th>Số điện thoại</th>
+            <th>CMND</th>
+            <th>Giới tính</th>
+            <th>Email</th>
+            <th>Hành động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- If no data -->
+        <tr th:if="${#lists.isEmpty(investors)}">
+            <td colspan="9" style="text-align: center;" th:text="${noDataMessage}"></td>
+        </tr>
+        <!-- If data available -->
+        <tr th:each="investor : ${investors}">
+            <td th:text="${investor.maNDT}"></td>
+            <td th:text="${investor.hoTen}"></td>
+            <td th:text="${investor.ngaySinh}"></td>
+            <td th:text="${investor.diaChi}"></td>
+            <td th:text="${investor.phone}"></td>
+            <td th:text="${investor.cmnd}"></td>
+            <td th:text="${investor.gioiTinh}"></td>
+            <td th:text="${investor.email}"></td>
+            <td>
+                <button type="button" class="edit-link"
+                        th:attr="data-maNDT=${investor.maNDT},
+                                 data-hoTen=${investor.hoTen},
+                                 data-ngaySinh=${investor.ngaySinh},
+                                 data-diaChi=${investor.diaChi},
+                                 data-phone=${investor.phone},
+                                 data-cmnd=${investor.cmnd},
+                                 data-gioiTinh=${investor.gioiTinh},
+                                 data-email=${investor.email}">Sửa</button> |
+                <form th:action="@{/investors/delete}" method="post" style="display: inline;">
+                    <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
+                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 
-		<tr th:each="investor : ${investors}">
-			<td th:text="${investor.maNDT}"></td>
-			<td th:text="${investor.hoTen}"></td>
-			<td th:text="${investor.ngaySinh}"></td>
-			<td th:text="${investor.diaChi}"></td>
-			<td th:text="${investor.phone}"></td>
-			<td th:text="${investor.cmnd}"></td>
-			<td th:text="${investor.gioiTinh}"></td>
-			<td th:text="${investor.email}"></td>
-			<td>
-				<a href="#" class="edit-link"
-				   th:attr="data-maNDT=${investor.maNDT},
-						            data-hoTen=${investor.hoTen},
-						            data-ngaySinh=${investor.ngaySinh},
-						            data-diaChi=${investor.diaChi},
-						            data-phone=${investor.phone},
-						            data-cmnd=${investor.cmnd},
-						            data-gioiTinh=${investor.gioiTinh},
-						            data-email=${investor.email}">Sửa</a>|
-				<a>Ghi</a> |	<!-- Gán mapping của controller vào href --> 		            
-				<div class="hidden" th:each="account : ${bankAccountMap[investor.maNDT]}"
-					 th:data-maNDT="${investor.maNDT}"
-					 th:data-accountNumber="${account.maTK}"
-					 th:data-tenNH="${account.nganHang.tenNH}"
-					 th:data-maNH="${account.nganHang.maNH}"
-					 th:data-soTien="${account.soTien}"
-					 th:data-diaChi="${account.nganHang.diaChi}"
-					 th:data-phone="${account.nganHang.phone}"
-					 th:data-email="${account.nganHang.email}"
-					 style="display:none;">
-				</div>
-				<form th:action="@{/investors/delete}" method="post" style="display: inline;">
-					<input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
-					<button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-				</form>
-			</td>
-		</tr>
-		</tbody>
-	</table>
+    <!-- Form Thêm/Sửa -->
+    <div id="subform" class="subform-container" style="display:none;">
+        <h3 id="subform-title"></h3>
+        <form id="investor-form" th:action="@{/investors/add}" th:object="${investor}" method="post">
+            <table class="subform-table">
+                <tr id="row-maNDT">
+                    <td><label>Mã nhà đầu tư:</label></td>
+                    <td><input type="text" th:field="*{maNDT}" id="maNDT" maxlength="20" required /></td>
+                </tr>
+                <tr>
+                    <td><label>Họ tên:</label></td>
+                    <td><input type="text" th:field="*{hoTen}" maxlength="50" required /></td>
+                </tr>
+                <tr>
+                    <td><label>Ngày sinh:</label></td>
+                    <td><input type="date" th:field="*{ngaySinh}" required /></td>
+                </tr>
+                <tr>
+                    <td><label>Địa chỉ:</label></td>
+                    <td><input type="text" th:field="*{diaChi}" maxlength="100" required /></td>
+                </tr>
+                <tr>
+                    <td><label>Số điện thoại:</label></td>
+                    <td><input type="text" th:field="*{phone}" maxlength="15" required /></td>
+                </tr>
+                <tr>
+                    <td><label>CMND:</label></td>
+                    <td><input type="text" th:field="*{cmnd}" id="cmnd" maxlength="10" required /></td>
+                </tr>
+                <tr>
+                    <td><label>Giới tính:</label></td>
+                    <td>
+                        <input type="radio" th:field="*{gioiTinh}" value="Nam" id="nam" />
+                        <label for="nam">Nam</label>
+                        <input type="radio" th:field="*{gioiTinh}" value="Nữ" id="nu" style="margin-left: 20px;" />
+                        <label for="nu">Nữ</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>Email:</label></td>
+                    <td><input type="email" th:field="*{email}" maxlength="50" required /></td>
+                </tr>
+            </table>
 
-	<div id="subform" class="subform-container">
-		<h3 id="subform-title"></h3>
-		<form id="investor-form" th:action="@{/investors/add}" th:object="${investor}" method="post">
-			<table class="subform-table">
-				<tr id="row-maNDT">
-					<td><label>Mã nhà đầu tư:</label></td>
-					<td><input type="text" th:field="*{maNDT}" id="maNDT" maxlength="20" required /></td>
-				</tr>
+            <h4>Tài khoản ngân hàng</h4>
+            <table class="bank-account-table">
+                <thead>
+                <tr>
+                    <th>Số tài khoản</th>
+                    <th>Tên ngân hàng</th>
+                    <th>Mã ngân hàng</th>
+                    <th>Số tiền</th>
+                    <th>Địa chỉ</th>
+                    <th>Số điện thoại</th>
+                    <th>Email</th>
+                    <th>Hành động</th>
+                </tr>
+                </thead>
+                <tbody id="bank-accounts"></tbody>
+            </table>
 
-				<tr>
-					<td><label>Họ tên:</label></td>
-					<td><input type="text" th:field="*{hoTen}" maxlength="50" required /></td>
-				</tr>
+            <button type="button" onclick="addBankAccount()">Thêm tài khoản ngân hàng</button>
 
-				<tr>
-					<td><label>Ngày sinh:</label></td>
-					<td><input type="date" th:field="*{ngaySinh}" required /></td>
-				</tr>
-
-
-				<tr>
-					<td><label>Địa chỉ:</label></td>
-					<td><input type="text" th:field="*{diaChi}" maxlength="100" required /></td>
-				</tr>
-
-				<tr>
-					<td><label>Số điện thoại:</label></td>
-					<td><input type="text" th:field="*{phone}" maxlength="15" required /></td>
-				</tr>
-
-				<tr>
-					<td><label>CMND:</label></td>
-					<td><input type="text" th:field="*{cmnd}" id="cmnd" maxlength="10" required /></td>
-				</tr>
-
-				<tr>
-					<td><label>Giới tính:</label></td>
-					<td>
-						<input type="radio" th:field="*{gioiTinh}" value="Nam" id="nam" />
-						<label for="nam">Nam</label>
-
-						<input type="radio" th:field="*{gioiTinh}" value="Nữ" id="nu" style="margin-left: 20px;" />
-						<label for="nu">Nữ</label>
-					</td>
-				</tr>
-
-				<tr>
-					<td><label>Email:</label></td>
-					<td><input type="email" th:field="*{email}" maxlength="50" required /></td>
-				</tr>
-			</table>
-
-			<h4>Tài khoản ngân hàng</h4>
-			<table class="bank-account-table">
-				<thead>
-				<tr>
-					<th>Số tài khoản</th>
-					<th>Tên ngân hàng</th>
-					<th>Mã ngân hàng</th>
-					<th>Số tiền</th>
-					<th>Địa chỉ</th>
-					<th>Số điện thoại</th>
-					<th>Email</th>
-					<th>Hành động</th>
-				</tr>
-				</thead>
-				<tbody id="bank-accounts"></tbody>
-			</table>
-
-			<button type="button" onclick="addBankAccount()">Thêm tài khoản ngân hàng</button>
-
-			<div class="form-actions">
-				<button type="submit">Lưu</button>
-				<button type="button" onclick="hideSubform()">Hủy</button>
-			</div>
-		</form>
-	</div>
+            <div class="form-actions">
+                <button type="submit">Lưu</button>
+                <button type="button" onclick="hideSubform()">Hủy</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
-	document.addEventListener("DOMContentLoaded", function () {
-		console.log("Trang đã tải xong, sẵn sàng xử lý sự kiện.");
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".edit-link").forEach(function (link) {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const maNDT = this.getAttribute("data-maNDT");
+                showSubform('edit', maNDT);
+            });
+        });
 
-		document.querySelectorAll(".edit-link").forEach(function (link) {
-			link.addEventListener("click", function (e) {
-				e.preventDefault();
-				const maNDT = this.getAttribute("data-maNDT");
-				console.log("Nhấn 'Sửa', Mã NDT được chọn:", maNDT);
-				showSubform('edit', maNDT);
-			});
-		});
+        document.getElementById("investor-form").addEventListener("submit", function(e) {
+            const maNDT = document.getElementById("maNDT").value;
+            const cmnd = document.getElementById("cmnd").value;
+            console.log("Biểu mẫu được gửi, Mã NDT (input):", maNDT);
+            console.log("Biểu mẫu được gửi, CMND (input):", cmnd);
+            console.log("Action của form:", this.action);
+        });
+    });
 
-		document.getElementById("investor-form").addEventListener("submit", function(e) {
-			const maNDT = document.getElementById("maNDT").value;
-			const cmnd = document.getElementById("cmnd").value;
-			console.log("Biểu mẫu được gửi, Mã NDT (input):", maNDT);
-			console.log("Biểu mẫu được gửi, CMND (input):", cmnd);
-			console.log("Action của form:", this.action);
-		});
-	});
+    function showSubform(action, maNDT = '') {
+        const subform = document.getElementById('subform');
+        const title = document.getElementById('subform-title');
+        const form = document.getElementById('investor-form');
+        const maNDTInput = document.getElementById('maNDT');
+        const rowMaNDT = document.getElementById('row-maNDT');
 
-	function showSubform(action, maNDT = '') {
-		const subform = document.getElementById('subform');
-		const title = document.getElementById('subform-title');
-		const form = document.getElementById('investor-form');
-		const maNDTInput = document.getElementById('maNDT');
-		const rowMaNDT = document.getElementById('row-maNDT');
+        subform.style.display = 'block';
+        form.reset();
+        document.getElementById('bank-accounts').innerHTML = '';
 
-		subform.classList.add('active');
-		form.reset();
-		document.getElementById('bank-accounts').innerHTML = '';
+        if (action === 'add') {
+            title.textContent = 'Thêm nhà đầu tư';
+            form.action = '/investors/add';
+            maNDTInput.readOnly = true;
+            maNDTInput.value = '';
+            rowMaNDT.style.display = 'none';
+        } else if (action === 'edit') {
+            title.textContent = 'Sửa nhà đầu tư';
+            form.action = '/investors/edit';
+            maNDTInput.readOnly = true;
+            maNDTInput.value = maNDT;
+            rowMaNDT.style.display = '';
 
-		if (action === 'add') {
-			title.textContent = 'Thêm nhà đầu tư';
-			form.action = '/investors/add';
-			maNDTInput.readOnly = true;
-			maNDTInput.value = ''; // clear
-			rowMaNDT.style.display = 'none'; // Ẩn dòng Mã NDT
-		} else if (action === 'edit') {
-			title.textContent = 'Sửa nhà đầu tư';
-			form.action = '/investors/edit';
-			maNDTInput.readOnly = true;
-			maNDTInput.value = maNDT;
-			rowMaNDT.style.display = '';
+            const editLink = document.querySelector(`[data-maNDT="${maNDT}"]`);
+            maNDTInput.value = editLink.getAttribute('data-maNDT');
+            document.querySelector("[name=hoTen]").value = editLink.getAttribute('data-hoTen');
+            document.querySelector("[name=ngaySinh]").value = editLink.getAttribute('data-ngaySinh');
+            document.querySelector("[name=diaChi]").value = editLink.getAttribute('data-diaChi');
+            document.querySelector("[name=phone]").value = editLink.getAttribute('data-phone');
+            document.querySelector("[name=cmnd]").value = editLink.getAttribute('data-cmnd');
+            document.querySelector("[name=gioiTinh]").value = editLink.getAttribute('data-gioiTinh');
+            document.querySelector("[name=email]").value = editLink.getAttribute('data-email');
+        }
+    }
 
-			const editLink = document.querySelector(`.edit-link[data-maNDT="${maNDT}"]`);
+    function hideSubform() {
+        document.getElementById('subform').style.display = 'none';
+    }
 
-			form.querySelector('[name="hoTen"]').value = editLink.dataset.hoten;
-			form.querySelector('[name="ngaySinh"]').value = editLink.dataset.ngaysinh;
-			form.querySelector('[name="diaChi"]').value = editLink.dataset.diachi;
-			form.querySelector('[name="phone"]').value = editLink.dataset.phone;
-			form.querySelector('[name="cmnd"]').value = editLink.dataset.cmnd;
-			form.querySelector('[name="email"]').value = editLink.dataset.email;
-
-			const gioiTinhValue = editLink.dataset.gioitinh?.trim().toLowerCase();
-
-			const gioiTinhNam = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nam"]');
-			const gioiTinhNu = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nữ"]');
-
-			if (gioiTinhValue === 'nam' && gioiTinhNam) {
-				gioiTinhNam.checked = true;
-			} else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
-				gioiTinhNu.checked = true;
-			}
-
-			// Tự fill thông tin ngân hàng
-			const hiddenDivs = document.querySelectorAll(`div[data-maNDT="${maNDT}"]`);
-			const tbody = document.getElementById('bank-accounts');
-
-			hiddenDivs.forEach(div => {
-				const row = document.createElement('tr');
-				row.innerHTML = `
-                    <td><input type="text" name="bankAccounts[].accountNumber" value="${div.dataset.accountnumber}"></td>
-                    <td><input type="text" name="bankAccounts[].tenNH" value="${div.dataset.tennh}"></td>
-                    <td><input type="text" name="bankAccounts[].maNH" value="${div.dataset.manh}"></td>
-                    <td><input type="number" name="bankAccounts[].soTien" value="${div.dataset.sotien}"></td>
-                    <td><input type="text" name="bankAccounts[].diaChi" value="${div.dataset.diachi}"></td>
-                    <td><input type="text" name="bankAccounts[].phone" value="${div.dataset.phone}"></td>
-                    <td><input type="text" name="bankAccounts[].email" value="${div.dataset.email}"></td>
-                    <td><button type="button" onclick="this.parentElement.parentElement.remove()">Xóa</button></td>
-                `;
-				tbody.appendChild(row);
-			});
-
-			populateBankAccounts(maNDT);
-		}
-	}
-
-	function addBankAccount() {
-		const tbody = document.getElementById('bank-accounts');
-		const row = document.createElement('tr');
-		row.innerHTML = `
-            <td><input type="text" name="bankAccounts[].accountNumber"></td>
-            <td><input type="text" name="bankAccounts[].tenNH"></td>
-            <td><input type="text" name="bankAccounts[].maNH"></td>
-            <td><input type="number" name="bankAccounts[].soTien"></td>
-            <td><input type="text" name="bankAccounts[].diaChi"></td>
-            <td><input type="text" name="bankAccounts[].phone"></td>
-            <td><input type="text" name="bankAccounts[].email"></td>
-            <td><button type="button" onclick="this.parentElement.parentElement.remove()">Xóa</button></td>
+    function addBankAccount() {
+        const bankAccountsTable = document.getElementById("bank-accounts");
+        const newRow = bankAccountsTable.insertRow();
+        newRow.innerHTML = `
+            <td><input type="text" name="bankAccount[accountNumber]" maxlength="20" required /></td>
+            <td><input type="text" name="bankAccount[bankName]" maxlength="50" required /></td>
+            <td><input type="text" name="bankAccount[bankCode]" maxlength="20" required /></td>
+            <td><input type="text" name="bankAccount[amount]" maxlength="20" required /></td>
+            <td><input type="text" name="bankAccount[address]" maxlength="100" required /></td>
+            <td><input type="text" name="bankAccount[phone]" maxlength="15" required /></td>
+            <td><input type="email" name="bankAccount[email]" maxlength="50" required /></td>
+            <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
         `;
-		tbody.appendChild(row);
-	}
+    }
 
-	function populateBankAccounts(maNDT) {
-		const tbody = document.getElementById('bank-accounts');
-		tbody.innerHTML = '';
-
-		// Lấy dữ liệu tài khoản từ các div ẩn tương ứng với maNDT
-		const hiddenDivs = document.querySelectorAll(`div[data-maNDT="${maNDT}"]`);
-
-		hiddenDivs.forEach(div => {
-			const row = document.createElement('tr');
-			row.innerHTML = `
-                <td><input type="text" name="bankAccounts[].accountNumber" value="${div.dataset.accountnumber}"></td>
-                <td><input type="text" name="bankAccounts[].tenNH" value="${div.dataset.tennh}"></td>
-                <td><input type="text" name="bankAccounts[].maNH" value="${div.dataset.manh}"></td>
-                <td><input type="number" name="bankAccounts[].soTien" value="${div.dataset.sotien}"></td>
-                <td><input type="text" name="bankAccounts[].diaChi" value="${div.dataset.diachi}"></td>
-                <td><input type="text" name="bankAccounts[].phone" value="${div.dataset.phone}"></td>
-                <td><input type="text" name="bankAccounts[].email" value="${div.dataset.email}"></td>
-                <td><button type="button" onclick="this.parentElement.parentElement.remove()">Xóa</button></td>
-            `;
-			tbody.appendChild(row);
-		});
-	}
-
-
-	function hideSubform() {
-		document.getElementById('subform').style.display = 'none';
-	}
-
+    function removeBankAccount(button) {
+        const row = button.closest("tr");
+        row.parentNode.removeChild(row);
+    }
 </script>
 </body>
 </html>
