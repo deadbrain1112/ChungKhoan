@@ -22,4 +22,8 @@ public class TaiKhoanNganHangService {
     public List<TaiKhoanNganHang> getAllByNDT(NhaDauTu nhaDauTu) {
         return taiKhoanNganHangRepository.findByNhaDauTu(nhaDauTu);
     }
+    
+    public void save(TaiKhoanNganHang taiKhoanNganHang) {
+    	taiKhoanNganHangRepository.save(taiKhoanNganHang);
+    }
 }

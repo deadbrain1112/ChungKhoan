@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Đặt lệnh mua</title>
+    <title>Đặt lệnh bán</title>
     <link rel="stylesheet" th:href="@{/css/home.css}">
     <link rel="stylesheet" th:href="@{/css/dat_lenh_mua.css}">
 </head>
@@ -11,7 +11,7 @@
     <div th:replace="~{ndt/header :: menu(${taiKhoan})}"></div>
 
     <section class="buy-container">
-        <form id="datLenhForm" th:action="@{/nhadautu/dat-lenh-mua}" method="post">
+        <form id="datLenhForm" th:action="@{/nhadautu/dat-lenh-ban}" method="post">
             <table class="buy-table">
                 <tbody>
                     <!-- Hiển thị thông báo lỗi -->
@@ -27,13 +27,7 @@
                             <strong th:text="${success}"></strong>
                         </td>
                     </tr>
-
-                    <!-- Số dư -->
-                    <tr>
-                        <th>Số dư tiền được phép giao dịch</th>
-                        <td><span id="soDuTien" th:text="${formattedSoTien}">0 VND</span></td>
-                    </tr>
-
+                    
                     <!-- Mã cổ phiếu và Xem giá -->
                     <tr>
                         <th>Chứng khoán</th>
@@ -44,9 +38,9 @@
                             </div>
                             <div id="giaHienThi" th:if="${coPhieu != null}" style="margin-top: 10px;">
                                 <div><strong>Mã cổ phiếu: </strong><span id="maCPHienThi" th:text="${coPhieu.maCP}"></span></div>
-                                <div><strong>Giá tham chiếu: </strong><span id="giaThamChieu" th:text="${giaThamChieu}"></span></div>
-                                <div><strong>Giá trần: </strong><span id="giaTran" th:text="${giaTran}"></span></div>
-                                <div><strong>Giá sàn: </strong><span id="giaSan" th:text="${giaSan}"></span></div>
+                                <div><strong>Giá tham chiếu: </strong><span id="giaThamChieu" th:text="${#numbers.formatDecimal(coPhieu.giaTC, 0, 'POINT', 'VND')}"></span></div>
+                                <div><strong>Giá trần: </strong><span id="giaTran" th:text="${#numbers.formatDecimal(coPhieu.giaTran, 0, 'POINT', 'VND')}"></span></div>
+                                <div><strong>Giá sàn: </strong><span id="giaSan" th:text="${#numbers.formatDecimal(coPhieu.giaSan, 0, 'POINT', 'VND')}"></span></div>
                             </div>
                             <div id="khongTimThay" th:if="${khongTimThay}" style="color:red;">Không tìm thấy cổ phiếu!</div>
                         </td>
@@ -61,7 +55,8 @@
                                         th:value="${tk.nganHang.maNH}"
                                         th:text="${tk.nganHang.tenNH}"
                                         th:data-sodu="${tk.soTien}"
-                                        th:selected="${tk.nganHang.maNH == taiKhoan?.nganHang?.maNH}"></option>
+                                        th:selected="${tk.nganHang.maNH == taiKhoan?.nganHang?.maNH}">
+                                </option>
                             </select>
                         </td>
                     </tr>
@@ -94,14 +89,14 @@
                     </tr>
 
                     <tr>
-                        <th>Tổng số tiền mua</th>
-                        <td><span id="tongTienMua">0 VND</span></td>
+                        <th>Tổng số tiền bán</th>
+                        <td><span id="tongTienBan">0 VND</span></td>
                     </tr>
 
                     <tr>
                         <th>Hành động</th>
                         <td colspan="2" class="action-buttons">
-                            <button type="submit" class="submit-btn">Đặt lệnh mua</button>
+                            <button type="submit" class="submit-btn">Đặt lệnh bán</button>
                             <button type="button" id="xoaBtn" class="reset-btn">Xóa</button>
                         </td>
                     </tr>
@@ -127,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const soLuongInput = document.getElementById("soLuong");
     const giaInput = document.getElementById("gia");
-    const tongTienSpan = document.getElementById("tongTienMua");
+    const tongTienSpan = document.getElementById("tongTienBan");
 
     function updateTongTien() {
         const soLuong = parseFloat(soLuongInput.value) || 0;

@@ -23,4 +23,17 @@ public class SoHuuService {
     public List<String> getMaCPByNDT(String maNDT) {
         return soHuuRepository.findMaCPByMaNDT(maNDT);
     }
+    
+    // Lấy số lượng cổ phiếu mà nhà đầu tư sở hữu cho một mã cổ phiếu
+    public int getSoLuong(String maNDT, String maCP) {
+        // Lấy danh sách sở hữu của nhà đầu tư đối với mã cổ phiếu
+        List<SoHuu> soHuuList = soHuuRepository.findByMaNDT(maNDT);
+
+        for (SoHuu soHuu : soHuuList) {
+            if (soHuu.getMaCP().equals(maCP)) {
+                return soHuu.getSoLuong();  // Trả về số lượng cổ phiếu nếu tìm thấy
+            }
+        }
+        return 0;  // Nếu không tìm thấy mã cổ phiếu thì trả về 0
+    }
 }

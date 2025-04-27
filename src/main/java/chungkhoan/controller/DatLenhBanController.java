@@ -21,11 +21,12 @@ import chungkhoan.entity.TaiKhoanNganHang;
 import chungkhoan.service.CoPhieuService;
 import chungkhoan.service.LenhDatService;
 import chungkhoan.service.LichSuGiaService;
+import chungkhoan.service.SoHuuService;
 import chungkhoan.service.TaiKhoanNganHangService;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-public class DatLenhMuaController {
+public class DatLenhBanController {
 
     @Autowired
     private TaiKhoanNganHangService taiKhoanNganHangService;
@@ -38,8 +39,11 @@ public class DatLenhMuaController {
     
     @Autowired
     private LenhDatService lenhDatService;
+    
+    @Autowired
+    private SoHuuService soHuuService;
 
-    @GetMapping("/nhadautu/dat-lenh-mua")
+    @GetMapping("/nhadautu/dat-lenh-ban")
     public String getView(@RequestParam(value = "maCP", required = false) String maCP, Model model, HttpSession session) {
         // Lấy thông tin nhà đầu tư từ session
         NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
@@ -56,7 +60,7 @@ public class DatLenhMuaController {
         String formattedSoTien = "0";
         if (taiKhoan != null && taiKhoan.getSoTien() != null) {
             DecimalFormat decimalFormat = new DecimalFormat("#.###");
-            formattedSoTien = decimalFormat.format(taiKhoan.getSoTien()) + " VND";
+            formattedSoTien = decimalFormat.format(taiKhoan.getSoTien());
         }
 
         model.addAttribute("danhSachTaiKhoan", danhSachTaiKhoan);
@@ -69,19 +73,16 @@ public class DatLenhMuaController {
 
             if (lichSuGia != null) {
                 model.addAttribute("coPhieu", lichSuGia);
-                model.addAttribute("giaThamChieu", new DecimalFormat("#.###").format(lichSuGia.getGiaTC()) + " VND");
-                model.addAttribute("giaTran", new DecimalFormat("#.###").format(lichSuGia.getGiaTran()) + " VND");
-                model.addAttribute("giaSan", new DecimalFormat("#.###").format(lichSuGia.getGiaSan()) + " VND");
             } else {
                 model.addAttribute("khongTimThay", true);
             }
         }
 
-        return "ndt/dat_lenh_mua";
+        return "ndt/dat_lenh_ban";
     }
-
-    @PostMapping("/nhadautu/dat-lenh-mua")
-    public String datLenhMua(@RequestParam("maCP") String maCP,
+    
+    @PostMapping("/nhadautu/dat-lenh-ban")
+    public String datLenhBan(@RequestParam("maCP") String maCP,
                              @RequestParam("nganHang") String maNH,
                              @RequestParam("loaiLenh") String loaiLenh,
                              @RequestParam("soLuong") Integer soLuong,
@@ -97,17 +98,13 @@ public class DatLenhMuaController {
 
         TaiKhoanNganHang taiKhoan = danhSachTaiKhoan.isEmpty() ? null : danhSachTaiKhoan.get(0);
         
-        // Chuyển đổi BigDecimal thành double cho soTien
+        // Định dạng số dư tiền
+        String formattedSoTien = "0";
         double soTien = 0;
         if (taiKhoan != null && taiKhoan.getSoTien() != null) {
             soTien = taiKhoan.getSoTien().doubleValue();  // Chuyển BigDecimal thành double
-        }
-        
-        // Định dạng số dư tiền với double
-        String formattedSoTien = "0";
-        if (taiKhoan != null && taiKhoan.getSoTien() != null) {
             DecimalFormat decimalFormat = new DecimalFormat("#.###");
-            formattedSoTien = decimalFormat.format(soTien) + " VND";  // Sử dụng soTien kiểu double
+            formattedSoTien = decimalFormat.format(soTien);
         }
         
         model.addAttribute("formattedSoTien", formattedSoTien);
@@ -115,7 +112,7 @@ public class DatLenhMuaController {
         Optional<CoPhieu> optCoPhieu = coPhieuService.findById(maCP);
         if (optCoPhieu.isEmpty()) {
             model.addAttribute("error", "Không tìm thấy cổ phiếu");
-            return "ndt/dat_lenh_mua";
+            return "ndt/dat_lenh_ban";
         }
 
         CoPhieu coPhieu = optCoPhieu.get();
@@ -124,50 +121,44 @@ public class DatLenhMuaController {
         LichSuGia lichSuGia = lichSuGiaService.layGiaMoiNhat(maCP);
         if (lichSuGia == null) {
             model.addAttribute("error", "Không có dữ liệu giá sàn cho cổ phiếu này");
-            return "ndt/dat_lenh_mua";
+            return "ndt/dat_lenh_ban";
         }
 
-        // Chuyển giá sàn từ float thành double
-        double giaSan = lichSuGia.getGiaSan();  // Lấy giá sàn dưới dạng double
+        // Chuyển giá sàn thành double
+        double giaSan = lichSuGia.getGiaSan();  // Giá sàn là kiểu double
 
-        // Kiểm tra nếu là lệnh LO, đảm bảo giá mua không thấp hơn giá sàn
+        // Kiểm tra nếu là lệnh LO, đảm bảo giá bán không thấp hơn giá sàn
         if ("LO".equals(loaiLenh)) {
-            if (gia < giaSan) {  // So sánh giá mua và giá sàn
-                model.addAttribute("error", "Giá mua không được thấp hơn giá sàn!");
-                return "ndt/dat_lenh_mua";
+            if (gia < giaSan) {  // So sánh giá bán và giá sàn kiểu double
+                model.addAttribute("error", "Giá bán không được thấp hơn giá sàn!");
+                return "ndt/dat_lenh_ban";
             }
         }
 
-        // Tính tổng tiền cần mua với kiểu double
-        double tongTien = gia * soLuong;  // Tính tổng tiền với double
-        
-        // Định dạng tổng tiền
-        String formattedTongTien = new DecimalFormat("#.###").format(tongTien) + " VND";
-        model.addAttribute("formattedTongTien", formattedTongTien);
-
-        // Kiểm tra số dư
-        if (soTien < tongTien) {
-            model.addAttribute("error", "Số dư không đủ để đặt lệnh mua!");
-            return "redirect:/nhadautu/dat-lenh-mua";
+        // Kiểm tra xem nhà đầu tư có đủ cổ phiếu để bán hay không
+        if (soHuuService.getSoLuong(nhaDauTu.getMaNDT(), maCP) < soLuong) {
+            model.addAttribute("error", "Số lượng cổ phiếu không đủ để bán!");
+            return "ndt/dat_lenh_ban";
         }
 
         // Tạo đối tượng lệnh đặt
         LenhDat lenhDat = LenhDat.builder()
                     .coPhieu(coPhieu)
                     .taiKhoanNganHang(taiKhoan)
-                    .loaiGD("M")  // Loại giao dịch "M" cho mua
+                    .loaiGD("B")  // Loại giao dịch "B" cho bán
                     .loaiLenh(loaiLenh)
                     .soLuong(soLuong)
                     .gia(gia)  // Truyền giá vào là kiểu double
-                    .trangThai("Chờ")
+                    .trangThai("Chờ")  // Trạng thái ban đầu là "Chờ"
                     .ngayGD(LocalDateTime.now())
                     .build();
 
         // Lưu lệnh đặt
         lenhDatService.save(lenhDat);
 
-        model.addAttribute("success", "Đặt lệnh mua thành công!");
+        model.addAttribute("success", "Đặt lệnh bán thành công, chờ khớp lệnh!");
 
-        return "redirect:/nhadautu/dat-lenh-mua";
+        return "redirect:/nhadautu/dat-lenh-ban";
     }
+
 }

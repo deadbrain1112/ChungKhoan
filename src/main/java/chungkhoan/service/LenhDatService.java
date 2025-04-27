@@ -22,4 +22,8 @@ public class LenhDatService {
         }
         return lenhDatRepository.timLenhDatTheoMaNDT(maNDT);
     }
+    
+    public void save(LenhDat lenhDat) {
+    	lenhDatRepository.save(lenhDat);
+    }
 }
