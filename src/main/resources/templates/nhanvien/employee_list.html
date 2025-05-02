@@ -10,137 +10,232 @@
 <div>
     <!-- Toolbar -->
     <div class="toolbar">
-        <button type="button" onclick="showSubform('add')" style="display:inline;">Thêm</button> |
-        <button type="button" style="display:inline;">Reload</button> |
-        <form method="post" style="display:inline;">
-            <button type="submit">Ghi tất cả</button>
-        </form> |
+        <button type="button" class="toolbar-btn" onclick="showAddForm()">Thêm</button>
+        <span class="separator">|</span>
+        <form th:action="@{/employees/reload}" method="get" style="display:inline;">
+            <button type="submit" class="toolbar-btn">Reload</button>
+        </form>
+        <span class="separator">|</span>
+        <form th:action="@{/employees/save-all}" method="post" style="display:inline;">
+            <button type="submit" class="toolbar-btn" th:disabled="${temporaryEmployees.isEmpty()}">Ghi tất cả</button>
+        </form>
+        <span class="separator">|</span>
+        <form th:action="@{/employees/search}" method="post" style="display:inline;">
+            <input type="text" name="query" placeholder="Tìm kiếm..." />
+            <button type="submit" class="toolbar-btn">Tìm</button>
+        </form>
+        <span class="separator">|</span>
         <form th:action="@{/employees/undo}" method="post" style="display:inline;">
-            <button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
-        </form> |
+            <button type="submit" class="toolbar-btn" th:disabled="${!canUndo}">Hoàn tác</button>
+        </form>
+        <span class="separator">|</span>
         <form th:action="@{/employees/clear-undo}" method="post" style="display:inline;">
-            <button type="submit" class="btn btn-danger">Thoát</button>
+            <button type="submit" class="toolbar-btn btn btn-danger">Thoát</button>
         </form>
     </div>
 
     <!-- Thông báo -->
-    <div th:if="${message}" th:class="'alert ' + (${messageType} == 'success' ? 'alert-success' : 'alert-danger')" role="alert" style="color: red;">
+    <div th:if="${message}" th:class="'alert ' + (${messageType}=='success'?'alert-success':'alert-danger')" role="alert">
         <span th:text="${message}"></span>
     </div>
 
-    <!-- Bảng dữ liệu -->
-    <table class="main-table">
+    <!-- Bảng danh sách -->
+    <table class="table">
         <thead>
-            <tr>
-                <th>Mã</th>
-                <th>Họ tên</th>
-                <th>Ngày sinh</th>
-                <th>Địa chỉ</th>
-                <th>Số điện thoại</th>
-                <th>CMND</th>
-                <th>Giới tính</th>
-                <th>Email</th>
-                <th>Hành động</th>
-            </tr>
+        <tr>
+            <th>Mã</th>
+            <th>Họ tên</th>
+            <th>Ngày sinh</th>
+            <th>Địa chỉ</th>
+            <th>Số điện thoại</th>
+            <th>CMND</th>
+            <th>Giới tính</th>
+            <th>Email</th>
+            <th>Hành động</th>
+        </tr>
         </thead>
         <tbody>
-            <tr th:if="${#lists.isEmpty(employees)}">
-                <td colspan="9" style="text-align:center;" th:text="${noDataMessage}"></td>
-            </tr>
-            <tr th:each="employee : ${employees}">
-                <td th:text="${employee.maNV}"></td>
-                <td th:text="${employee.hoTen}"></td>
-                <td th:text="${employee.ngaySinh}"></td>
-                <td th:text="${employee.diaChi}"></td>
-                <td th:text="${employee.phone}"></td>
-                <td th:text="${employee.cmnd}"></td>
-                <td th:text="${employee.gioiTinh}"></td>
-                <td th:text="${employee.email}"></td>
-                <td>
-					<button type="button" class="edit-link"
+        <!-- Duyệt qua employees.content -->
+        <tr th:each="employee : ${employees.content}" th:classappend="${temporaryEmployees.contains(employee)} ? 'unsaved'">
+            <td th:text="${employee.maNV}"></td>
+            <td th:text="${employee.hoTen}"></td>
+            <td th:text="${employee.ngaySinh}"></td>
+            <td th:text="${employee.diaChi}"></td>
+            <td th:text="${employee.phone}"></td>
+            <td th:text="${employee.cmnd}"></td>
+            <td th:text="${employee.gioiTinh}"></td>
+            <td th:text="${employee.email}"></td>
+            <td>
+                <button type="button" class="edit-link"
                         th:attr="data-maNV=${employee.maNV},
-                                data-hoTen=${employee.hoTen},
-                                data-ngaySinh=${employee.ngaySinh},
-                                data-diaChi=${employee.diaChi},
-                                data-phone=${employee.phone},
-                                data-cmnd=${employee.cmnd},
-                                data-gioiTinh=${employee.gioiTinh},
-                                data-email=${employee.email}">Sửa</button> |
-                    <form th:action="@{/employees/delete}" method="post" style="display:inline;">
-                        <input type="hidden" name="maNV" th:value="${employee.maNV}" />
-                        <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-                    </form>
-                </td>
-            </tr>
+                                 data-hoTen=${employee.hoTen},
+                                 data-ngaySinh=${employee.ngaySinh},
+                                 data-diaChi=${employee.diaChi},
+                                 data-phone=${employee.phone},
+                                 data-cmnd=${employee.cmnd},
+                                 data-gioiTinh=${employee.gioiTinh},
+                                 data-email=${employee.email}">Sửa</button> |
+                <form th:action="${temporaryEmployees.contains(employee) ? '/employees/remove-temp' : '/employees/delete'}" method="post" style="display:inline;">
+                    <input type="hidden" name="maNV" th:value="${employee.maNV}" />
+                    <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                </form>
+            </td>
+        </tr>
+        <!-- Nếu không có bản ghi -->
+        <tr th:if="${employees.empty}">
+            <td colspan="9" style="text-align:center;">Không có dữ liệu nhân viên.</td>
+        </tr>
         </tbody>
     </table>
 
-    <!-- Form Thêm / Sửa -->
-    <div id="subform" class="subform-container">
-        <h3 id="subform-title"></h3>
-        <form id="employee-form" th:action="@{/employees/add}" th:object="${employee}" method="post">
-            <table class="subform-table">
-                <tr id="row-maNV">
-                    <td><label>Mã nhân viên:</label></td>
-                    <td><input type="text" th:field="*{maNV}" id="maNV" maxlength="20" required /></td>
-                </tr>
-                <tr>
-                    <td><label>Họ tên:</label></td>
-                    <td><input type="text" th:field="*{hoTen}" maxlength="50" required /></td>
-                </tr>
-                <tr>
-                    <td><label>Ngày sinh:</label></td>
-                    <td><input type="date" th:field="*{ngaySinh}" required /></td>
-                </tr>
-                <tr>
-                    <td><label>Địa chỉ:</label></td>
-                    <td><input type="text" th:field="*{diaChi}" maxlength="100" required /></td>
-                </tr>
-                <tr>
-                    <td><label>Số điện thoại:</label></td>
-                    <td><input type="text" th:field="*{phone}" maxlength="15" required /></td>
-                </tr>
-                <tr>
-                    <td><label>CMND:</label></td>
-                    <td><input type="text" th:field="*{cmnd}" id="cmnd" maxlength="10" required /></td>
-                </tr>
-                <tr>
-                    <td><label>Giới tính:</label></td>
-                    <td>
-                        <input type="radio" th:field="*{gioiTinh}" value="Nam" id="nam" />
-                        <label for="nam">Nam</label>
-                        <input type="radio" th:field="*{gioiTinh}" value="Nữ" id="nu" style="margin-left: 20px;" />
-                        <label for="nu">Nữ</label>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Email:</label></td>
-                    <td><input type="email" th:field="*{email}" maxlength="50" required /></td>
-                </tr>
-            </table>
+    <!-- Phân trang -->
+    <div class="pagination">
+        <span th:if="${employees.hasPrevious()}">
+            <a th:href="@{/employees(page=${employees.number-1},size=${employees.size})}">« Trước</a>
+        </span>
+        <span th:each="i : ${#numbers.sequence(0, employees.totalPages-1)}">
+            <a th:href="@{/employees(page=${i},size=${employees.size})}"
+               th:text="${i+1}"
+               th:classappend="${i==employees.number} ? 'active'">
+            </a>
+        </span>
+        <span th:if="${employees.hasNext()}">
+            <a th:href="@{/employees(page=${employees.number+1},size=${employees.size})}">Sau »</a>
+        </span>
+    </div>
 
-            <div class="form-actions">
-                <button type="submit">Lưu</button>
-                <button type="button" onclick="hideSubform()">Hủy</button>
-            </div>
+    <!-- Form Thêm -->
+    <div id="add-form" class="subform-container" style="display:none;">
+        <h3>Thêm nhân viên</h3>
+        <form th:action="@{/employees/add-temp(page=${employees.number},size=${employees.size})}" method="post">
+            <input type="hidden" name="page" th:value="${employees.number}"/>
+            <input type="hidden" name="size" th:value="${employees.size}"/>
+            <label>Mã nhân viên: <input type="text" name="maNV" maxlength="20" required/></label><br/>
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
+            <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
+            <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
+            <label>CMND: <input type="text" name="cmnd" maxlength="10" required/></label><br/>
+            <label>Giới tính:
+                <input type="radio" name="gioiTinh" value="Nam" id="add-nam" required/>
+                <label for="add-nam">Nam</label>
+                <input type="radio" name="gioiTinh" value="Nữ" id="add-nu" style="margin-left: 20px;"/>
+                <label for="add-nu">Nữ</label>
+            </label><br/>
+            <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
+            <button type="submit">Lưu vào tạm</button>
+            <button type="button" onclick="hideSubform('add-form')">Hủy</button>
+        </form>
+    </div>
+
+    <!-- Form Sửa -->
+    <div id="edit-form" class="subform-container" style="display:none;">
+        <h3>Sửa nhân viên</h3>
+        <form th:action="@{/employees/edit-temp}" method="post">
+            <input type="hidden" name="maNV" id="maNV" />
+            <label>Mã nhân viên: <input type="text" name="maNV" readonly /></label><br/>
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
+            <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
+            <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
+            <label>CMND: <input type="text" name="cmnd" maxlength="10" required/></label><br/>
+            <label>Giới tính:
+                <input type="radio" name="gioiTinh" value="Nam" id="edit-nam" required/>
+                <label for="edit-nam">Nam</label>
+                <input type="radio" name="gioiTinh" value="Nữ" id="edit-nu" style="margin-left: 20px;"/>
+                <label for="edit-nu">Nữ</label>
+            </label><br/>
+            <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
+            <button type="submit">Lưu thay đổi</button>
+            <button type="button" onclick="hideSubform('edit-form')">Hủy</button>
         </form>
     </div>
 </div>
 
 <!-- Script -->
 <script>
+    function disableToolbarButtons() {
+        document.querySelectorAll('.toolbar-btn').forEach(btn => btn.disabled = true);
+        document.querySelectorAll('.edit-link').forEach(btn => btn.disabled = true);
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.disabled = true);
+    }
+
+    function enableToolbarButtons() {
+        document.querySelectorAll('.toolbar-btn').forEach(btn => btn.disabled = false);
+        document.querySelectorAll('.edit-link').forEach(btn => btn.disabled = false);
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.disabled = false);
+    }
+
+    function showAddForm() {
+        document.getElementById('add-form').style.display = 'block';
+        document.getElementById('edit-form').style.display = 'none';
+        document.querySelector('#add-form form').reset();
+        disableToolbarButtons();
+    }
+
+    function showEditForm(data) {
+        const form = document.querySelector('#edit-form form');
+        form.maNV.value = data.maNV;
+        form.hoTen.value = data.hoTen;
+        form.ngaySinh.value = data.ngaySinh;
+        form.diaChi.value = data.diaChi;
+        form.phone.value = data.phone;
+        form.cmnd.value = data.cmnd;
+        form.email.value = data.email;
+        const genderInputs = form.querySelectorAll('input[name="gioiTinh"]');
+        genderInputs.forEach(input => {
+            input.checked = (input.value === data.gioiTinh);
+        });
+        document.getElementById('edit-form').style.display = 'block';
+        document.getElementById('add-form').style.display = 'none';
+        disableToolbarButtons();
+    }
+
+    function hideSubform(id) {
+        document.getElementById(id).style.display = 'none';
+        enableToolbarButtons();
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".edit-link").forEach(function (link) {
+        document.querySelectorAll(".edit-link").forEach(link => {
             link.addEventListener("click", function (e) {
                 e.preventDefault();
                 const maNV = this.getAttribute("data-maNV");
-                showSubform('edit', maNV);
+                const hoTen = this.getAttribute("data-hoTen");
+                const ngaySinh = this.getAttribute("data-ngaySinh");
+                const diaChi = this.getAttribute("data-diaChi");
+                const phone = this.getAttribute("data-phone");
+                const cmnd = this.getAttribute("data-cmnd");
+                const gioiTinh = this.getAttribute("data-gioiTinh");
+                const email = this.getAttribute("data-email");
+                showEditForm({ maNV, hoTen, ngaySinh, diaChi, phone, cmnd, gioiTinh, email });
             });
         });
 
-        document.getElementById("employee-form").addEventListener("submit", function (e) {
-            const maNV = document.getElementById("maNV").value;
-            console.log("Gửi form với mã NV:", maNV);
+        // Kiểm tra ngày sinh trong form thêm
+        document.querySelector('#add-form form').addEventListener('submit', function(e) {
+            const ngaySinhInput = document.querySelector('#add-form input[name="ngaySinh"]').value;
+            const ngaySinh = new Date(ngaySinhInput);
+            const today = new Date();
+            const minYear = 1900;
+
+            if (ngaySinh > today || ngaySinh.getFullYear() < minYear) {
+                alert('Ngày sinh không hợp lệ! Vui lòng chọn ngày sinh từ năm 1900 đến nay.');
+                e.preventDefault();
+            }
+        });
+
+        // Kiểm tra ngày sinh trong form sửa
+        document.querySelector('#edit-form form').addEventListener('submit', function(e) {
+            const ngaySinhInput = document.querySelector('#edit-form input[name="ngaySinh"]').value;
+            const ngaySinh = new Date(ngaySinhInput);
+            const today = new Date();
+            const minYear = 1900;
+
+            if (ngaySinh > today || ngaySinh.getFullYear() < minYear) {
+                alert('Ngày sinh không hợp lệ! Vui lòng chọn ngày sinh từ năm 1900 đến nay.');
+                e.preventDefault();
+            }
         });
     });
 

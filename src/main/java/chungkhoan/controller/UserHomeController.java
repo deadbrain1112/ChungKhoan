@@ -68,18 +68,20 @@ public class UserHomeController {
 
         DecimalFormat decimalFormat = new DecimalFormat("#,###");
         String formattedSoTien = taiKhoan.getSoTien() != null 
-            ? decimalFormat.format(taiKhoan.getSoTien()) 
+            ? decimalFormat.format(taiKhoan.getSoTien())
             : "0";
 
         Map<String, String> giaThiTruongMap = new HashMap<>();
         Map<String, String> tongGiaTriMap = new HashMap<>();
         Map<String, Integer> soLuongMap = new HashMap<>();
 
+        // Lưu số lượng từ SoHuu vào map để sử dụng
         for (SoHuu soHuu : danhSachSoHuu) {
             soLuongMap.put(soHuu.getMaCP(), soHuu.getSoLuong());
         }
 
         for (CoPhieu cp : danhSachCP) {
+            // Lấy giá thị trường (giaTC) của cổ phiếu từ LichSuGia
             Float giaTC = lichSuGiaService.getGiaThamChieuMoiNhat(cp.getMaCP());
             String formattedGiaTC = giaTC != null ? decimalFormat.format(giaTC) : "Chưa cập nhật";
             giaThiTruongMap.put(cp.getMaCP(), formattedGiaTC);

@@ -13,20 +13,6 @@ import java.util.List;
 public interface NDTRepository extends JpaRepository<NhaDauTu, String> {
     NhaDauTu findByMaNDT(String maNDT);
     List<NhaDauTu> findAll();
-
-    @Modifying
-    @Transactional
-    @Query(value = "EXEC sp_ThemNhaDauTu :hoTen, :ngaySinh, :mkgd, :diaChi, :phone, :cmnd, :gioiTinh, :email", nativeQuery = true)
-    void themNhaDauTu(
-            @Param("hoTen") String hoTen,
-            @Param("ngaySinh") Date ngaySinh,
-            @Param("mkgd") String mkgd,
-            @Param("diaChi") String diaChi,
-            @Param("phone") String phone,
-            @Param("cmnd") String cmnd,
-            @Param("gioiTinh") String gioiTinh,
-            @Param("email") String email
-    );
     
     @Query("SELECT n FROM NhaDauTu n WHERE n.maNDT = :username")
     NhaDauTu findByUsername(@Param("username") String username);

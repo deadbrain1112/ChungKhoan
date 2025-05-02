@@ -4,6 +4,9 @@ import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.UndoAction;
 import chungkhoan.repository.NDTRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +16,9 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class NDTService {
@@ -24,39 +30,34 @@ public class NDTService {
     private JdbcTemplate jdbcTemplate;
 
     private final Deque<UndoAction> undoStack = new ArrayDeque<>();
-    
-    public NhaDauTu findByMaNDT(String maNDT) {
-    	return ndtRepository.findByMaNDT(maNDT);
-    }
+
 
     public void themNhaDauTuBangSP(NhaDauTu ndt) {
-        String maNDTMoi = jdbcTemplate.execute(
+        jdbcTemplate.execute(
                 (Connection conn) -> {
                     CallableStatement cs = conn.prepareCall("{call sp_ThemNhaDauTu(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-                    cs.setString(1, ndt.getHoTen());
-                    cs.setDate(2, Date.valueOf(ndt.getNgaySinh()));
-                    cs.setString(3, "1");
-                    cs.setString(4, ndt.getDiaChi());
-                    cs.setString(5, ndt.getPhone());
-                    cs.setString(6, ndt.getCmnd());
-                    cs.setString(7, ndt.getGioiTinh());
-                    cs.setString(8, ndt.getEmail());
-                    cs.registerOutParameter(9, java.sql.Types.NCHAR);
+                    cs.setString(1, ndt.getMaNDT()); // truyền mã NĐT từ đối tượng
+                    cs.setString(2, ndt.getHoTen());
+                    cs.setDate(3, Date.valueOf(ndt.getNgaySinh()));
+                    cs.setString(4, "1"); // Mật khẩu giao dịch mặc định
+                    cs.setString(5, ndt.getDiaChi());
+                    cs.setString(6, ndt.getPhone());
+                    cs.setString(7, ndt.getCmnd());
+                    cs.setString(8, ndt.getGioiTinh());
+                    cs.setString(9, ndt.getEmail());
                     cs.execute();
-                    return cs.getString(9);
+                    return null;
                 }
         );
 
-        if (maNDTMoi != null) {
-            ndt.setMaNDT(maNDTMoi);
-            undoStack.push(new UndoAction(
-                    UndoAction.ActionType.ADD,
-                    UndoAction.EntityType.NHA_DAU_TU,
-                    null,
-                    ndt
-            ));
-        }
+        undoStack.push(new UndoAction(
+                UndoAction.ActionType.ADD,
+                UndoAction.EntityType.NHA_DAU_TU,
+                null,
+                ndt
+        ));
     }
+
 
     public void xoaNhaDauTu(String maNDT) {
         NhaDauTu existing = ndtRepository.findById(maNDT).orElse(null);
@@ -97,7 +98,7 @@ public class NDTService {
         UndoAction action = undoStack.pop();
 
         if (action.getEntityType() != UndoAction.EntityType.NHA_DAU_TU) {
-            return false; // chưa hỗ trợ undo cho entity khác
+            return false;
         }
 
         NhaDauTu oldNDT = (NhaDauTu) action.getOldData();
@@ -121,7 +122,7 @@ public class NDTService {
     public boolean isUndoStackEmpty() {
         return undoStack.isEmpty();
     }
-    
+
     public void clearUndoStack() {
         undoStack.clear();
     }
@@ -133,4 +134,34 @@ public class NDTService {
         }
         return nhaDauTu;
     }
+
+
+    // Get paginated list of investors
+    public Page<NhaDauTu> getPaginated(int page, int size) {
+        if (size == Integer.MAX_VALUE) {
+            List<NhaDauTu> allInvestors = ndtRepository.findAll();
+            return new PageImpl<>(allInvestors, PageRequest.of(0, Integer.MAX_VALUE), allInvestors.size());
+        }
+        return ndtRepository.findAll(PageRequest.of(page, size));
+    }
+
+    // Search investors by query
+    public List<NhaDauTu> searchInvestors(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return ndtRepository.findAll();
+        }
+        // Search by maNDT, hoTen, or cmnd (case-insensitive)
+        return ndtRepository.findAll().stream()
+                .filter(ndt ->
+                        (ndt.getMaNDT() != null && ndt.getMaNDT().toLowerCase().contains(query.toLowerCase())) ||
+                                (ndt.getHoTen() != null && ndt.getHoTen().toLowerCase().contains(query.toLowerCase())) ||
+                                (ndt.getCmnd() != null && ndt.getCmnd().toLowerCase().contains(query.toLowerCase())))
+                .collect(Collectors.toList());
+    }
+
+    public Optional<NhaDauTu> findById(String maNDT) {
+        return ndtRepository.findById(maNDT);
+    }
+
+
 }

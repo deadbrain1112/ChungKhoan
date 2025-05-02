@@ -40,10 +40,14 @@
             <button type="submit" th:disabled="${selectedDb == null}">Sao lưu</button>
         </form>
 
-        <!-- Form phục hồi -->
         <form th:action="@{/backup/recovery}" method="post" class="inline-form recovery-form"
               onsubmit="return confirm('Bạn có chắc muốn phục hồi cơ sở dữ liệu này? Hành động này không thể hoàn tác.');">
             <input type="hidden" name="dbName" th:value="${selectedDb}" />
+
+            <!-- Mặc định phục hồi bản backup gần nhất (vị trí đầu tiên trong danh sách) -->
+            <input type="hidden" name="backupPosition"
+                   th:value="${backupList != null and !backupList.isEmpty() ? backupList.get(0).position : 1}" />
+
             <label>
                 <input type="checkbox" id="timeRecoveryCheckbox" name="enableTimeRecovery" value="true"
                        onchange="toggleTimeInputs()">
@@ -61,6 +65,7 @@
             </div>
             <button type="submit" th:disabled="${selectedDb == null}">Phục hồi</button>
         </form>
+
 
         <!-- Form tạo device sao lưu -->
         <form th:action="@{/backup/device-create}" method="post" class="inline-form"

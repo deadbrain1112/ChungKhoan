@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,22 +19,16 @@ import java.util.Map;
 public class BackupService {
 
     @Autowired
-    private HttpSession session;  // Inject HttpSession vào service
+    private HttpSession session;
 
-    // Lấy thông tin username từ session
     private String getUsernameFromSession() {
-        // Lấy username từ session
         return (String) session.getAttribute("username");
     }
 
     // Lấy mật khẩu từ session
     private String getPasswordFromSession() {
-        // Lấy mật khẩu từ session
         return (String) session.getAttribute("password");
     }
-
-
-
 
     // Tạo phương thức này để sử dụng JdbcTemplate động
     private JdbcTemplate getJdbcTemplate() {
@@ -78,9 +73,6 @@ public class BackupService {
         return rawList;
     }
 
-
-
-    // Tạo backup device nếu chưa tồn tại
     public void createBackupDevice(String dbName) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         String logicalName = "DEVICE_" + dbName;
@@ -96,7 +88,6 @@ public class BackupService {
         jdbcTemplate.update(check, logicalName, logicalName, path);
     }
 
-    // Sao lưu cơ sở dữ liệu
     public void backupDatabase(String dbName, boolean deleteOld) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
         String deviceName = "DEVICE_" + dbName;
@@ -106,16 +97,13 @@ public class BackupService {
         jdbcTemplate.execute(command);
     }
 
-    // Phục hồi cơ sở dữ liệu từ backup
-    public void restoreDatabase(String dbName) {
+    public void restoreDatabaseWithSP(int backupPosition) {
         JdbcTemplate jdbcTemplate = getJdbcTemplate();
-        String command = """
-            ALTER DATABASE [%s] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-            RESTORE DATABASE [%s] FROM [%s] WITH REPLACE;
-            ALTER DATABASE [%s] SET MULTI_USER;
-        """.formatted(dbName, dbName, "DEVICE_" + dbName, dbName);
-        jdbcTemplate.execute(command);
+        String sql = "EXEC sp_RestoreQLGDCk ?";
+        jdbcTemplate.update(sql, backupPosition);
     }
+
+
 
     // Phục hồi cơ sở dữ liệu đến một thời điểm nhất định
     public void restoreToTime(String dbName, LocalDate date, LocalTime time) {
@@ -129,4 +117,35 @@ public class BackupService {
         """.formatted(dbName, dbName, "DEVICE_" + dbName, dbName, "DEVICE_" + dbName, datetime, dbName);
         jdbcTemplate.execute(command);
     }
+
+    public void restoreLatestBackup(String dbName) {
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        String path = "C:\\Backup\\" + dbName + ".bak";
+        int latestPosition = getLatestBackupPosition(path);
+
+        if (latestPosition <= 0) {
+            System.out.println("Không tìm thấy bản backup trong file: " + path);
+            return;
+        }
+
+        String sql = "EXEC master.dbo.sp_PhucHoiCSDL ?, ?";
+        jdbcTemplate.update(sql, path, latestPosition);
+        System.out.println("Đã gọi stored procedure để phục hồi từ bản backup mới nhất.");
+    }
+
+    public int getLatestBackupPosition(String path) {
+        JdbcTemplate jdbcTemplate = getJdbcTemplate();
+        String sql = "RESTORE HEADERONLY FROM DISK = ?";
+        return jdbcTemplate.query(sql, new Object[]{path}, (ResultSet rs) -> {
+            int max = 0;
+            while (rs.next()) {
+                int pos = rs.getInt("Position");
+                if (pos > max) {
+                    max = pos;
+                }
+            }
+            return max;
+        });
+    }
+
 }

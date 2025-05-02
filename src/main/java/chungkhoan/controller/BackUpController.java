@@ -58,14 +58,21 @@ public class BackUpController {
 								  @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime recoveryTime,
 								  RedirectAttributes ra) {
 
-		if (enableTimeRecovery && recoveryDate != null && recoveryTime != null) {
-			backupService.restoreToTime(dbName, recoveryDate, recoveryTime);
-			ra.addFlashAttribute("msg", "Đã phục hồi " + dbName + " về thời điểm " + recoveryDate + " " + recoveryTime);
-		} else {
-			backupService.restoreDatabase(dbName);
-			ra.addFlashAttribute("msg", "Đã phục hồi " + dbName + " thành công.");
+		try {
+			if (enableTimeRecovery && recoveryDate != null && recoveryTime != null) {
+				backupService.restoreToTime(dbName, recoveryDate, recoveryTime);
+				ra.addFlashAttribute("msg", "Đã phục hồi " + dbName + " về thời điểm " + recoveryDate + " " + recoveryTime);
+			} else {
+				backupService.restoreLatestBackup(dbName);
+				ra.addFlashAttribute("msg", "Đã phục hồi " + dbName + " từ bản backup mới nhất.");
+			}
+		} catch (Exception e) {
+			ra.addFlashAttribute("error", "Lỗi khi phục hồi: " + e.getMessage());
 		}
 
 		return "redirect:/backup?dbName=" + dbName;
 	}
+
+
+
 }

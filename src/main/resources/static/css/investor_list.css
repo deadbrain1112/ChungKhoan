@@ -5,8 +5,8 @@ body {
 
 .toolbar {
     margin-bottom: 15px;
+    font-size: 14px;
 }
-
 .toolbar a {
     margin-right: 10px;
     text-decoration: none;
