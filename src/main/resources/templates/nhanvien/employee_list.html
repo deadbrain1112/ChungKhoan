@@ -238,54 +238,6 @@
             }
         });
     });
-
-    function showSubform(action, maNV = '') {
-        const subform = document.getElementById('subform');
-        const title = document.getElementById('subform-title');
-        const form = document.getElementById('employee-form');
-        const maNVInput = document.getElementById('maNV');
-        const rowMaNV = document.getElementById('row-maNV');
-
-        subform.classList.add('active');
-        form.reset();
-
-        if (action === 'add') {
-            title.textContent = 'Thêm nhân viên';
-            form.action = '/employees/add';
-            maNVInput.readOnly = false;
-            maNVInput.value = '';
-            rowMaNV.style.display = '';
-        } else if (action === 'edit') {
-            title.textContent = 'Sửa nhân viên';
-            form.action = '/employees/edit';
-            maNVInput.readOnly = true;
-            maNVInput.value = maNV;
-            rowMaNV.style.display = '';
-
-            const editLink = document.querySelector(`.edit-link[data-maNV="${maNV}"]`);
-
-            form.querySelector('[name="hoTen"]').value = editLink.dataset.hoten;
-            form.querySelector('[name="ngaySinh"]').value = editLink.dataset.ngaysinh;
-            form.querySelector('[name="diaChi"]').value = editLink.dataset.diachi;
-            form.querySelector('[name="phone"]').value = editLink.dataset.phone;
-            form.querySelector('[name="cmnd"]').value = editLink.dataset.cmnd;
-            form.querySelector('[name="email"]').value = editLink.dataset.email;
-
-            const gioiTinhValue = editLink.dataset.gioitinh?.trim().toLowerCase();
-            const gioiTinhNam = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nam"]');
-            const gioiTinhNu = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nữ"]');
-
-            if (gioiTinhValue === 'nam' && gioiTinhNam) {
-                gioiTinhNam.checked = true;
-            } else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
-                gioiTinhNu.checked = true;
-            }
-        }
-    }
-
-    function hideSubform() {
-        document.getElementById('subform').classList.remove('active');
-    }
 </script>
 </body>
 </html>

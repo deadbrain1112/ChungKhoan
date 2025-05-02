@@ -1,65 +1,194 @@
+@charset "UTF-8";
+
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
+    margin: 10px;
 }
 
+/* --- TOOLBAR --- */
 .toolbar {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 10;
     margin-bottom: 15px;
     font-size: 14px;
-}
-.toolbar a {
-    margin-right: 10px;
-    text-decoration: none;
-    font-weight: bold;
-    color: #2a5885;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.main-table, .subform-table, .bank-account-table {
+.toolbar form,
+.toolbar button {
+    margin: 0;
+}
+
+.toolbar input[type="text"] {
+    width: auto;
+    padding: 6px 8px;
+    margin: 0;
+}
+
+/* --- BẢNG CHÍNH --- */
+.table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
+    table-layout: fixed;
 }
 
-.main-table th, .main-table td,
-.subform-table th, .subform-table td,
-.bank-account-table th, .bank-account-table td {
+.table th, .table td {
     border: 1px solid #ccc;
-    padding: 8px;
+    padding: 10px 8px;
     text-align: left;
+    vertical-align: middle;
+    line-height: 1.5;
+    word-wrap: break-word;
 }
 
+.table th {
+    background-color: #f2f2f2;
+}
+
+.table-container {
+    overflow-x: auto;
+    position: relative;
+}
+
+.table th.action-cell,
+.table td.action-cell {
+    position: sticky;
+    right: 0;
+    background: #fff;
+    z-index: 2;
+    min-width: 120px;
+    text-align: center;
+    box-shadow: -1px 0 5px rgba(0,0,0,0.1);
+}
+
+
+/* --- FORM CON (SUBFORM) --- */
 .subform-container {
     display: none;
     margin-top: 20px;
     padding: 15px;
-    border: 1px solid #999;
-    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
 }
 
 .subform-container.active {
     display: block;
 }
 
-input[type="text"], [type="email"] {
-    width: 100%;
-    box-sizing: border-box;
+.subform-table td {
     padding: 5px;
+}
+
+/* --- INPUTS --- */
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="number"] {
+    width: 100%;
+    padding: 8px 10px;
+    margin: 5px 0 12px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* --- GIỚI TÍNH --- */
+label[for="edit-nam"],
+label[for="edit-nu"] {
+    margin-left: 8px;
+    margin-right: 20px;
+}
+
+input[name="gioiTinh"] {
+    margin-left: 10px;
+    margin-right: 2px;
+}
+
+/* --- BUTTONS --- */
+button {
+    padding: 8px 14px;
+    cursor: pointer;
+    margin: 10px 5px 10px 5px;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .form-actions {
     margin-top: 15px;
 }
 
-button {
-    padding: 6px 12px;
-    margin-right: 5px;
-    cursor: pointer;
+/* --- PHÂN TRANG --- */
+.pagination {
+    margin-top: 20px;
+    text-align: center;
 }
 
-button:disabled { 
-	opacity: 0.5; 
-	cursor: not-allowed; 
+.pagination a {
+    margin: 0 6px;
+    padding: 8px 14px;
+    border: 1px solid #ccc;
+    text-decoration: none;
+    color: #333;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
 }
 
+.pagination a:hover {
+    background-color: #e6e6e6;
+    color: #333;
+}
 
+.pagination a.active {
+    background-color: #f0f0f0;
+    color: #333;
+    border-color: #ccc;
+}
 
+/* --- CÁC DÒNG TẠM --- */
+tr.unsaved {
+    background-color: #fff3cd;
+    font-style: italic;
+}
+
+/* --- BẢNG TÀI KHOẢN NGÂN HÀNG TRONG SUBFORM --- */
+.bank-account-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    table-layout: fixed;
+}
+
+.bank-account-table th,
+.bank-account-table td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: center;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+
+.bank-account-table th {
+    background-color: #e9f2ff;
+    font-weight: bold;
+}
+
+.bank-account-table th:nth-child(1) { width: 14%; }  /* Số tài khoản */
+.bank-account-table th:nth-child(2) { width: 14%; }  /* Tên ngân hàng */
+.bank-account-table th:nth-child(3) { width: 10%; }  /* Mã ngân hàng */
+.bank-account-table th:nth-child(4) { width: 12%; }  /* Số tiền */
+.bank-account-table th:nth-child(5) { width: 16%; }  /* Địa chỉ */
+.bank-account-table th:nth-child(6) { width: 12%; }  /* Số điện thoại */
+.bank-account-table th:nth-child(7) { width: 14%; }  /* Email */
+.bank-account-table th:nth-child(8) { width: 8%; }   /* Hành động */

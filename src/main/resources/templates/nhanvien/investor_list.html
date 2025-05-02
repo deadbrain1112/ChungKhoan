@@ -2,8 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Danh sách nhà đầu từ </title>
-    <link rel="stylesheet" th:href="@{/css/stocks.css}">
+    <title>Danh sách nhà đầu tư</title>
+    <link rel="stylesheet" th:href="@{/css/investor_list.css}">
 </head>
 <body>
 <div>
@@ -34,53 +34,52 @@
     </div>
 
     <!-- Bảng danh sách -->
-    <table class="table">
-        <thead>
-        <tr>
-            <th>Mã</th>
-            <th>Họ tên</th>
-            <th>Ngày sinh</th>
-            <th>Địa chỉ</th>
-            <th>Số điện thoại</th>
-            <th>CMND</th>
-            <th>Giới tính</th>
-            <th>Email</th>
-            <th>Hành động</th>
-        </tr>
-        </thead>
-        <tbody>
-        <!-- Duyệt qua investors.content -->
-        <tr th:each="investor : ${investors.content}" th:classappend="${temporaryInvestors.contains(investor)} ? 'unsaved'">
-            <td th:text="${investor.maNDT}"></td>
-            <td th:text="${investor.hoTen}"></td>
-            <td th:text="${investor.ngaySinh}"></td>
-            <td th:text="${investor.diaChi}"></td>
-            <td th:text="${investor.phone}"></td>
-            <td th:text="${investor.cmnd}"></td>
-            <td th:text="${investor.gioiTinh}"></td>
-            <td th:text="${investor.email}"></td>
-            <td>
-                <button type="button" class="edit-link"
-                        th:attr="data-maNDT=${investor.maNDT},
-                                 data-hoTen=${investor.hoTen},
-                                 data-ngaySinh=${investor.ngaySinh},
-                                 data-diaChi=${investor.diaChi},
-                                 data-phone=${investor.phone},
-                                 data-cmnd=${investor.cmnd},
-                                 data-gioiTinh=${investor.gioiTinh},
-                                 data-email=${investor.email}">Sửa</button> |
-                <form th:action="${temporaryInvestors.contains(investor) ? '/investors/remove-temp' : '/investors/delete'}" method="post" style="display:inline;">
-                    <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
-                    <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-                </form>
-            </td>
-        </tr>
-        <!-- Nếu không có bản ghi -->
-        <tr th:if="${investors.empty}">
-            <td colspan="9" style="text-align:center;">Không có dữ liệu nhà đầu tư.</td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="table-container">
+	    <table class="table">
+	        <thead>
+	        <tr>
+	            <th>Mã</th>
+	            <th>Họ tên</th>
+	            <th>Ngày sinh</th>
+	            <th>Địa chỉ</th>
+	            <th>Số điện thoại</th>
+	            <th>CMND</th>
+	            <th>Giới tính</th>
+	            <th>Email</th>
+	            <th class="action-cell">Hành động</th>
+	        </tr>
+	        </thead>
+	        <tbody>
+	        <tr th:each="investor : ${investors.content}" th:classappend="${temporaryInvestors.contains(investor)} ? 'unsaved'">
+	            <td th:text="${investor.maNDT}"></td>
+	            <td th:text="${investor.hoTen}"></td>
+	            <td th:text="${investor.ngaySinh}"></td>
+	            <td th:text="${investor.diaChi}"></td>
+	            <td th:text="${investor.phone}"></td>
+	            <td th:text="${investor.cmnd}"></td>
+	            <td th:text="${investor.gioiTinh}"></td>
+	            <td th:text="${investor.email}"></td>
+	            <td class="action-cell">
+	                <!-- Nút Sửa -->
+	                <button type="button" class="edit-link"
+	                        th:attr="data-maNDT=${investor.maNDT},
+	                                 data-hoTen=${investor.hoTen},
+	                                 data-ngaySinh=${investor.ngaySinh},
+	                                 data-diaChi=${investor.diaChi},
+	                                 data-phone=${investor.phone},
+	                                 data-cmnd=${investor.cmnd},
+	                                 data-gioiTinh=${investor.gioiTinh},
+	                                 data-email=${investor.email}">Sửa</button> |
+	                <!-- Nút Xóa -->
+	                <form th:action="${temporaryInvestors.contains(investor) ? '/investors/remove-temp' : '/investors/delete'}" method="post" style="display:inline;">
+	                    <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
+	                    <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+	                </form>
+	            </td>
+	        </tr>
+	        </tbody>
+	    </table>
+	</div>
 
     <!-- Phân trang -->
     <div class="pagination">
@@ -102,8 +101,6 @@
     <div id="add-form" class="subform-container" style="display:none;">
         <h3>Thêm nhà đầu tư</h3>
         <form th:action="@{/investors/add-temp(page=${investors.number},size=${investors.size})}" method="post">
-            <input type="hidden" name="page" th:value="${investors.number}"/>
-            <input type="hidden" name="size" th:value="${investors.size}"/>
             <label>Mã nhà đầu tư: <input type="text" name="maNDT" maxlength="10" required/></label><br/>
             <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
             <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
@@ -111,12 +108,11 @@
             <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
             <label>CMND: <input type="text" name="cmnd" maxlength="10" required/></label><br/>
             <label>Giới tính:
-                <input type="radio" name="gioiTinh" value="Nam" id="add-nam" required/>
-                <label for="add-nam">Nam</label>
-                <input type="radio" name="gioiTinh" value="Nữ" id="add-nu" style="margin-left: 20px;"/>
-                <label for="add-nu">Nữ</label>
+                <input type="radio" name="gioiTinh" value="Nam" required/> Nam
+                <input type="radio" name="gioiTinh" value="Nữ" required style="margin-left: 20px;"/> Nữ
             </label><br/>
             <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
+
             <h4>Tài khoản ngân hàng</h4>
             <table class="bank-account-table" id="bank-accounts-add">
                 <thead>
@@ -152,7 +148,7 @@
             <label>Giới tính:
                 <input type="radio" name="gioiTinh" value="Nam" id="edit-nam" required/>
                 <label for="edit-nam">Nam</label>
-                <input type="radio" name="gioiTinh" value="Nữ" id="edit-nu" style="margin-left: 20px;"/>
+                <input type="radio" name="gioiTinh" value="Nữ" id="edit-nu" style="margin-left: 20px;" required/>
                 <label for="edit-nu">Nữ</label>
             </label><br/>
             <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
@@ -182,75 +178,27 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".edit-link").forEach(function (link) {
-            link.addEventListener("click", function (e) {
-                e.preventDefault();
-                const maNDT = this.getAttribute("data-maNDT");
-                showSubform('edit', maNDT);
+            link.addEventListener("click", function () {
+                const data = {
+                    maNDT: this.dataset.manadt,
+                    hoTen: this.dataset.hoten,
+                    ngaySinh: this.dataset.ngaysinh,
+                    diaChi: this.dataset.diachi,
+                    phone: this.dataset.phone,
+                    cmnd: this.dataset.cmnd,
+                    gioiTinh: this.dataset.gioitinh,
+                    email: this.dataset.email
+                };
+                showEditForm(data);
             });
         });
-
-        document.getElementById("investor-form").addEventListener("submit", function(e) {
-            const maNDT = document.getElementById("maNDT").value;
-            const cmnd = document.getElementById("cmnd").value;
-            console.log("Biểu mẫu được gửi, Mã NDT (input):", maNDT);
-            console.log("Biểu mẫu được gửi, CMND (input):", cmnd);
-            console.log("Action của form:", this.action);
-        });
     });
-
-    function showSubform(action, maNDT = '') {
-        const subform = document.getElementById('subform');
-        const title = document.getElementById('subform-title');
-        const form = document.getElementById('investor-form');
-        const maNDTInput = document.getElementById('maNDT');
-        const rowMaNDT = document.getElementById('row-maNDT');
-
-        subform.style.display = 'block';
-        form.reset();
-        document.getElementById('bank-accounts').innerHTML = '';
-
-        if (action === 'add') {
-            title.textContent = 'Thêm nhà đầu tư';
-            form.action = '/investors/add';
-            maNDTInput.readOnly = false;
-            maNDTInput.value = '';
-            rowMaNDT.style.display = '';
-        } else if (action === 'edit') {
-            title.textContent = 'Sửa nhà đầu tư';
-            form.action = '/investors/edit';
-            maNDTInput.readOnly = true;
-            maNDTInput.value = maNDT;
-            rowMaNDT.style.display = '';
-
-            const editLink = document.querySelector(`[data-maNDT="${maNDT}"]`);
-            maNDTInput.value = editLink.getAttribute('data-maNDT');
-            document.querySelector("[name=hoTen]").value = editLink.getAttribute('data-hoTen');
-            document.querySelector("[name=ngaySinh]").value = editLink.getAttribute('data-ngaySinh');
-            document.querySelector("[name=diaChi]").value = editLink.getAttribute('data-diaChi');
-            document.querySelector("[name=phone]").value = editLink.getAttribute('data-phone');
-            document.querySelector("[name=cmnd]").value = editLink.getAttribute('data-cmnd');
-            document.querySelector("[name=gioiTinh]").value = editLink.getAttribute('data-gioiTinh');
-            document.querySelector("[name=email]").value = editLink.getAttribute('data-email');
-        }
-    }
-
-    function disableToolbarButtons() {
-        document.querySelectorAll('.toolbar-btn').forEach(btn => btn.disabled = true);
-        document.querySelectorAll('.edit-link').forEach(btn => btn.disabled = true);
-        document.querySelectorAll('.delete-btn').forEach(btn => btn.disabled = true);
-    }
-
-    function enableToolbarButtons() {
-        document.querySelectorAll('.toolbar-btn').forEach(btn => btn.disabled = false);
-        document.querySelectorAll('.edit-link').forEach(btn => btn.disabled = false);
-        document.querySelectorAll('.delete-btn').forEach(btn => btn.disabled = false);
-    }
 
     function showAddForm() {
         document.getElementById('add-form').style.display = 'block';
         document.getElementById('edit-form').style.display = 'none';
         document.querySelector('#add-form form').reset();
-        document.getElementById('bank-accounts-add').querySelector('tbody').innerHTML = '';
+        document.querySelector('#bank-accounts-add tbody').innerHTML = '';
         disableToolbarButtons();
     }
 
@@ -263,11 +211,10 @@
         form.phone.value = data.phone;
         form.cmnd.value = data.cmnd;
         form.email.value = data.email;
+
         const genderInputs = form.querySelectorAll('input[name="gioiTinh"]');
-        genderInputs.forEach(input => {
-            input.checked = (input.value === data.gioiTinh);
-        });
-        document.getElementById('bank-accounts-edit').querySelector('tbody').innerHTML = '';
+        genderInputs.forEach(input => input.checked = input.value === data.gioiTinh);
+
         document.getElementById('edit-form').style.display = 'block';
         document.getElementById('add-form').style.display = 'none';
         disableToolbarButtons();
@@ -278,9 +225,17 @@
         enableToolbarButtons();
     }
 
+    function disableToolbarButtons() {
+        document.querySelectorAll('.toolbar-btn, .edit-link, .delete-btn').forEach(btn => btn.disabled = true);
+    }
+
+    function enableToolbarButtons() {
+        document.querySelectorAll('.toolbar-btn, .edit-link, .delete-btn').forEach(btn => btn.disabled = false);
+    }
+
     function addBankAccount(tableId) {
-        const bankAccountsTable = document.getElementById(tableId);
-        const newRow = bankAccountsTable.querySelector('tbody').insertRow();
+        const table = document.getElementById(tableId).querySelector('tbody');
+        const newRow = document.createElement('tr');
         newRow.innerHTML = `
             <td><input type="text" name="bankAccounts[][accountNumber]" maxlength="20" required /></td>
             <td><input type="text" name="bankAccounts[][bankName]" maxlength="50" required /></td>
@@ -291,32 +246,12 @@
             <td><input type="email" name="bankAccounts[][email]" maxlength="50" required /></td>
             <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
         `;
+        table.appendChild(newRow);
     }
 
     function removeBankAccount(button) {
-        const row = button.closest("tr");
-        if (row) {
-            row.remove();
-        }
+        button.closest("tr").remove();
     }
-
-
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".edit-link").forEach(link => {
-            link.addEventListener("click", function (e) {
-                e.preventDefault();
-                const maNDT = this.getAttribute("data-maNDT");
-                const hoTen = this.getAttribute("data-hoTen");
-                const ngaySinh = this.getAttribute("data-ngaySinh");
-                const diaChi = this.getAttribute("data-diaChi");
-                const phone = this.getAttribute("data-phone");
-                const cmnd = this.getAttribute("data-cmnd");
-                const gioiTinh = this.getAttribute("data-gioiTinh");
-                const email = this.getAttribute("data-email");
-                showEditForm({ maNDT, hoTen, ngaySinh, diaChi, phone, cmnd, gioiTinh, email });
-            });
-        });
-    });
 </script>
 </body>
 </html>
