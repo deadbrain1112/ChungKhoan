@@ -182,9 +182,9 @@
         if (action === 'add') {
             title.textContent = 'Thêm nhà đầu tư';
             form.action = '/investors/add';
-            maNDTInput.readOnly = true;
+            maNDTInput.readOnly = false;
             maNDTInput.value = '';
-            rowMaNDT.style.display = 'none';
+            rowMaNDT.style.display = '';
         } else if (action === 'edit') {
             title.textContent = 'Sửa nhà đầu tư';
             form.action = '/investors/edit';

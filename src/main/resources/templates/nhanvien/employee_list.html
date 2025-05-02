@@ -157,9 +157,9 @@
         if (action === 'add') {
             title.textContent = 'Thêm nhân viên';
             form.action = '/employees/add';
-            maNVInput.readOnly = true;
+            maNVInput.readOnly = false;
             maNVInput.value = '';
-            rowMaNV.style.display = 'none';
+            rowMaNV.style.display = '';
         } else if (action === 'edit') {
             title.textContent = 'Sửa nhân viên';
             form.action = '/employees/edit';
