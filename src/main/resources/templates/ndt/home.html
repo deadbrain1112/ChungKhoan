@@ -31,8 +31,8 @@
                         </select>
                         <span th:if="${taiKhoan == null}">Không có ngân hàng</span>
                     </p>
-                    <p><strong>Số dư còn lại được phép giao dịch:</strong> 
-                        <span class="highlight" th:if="${taiKhoan != null and taiKhoan.soTien != null}" 
+                    <p><strong>Số dư còn lại được phép giao dịch:</strong>
+                        <span class="highlight" th:if="${taiKhoan != null and taiKhoan.soTien != null}"
                               th:text="${formattedSoTien}"></span>
                         <span class="highlight" th:if="${taiKhoan == null or taiKhoan.soTien == null}">0</span> VND
                     </p>

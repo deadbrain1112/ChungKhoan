@@ -7,6 +7,8 @@ import java.util.Optional;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -26,31 +28,92 @@ public class StocksController {
                              @RequestParam(defaultValue = "5") int size,
                              Model model,
                              HttpSession session) {
-        Page<CoPhieu> stockPage = coPhieuService.getPaginated(page, size);
-        model.addAttribute("stocks", stockPage);
-        if (stockPage.isEmpty()) {
-            model.addAttribute("noDataMessage", "Không có dữ liệu cổ phiếu.");
-        }
+
+        // Lấy danh sách cổ phiếu chính từ cơ sở dữ liệu
+        Page<CoPhieu> stockPage = coPhieuService.getPaginated(0, Integer.MAX_VALUE); // Lấy tất cả để kết hợp
+
+        // Lấy danh sách cổ phiếu tạm từ session
         @SuppressWarnings("unchecked")
         List<CoPhieu> tempList = (List<CoPhieu>) session.getAttribute("temporaryStocks");
-        if (tempList == null) tempList = new ArrayList<>();
+        if (tempList == null) {
+            tempList = new ArrayList<>();
+        }
+
+        // Kết hợp danh sách: danh sách chính trước, danh sách tạm sau
+        List<CoPhieu> allStocks = new ArrayList<>();
+        allStocks.addAll(stockPage.getContent()); // Thêm danh sách chính trước
+        allStocks.addAll(tempList); // Thêm danh sách tạm sau
+
+        // Tính toán phân trang cho danh sách kết hợp
+        int totalItems = allStocks.size();
+        int start = page * size;
+        int end = Math.min(start + size, totalItems);
+
+        // Đảm bảo start và end hợp lệ
+        if (start >= totalItems && totalItems > 0) {
+            // Nếu start vượt quá kích thước danh sách, chuyển về trang cuối cùng
+            page = (totalItems - 1) / size;
+            start = page * size;
+            end = Math.min(start + size, totalItems);
+        } else if (start >= totalItems) {
+            start = 0;
+            end = 0;
+        }
+
+        List<CoPhieu> allStocksPageContent = (start < end) ? allStocks.subList(start, end) : new ArrayList<>();
+
+        // Tạo đối tượng Page cho danh sách kết hợp
+        Page<CoPhieu> allStocksPage = new PageImpl<>(allStocksPageContent, PageRequest.of(page, size), totalItems);
+
+        // Thêm vào model
+        model.addAttribute("stocks", allStocksPage);
         model.addAttribute("temporaryStocks", tempList);
+        if (allStocksPage.isEmpty()) {
+            model.addAttribute("message", "Không có dữ liệu cổ phiếu.");
+            model.addAttribute("messageType", "danger");
+        }
+
+        // Kiểm tra nếu có thể hoàn tác
         model.addAttribute("canUndo", !coPhieuService.isUndoStackEmpty());
+
+        // Thêm logging để kiểm tra
+        System.out.println("TempList size: " + tempList.size());
+        System.out.println("AllStocks size: " + allStocks.size());
+        System.out.println("Page content size: " + allStocksPageContent.size());
+
         return "nhanvien/stocks";
     }
 
     @PostMapping("/stocks/add-temp")
     public String addTempStock(@ModelAttribute CoPhieu stock,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "5") int size,
                                HttpSession session,
                                RedirectAttributes ra) {
         @SuppressWarnings("unchecked")
         List<CoPhieu> tempList = (List<CoPhieu>) session.getAttribute("temporaryStocks");
-        if (tempList == null) tempList = new ArrayList<>();
-        tempList.add(stock);
-        session.setAttribute("temporaryStocks", tempList);
-        ra.addFlashAttribute("message", "Đã thêm tạm cổ phiếu " + stock.getMaCP());
-        ra.addFlashAttribute("messageType", "success");
-        return "redirect:/stocks";
+        if (tempList == null) {
+            tempList = new ArrayList<>();
+        }
+
+        // Kiểm tra xem mã CP đã tồn tại trong danh sách tạm chưa
+        boolean exists = tempList.stream().anyMatch(s -> s.getMaCP().equals(stock.getMaCP()));
+        if (exists) {
+            ra.addFlashAttribute("message", "Mã CP " + stock.getMaCP() + " đã tồn tại trong danh sách tạm!");
+            ra.addFlashAttribute("messageType", "error");
+        } else {
+            tempList.add(stock);
+            session.setAttribute("temporaryStocks", tempList);
+            ra.addFlashAttribute("message", "Đã thêm tạm cổ phiếu " + stock.getMaCP());
+            ra.addFlashAttribute("messageType", "success");
+
+            // Thêm logging để kiểm tra
+            System.out.println("Added stock to tempList: " + stock.getMaCP());
+            System.out.println("TempList after adding: " + tempList);
+        }
+
+        // Chuyển hướng về trang hiện tại
+        return "redirect:/stocks?page=" + page + "&size=" + size;
     }
 
     @PostMapping("/stocks/edit-temp")
@@ -131,7 +194,6 @@ public class StocksController {
 
         return "redirect:/stocks";
     }
-    
     @GetMapping("/stocks/reload")
     public String reloadStocks(HttpSession session) {
         session.removeAttribute("temporaryStocks");

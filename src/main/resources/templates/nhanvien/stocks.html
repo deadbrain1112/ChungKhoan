@@ -9,22 +9,22 @@
 <div>
     <!-- Toolbar -->
     <div class="toolbar">
-        <button type="button" onclick="showAddForm(); return false;" style="display:inline;">Thêm</button> |
-        <form th:action="@{/stocks/reload}" method="get">
-        	<button type="submit" style="display:inline;">Reload</button> |
+        <button type="button" class="toolbar-btn" onclick="showAddForm(); return false;">Thêm</button> |
+        <form th:action="@{/stocks/reload}" method="get" style="display:inline;">
+            <button type="submit" class="toolbar-btn">Reload</button> |
         </form>
         <form th:action="@{/stocks/save-all}" method="post" style="display:inline;">
-            <button type="submit" th:disabled="${temporaryStocks.empty}">Ghi tất cả</button>
+            <button type="submit" class="toolbar-btn" th:disabled="${temporaryStocks.isEmpty()}">Ghi tất cả</button>
         </form> |
         <form th:action="@{/stocks/search}" method="post" style="display:inline;">
             <input type="text" name="query" placeholder="Tìm kiếm..."/>
-            <button type="submit">Tìm</button>
+            <button type="submit" class="toolbar-btn">Tìm</button>
         </form> |
         <form th:action="@{/stocks/undo}" method="post" style="display:inline;">
-            <button type="submit" th:disabled="${!canUndo}">Hoàn tác</button>
+            <button type="submit" class="toolbar-btn" th:disabled="${!canUndo}">Hoàn tác</button>
         </form> |
         <form th:action="@{/stocks/clear-undo}" method="post" style="display:inline;">
-            <button type="submit" class="btn btn-danger">Thoát</button>
+            <button type="submit" class="toolbar-btn btn btn-danger">Thoát</button>
         </form>
     </div>
 
@@ -33,7 +33,7 @@
         <span th:text="${message}"></span>
     </div>
 
-    <!-- Bảng dữ liệu -->
+    <!-- Bảng danh sách -->
     <table class="table">
         <thead>
         <tr>
@@ -45,8 +45,8 @@
         </tr>
         </thead>
         <tbody>
-        <!-- DB -->
-        <tr th:each="stock : ${stocks.content}">
+        <!-- Duyệt qua stocks.content (bao gồm cả cổ phiếu tạm) -->
+        <tr th:each="stock : ${stocks.content}" th:classappend="${temporaryStocks.contains(stock)} ? 'unsaved'">
             <td th:text="${stock.maCP}"></td>
             <td th:text="${stock.tenCty}"></td>
             <td th:text="${stock.diaChi}"></td>
@@ -54,37 +54,20 @@
             <td>
                 <button type="button" class="edit-link"
                         th:attr="data-maCP=${stock.maCP},
-                        		 data-tenCty=${stock.tenCty},
-                        		 data-diaChi=${stock.diaChi},
-                        		 data-soLuongPH=${stock.soLuongPH}">Sửa</button>
+                         data-tenCty=${stock.tenCty},
+                         data-diaChi=${stock.diaChi},
+                         data-soLuongPH=${stock.soLuongPH}">
+                    Sửa
+                </button>
                 |
-                <form th:action="@{/stocks/delete}" method="post" style="display:inline;">
+                <form th:action="${temporaryStocks.contains(stock) ? '/stocks/remove-temp' : '/stocks/delete'}" method="post" style="display:inline;">
                     <input type="hidden" name="maCP" th:value="${stock.maCP}"/>
-                    <button type="submit" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                    <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
                 </form>
             </td>
         </tr>
-        <!-- Tạm -->
-        <tr th:each="stockTemp : ${temporaryStocks}" class="unsaved">
-            <td th:text="${stockTemp.maCP}"></td>
-            <td th:text="${stockTemp.tenCty}"></td>
-            <td th:text="${stockTemp.diaChi}"></td>
-            <td th:text="${stockTemp.soLuongPH}"></td>
-            <td>
-                <button type="button" class="edit-temp-link"
-                        th:attr="data-maCP=${stockTemp.maCP},
-                        		 data-tenCty=${stockTemp.tenCty},
-                        		 data-diaChi=${stockTemp.diaChi},
-                        		 data-soLuongPH=${stockTemp.soLuongPH}">Sửa</button>
-                |
-                <form th:action="@{/stocks/remove-temp}" method="post" style="display:inline;">
-                    <input type="hidden" name="maCP" th:value="${stockTemp.maCP}"/>
-                    <button type="submit" onclick="return confirm('Xóa bản ghi tạm?')">Xóa</button>
-                </form>
-            </td>
-        </tr>
-        <!-- Empty -->
-        <tr th:if="${stocks.empty} and ${temporaryStocks.empty}">
+        <!-- Nếu không có bản ghi nào -->
+        <tr th:if="${stocks.empty}">
             <td colspan="5" style="text-align:center;">Không có dữ liệu cổ phiếu.</td>
         </tr>
         </tbody>
@@ -96,7 +79,10 @@
             <a th:href="@{/stocks(page=${stocks.number-1},size=${stocks.size})}">« Trước</a>
         </span>
         <span th:each="i : ${#numbers.sequence(0, stocks.totalPages-1)}">
-            <a th:href="@{/stocks(page=${i},size=${stocks.size})}" th:text="${i+1}" th:classappend="${i==stocks.number}?'active'"></a>
+            <a th:href="@{/stocks(page=${i},size=${stocks.size})}"
+               th:text="${i+1}"
+               th:classappend="${i==stocks.number} ? 'active'">
+            </a>
         </span>
         <span th:if="${stocks.hasNext()}">
             <a th:href="@{/stocks(page=${stocks.number+1},size=${stocks.size})}">Sau »</a>
@@ -106,11 +92,13 @@
     <!-- Form Thêm -->
     <div id="add-form" class="subform-container" style="display:none;">
         <h3>Thêm cổ phiếu</h3>
-        <form th:action="@{/stocks/add-temp}" method="post">
-            <label>Mã CP:<input type="text" name="maCP" required/></label><br/>
-            <label>Tên công ty:<input type="text" name="tenCty" required/></label><br/>
-            <label>Địa chỉ:<input type="text" name="diaChi" required/></label><br/>
-            <label>Số lượng phát hành:<input type="number" name="soLuongPH" required/></label><br/>
+        <form th:action="@{/stocks/add-temp(page=${stocks.number},size=${stocks.size})}" method="post">
+            <input type="hidden" name="page" th:value="${stocks.number}"/>
+            <input type="hidden" name="size" th:value="${stocks.size}"/>
+            <label>Mã CP: <input type="text" name="maCP" required/></label><br/>
+            <label>Tên công ty: <input type="text" name="tenCty" required/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" required/></label><br/>
+            <label>Số lượng phát hành: <input type="number" name="soLuongPH" required/></label><br/>
             <button type="submit">Lưu vào tạm</button>
             <button type="button" onclick="hideSubform('add-form')">Hủy</button>
         </form>
@@ -121,21 +109,37 @@
         <h3>Sửa cổ phiếu</h3>
         <form th:action="@{/stocks/edit-temp}" method="post">
             <input type="hidden" name="maCP" id="maCP" />
-            <label>Tên công ty:<input type="text" name="tenCty" required/></label><br/>
-            <label>Địa chỉ:<input type="text" name="diaChi" required/></label><br/>
-            <label>Số lượng phát hành:<input type="number" name="soLuongPH" required/></label><br/>
+            <label>Tên công ty: <input type="text" name="tenCty" required/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" required/></label><br/>
+            <label>Số lượng phát hành: <input type="number" name="soLuongPH" required/></label><br/>
             <button type="submit">Lưu thay đổi</button>
             <button type="button" onclick="hideSubform('edit-form')">Hủy</button>
         </form>
     </div>
+
 </div>
 
 <script>
+    function disableToolbarButtons() {
+        document.querySelectorAll('.toolbar-btn').forEach(btn => btn.disabled = true);
+        document.querySelectorAll('.edit-link').forEach(btn => btn.disabled = true);
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.disabled = true);
+    }
+    function enableToolbarButtons() {
+        document.querySelectorAll('.toolbar-btn').forEach(btn => btn.disabled = false);
+        document.querySelectorAll('.edit-link').forEach(btn => btn.disabled = false);
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.disabled = false);
+    }
     function showAddForm() {
         document.getElementById('add-form').style.display = 'block';
         document.getElementById('edit-form').style.display = 'none';
+        disableToolbarButtons();
     }
 
+    function hideSubform(id) {
+        document.getElementById(id).style.display = 'none';
+        enableToolbarButtons();
+    }
     function showEditForm(data) {
         const form = document.querySelector('#edit-form form');
         form.maCP.value = data.maCP;
@@ -144,15 +148,11 @@
         form.soLuongPH.value = data.soLuongPH;
         document.getElementById('edit-form').style.display = 'block';
         document.getElementById('add-form').style.display = 'none';
-    }
-
-    function hideSubform(id) {
-        document.getElementById(id).style.display = 'none';
+        disableToolbarButtons();
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        // DB edit links
-        document.querySelectorAll(".edit-link").forEach(function (link) {
+        document.querySelectorAll(".edit-link").forEach(link =>
             link.addEventListener("click", function (e) {
                 e.preventDefault();
                 const maCP = this.getAttribute("data-maCP");
@@ -160,19 +160,8 @@
                 const diaChi = this.getAttribute("data-diaChi");
                 const soLuongPH = this.getAttribute("data-soLuongPH");
                 showEditForm({ maCP, tenCty, diaChi, soLuongPH });
-            });
-        });
-        // Temp edit links
-        document.querySelectorAll(".edit-temp-link").forEach(function (link) {
-            link.addEventListener("click", function (e) {
-                e.preventDefault();
-                const maCP = this.getAttribute("data-maCP");
-                const tenCty = this.getAttribute("data-tenCty");
-                const diaChi = this.getAttribute("data-diaChi");
-                const soLuongPH = this.getAttribute("data-soLuongPH");
-                showEditForm({ maCP, tenCty, diaChi, soLuongPH });
-            });
-        });
+            })
+        );
     });
 </script>
 </body>

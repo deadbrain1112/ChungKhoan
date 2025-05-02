@@ -54,7 +54,6 @@ public class LoginController {
 
 		// Lấy vai trò người dùng
 		String role = databaseService.getUserRole(jdbcTemplate, username);
-		System.out.println("Role được nhận: " + role);
 
 		// Dùng username làm mã liên kết
 		String maLienKet = username;

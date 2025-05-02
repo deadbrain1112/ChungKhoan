@@ -20,8 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class CoPhieuService {
 
     @Autowired
-    private CoPhieuRepository coPhieuRepository;  
-    
+    private CoPhieuRepository coPhieuRepository;
+
     @Autowired
     private LichSuGiaRepository lichSuGiaRepository;
     
@@ -40,8 +40,14 @@ public class CoPhieuService {
                 stock.getDiaChi(),
                 stock.getSoLuongPH()
         );
+        undoStack.push(new UndoAction(
+                UndoAction.ActionType.ADD,
+                UndoAction.EntityType.CO_PHIEU,
+                null,
+                stock
+        ));
     }
-    
+
     // Xóa cổ phiếu
     public void xoaCoPhieu(String maCP) {
         CoPhieu cp = coPhieuRepository.findById(maCP).orElse(null);
@@ -50,7 +56,7 @@ public class CoPhieuService {
             undoStack.push(new UndoAction(
                 UndoAction.ActionType.DELETE,
                 UndoAction.EntityType.CO_PHIEU,
-                cp,  // oldData: trước khi xóa
+                cp,
                 null
             ));
         }
@@ -60,9 +66,9 @@ public class CoPhieuService {
     public void capNhatCoPhieu(String maCP, CoPhieu cpMoi) {
         CoPhieu cpCu = coPhieuRepository.findById(maCP).orElse(null);
         if (cpCu != null) {
-            CoPhieu copy = new CoPhieu(cpCu); 
+            CoPhieu copy = new CoPhieu(cpCu);
 
-            cpMoi.setMaCP(maCP); 
+            cpMoi.setMaCP(maCP);
 
             coPhieuRepository.save(cpMoi);
             undoStack.push(new UndoAction(
@@ -78,12 +84,12 @@ public class CoPhieuService {
     public Optional<CoPhieu> findById(String maCP) {
         return coPhieuRepository.findById(maCP);
     }
-    
+
     // Lấy tất cả cổ phiểu
     public List<CoPhieu> getAllCoPhieu() {
     	return coPhieuRepository.findAll();
     }
-    
+
     //
     public List<CoPhieu> findByMaCPIn(List<String> maCPs) {
         return coPhieuRepository.findByMaCPIn(maCPs);
@@ -119,7 +125,7 @@ public class CoPhieuService {
     public boolean isUndoStackEmpty() {
     	return undoStack.isEmpty();
     }
-    
+
     public void clearUndoStack() {
         undoStack.clear();
     }
