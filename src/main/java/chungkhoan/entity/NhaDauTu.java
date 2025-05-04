@@ -41,7 +41,10 @@ public class NhaDauTu {
     private String email;
 
     @OneToMany(mappedBy = "nhaDauTu", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<SoHuu> soHuus;  // Một nhà đầu tư có thể sở hữu nhiều cổ phiếu
+    private Set<SoHuu> soHuus;
+
+    @OneToMany(mappedBy = "nhaDauTu", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<TaiKhoanNganHang> taiKhoanNganHangs;
 
     public NhaDauTu(NhaDauTu other) {
         this.maNDT = other.maNDT;

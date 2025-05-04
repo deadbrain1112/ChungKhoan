@@ -40,7 +40,7 @@ body {
     border-radius: 5px;
     border: 1px solid #ddd;
     width: 100%;
-    box-sizing: border-box; /* Đảm bảo padding không làm rộng các ô */
+    box-sizing: border-box;
 }
 
 .buy-table input[type="number"]:focus,

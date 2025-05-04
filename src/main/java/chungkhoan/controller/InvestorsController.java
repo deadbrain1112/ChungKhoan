@@ -1,5 +1,7 @@
 package chungkhoan.controller;
 
+import chungkhoan.entity.TaiKhoanNganHang;
+import chungkhoan.service.TaiKhoanNganHangService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,16 +15,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.service.NDTService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 public class InvestorsController {
 
 	@Autowired
 	private NDTService nhaDauTuService;
-
+	@Autowired
+	private TaiKhoanNganHangService taiKhoanNganHangService;
 	@GetMapping("/investors")
 	public String listInvestors(@RequestParam(defaultValue = "0") int page,
 								@RequestParam(defaultValue = "5") int size,
@@ -30,6 +31,7 @@ public class InvestorsController {
 								HttpSession session) {
 		// Lấy danh sách nhà đầu tư chính từ cơ sở dữ liệu
 		Page<NhaDauTu> investorPage = nhaDauTuService.getPaginated(0, Integer.MAX_VALUE);
+
 
 		// Lấy danh sách nhà đầu tư tạm từ session
 		@SuppressWarnings("unchecked")
@@ -42,6 +44,10 @@ public class InvestorsController {
 		List<NhaDauTu> allInvestors = new ArrayList<>();
 		allInvestors.addAll(investorPage.getContent());
 		allInvestors.addAll(tempList);
+
+		Map<String, List<TaiKhoanNganHang>> bankAccountMap = taiKhoanNganHangService.getBankAccountsForInvestors(allInvestors);
+		model.addAttribute("bankAccountMap", bankAccountMap);
+
 
 		// Tính toán phân trang cho danh sách kết hợp
 		int totalItems = allInvestors.size();
@@ -253,6 +259,6 @@ public class InvestorsController {
 			model.addAttribute("messageType", "danger");
 		}
 
-		return "nhanvien/investors";
+		return "nhanvien/investor_list";
 	}
 }

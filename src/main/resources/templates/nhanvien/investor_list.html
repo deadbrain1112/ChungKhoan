@@ -35,51 +35,64 @@
 
     <!-- Bảng danh sách -->
     <div class="table-container">
-	    <table class="table">
-	        <thead>
-	        <tr>
-	            <th>Mã</th>
-	            <th>Họ tên</th>
-	            <th>Ngày sinh</th>
-	            <th>Địa chỉ</th>
-	            <th>Số điện thoại</th>
-	            <th>CMND</th>
-	            <th>Giới tính</th>
-	            <th>Email</th>
-	            <th class="action-cell">Hành động</th>
-	        </tr>
-	        </thead>
-	        <tbody>
-	        <tr th:each="investor : ${investors.content}" th:classappend="${temporaryInvestors.contains(investor)} ? 'unsaved'">
-	            <td th:text="${investor.maNDT}"></td>
-	            <td th:text="${investor.hoTen}"></td>
-	            <td th:text="${investor.ngaySinh}"></td>
-	            <td th:text="${investor.diaChi}"></td>
-	            <td th:text="${investor.phone}"></td>
-	            <td th:text="${investor.cmnd}"></td>
-	            <td th:text="${investor.gioiTinh}"></td>
-	            <td th:text="${investor.email}"></td>
-	            <td class="action-cell">
-	                <!-- Nút Sửa -->
-	                <button type="button" class="edit-link"
-	                        th:attr="data-maNDT=${investor.maNDT},
-	                                 data-hoTen=${investor.hoTen},
-	                                 data-ngaySinh=${investor.ngaySinh},
-	                                 data-diaChi=${investor.diaChi},
-	                                 data-phone=${investor.phone},
-	                                 data-cmnd=${investor.cmnd},
-	                                 data-gioiTinh=${investor.gioiTinh},
-	                                 data-email=${investor.email}">Sửa</button> |
-	                <!-- Nút Xóa -->
-	                <form th:action="${temporaryInvestors.contains(investor) ? '/investors/remove-temp' : '/investors/delete'}" method="post" style="display:inline;">
-	                    <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
-	                    <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-	                </form>
-	            </td>
-	        </tr>
-	        </tbody>
-	    </table>
-	</div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Mã</th>
+                <th>Họ tên</th>
+                <th>Ngày sinh</th>
+                <th>Địa chỉ</th>
+                <th>Số điện thoại</th>
+                <th>CMND</th>
+                <th>Giới tính</th>
+                <th>Email</th>
+                <th class="action-cell">Hành động</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="investor : ${investors.content}" th:classappend="${temporaryInvestors.contains(investor)} ? 'unsaved'">
+                <td th:text="${investor.maNDT}"></td>
+                <td th:text="${investor.hoTen}"></td>
+                <td th:text="${investor.ngaySinh}"></td>
+                <td th:text="${investor.diaChi}"></td>
+                <td th:text="${investor.phone}"></td>
+                <td th:text="${investor.cmnd}"></td>
+                <td th:text="${investor.gioiTinh}"></td>
+                <td th:text="${investor.email}"></td>
+                <td class="action-cell">
+                    <!-- Nút Sửa -->
+                    <button type="button" class="edit-link"
+                            th:attr="data-maNDT=${investor.maNDT},
+                                     data-hoTen=${investor.hoTen},
+                                     data-ngaySinh=${investor.ngaySinh},
+                                     data-diaChi=${investor.diaChi},
+                                     data-phone=${investor.phone},
+                                     data-cmnd=${investor.cmnd},
+                                     data-gioiTinh=${investor.gioiTinh},
+                                     data-email=${investor.email}">Sửa</button> |
+                    <!-- Lưu trữ thông tin tài khoản ngân hàng -->
+                    <div class="hidden" th:each="account : ${bankAccountMap[investor.maNDT]}"
+                         th:data-maNDT="${investor.maNDT}"
+                         th:data-accountNumber="${account.maTK}"
+                         th:data-bankName="${account.nganHang.tenNH}"
+                         th:data-bankCode="${account.nganHang.maNH}"
+                         th:data-amount="${account.soTien}"
+                         th:data-address="${account.nganHang.diaChi}"
+                         th:data-phone="${account.nganHang.phone}"
+                         th:data-email="${account.nganHang.email}"
+                         style="display:none;">
+                    </div>
+
+                    <!-- Nút Xóa -->
+                    <form th:action="${temporaryInvestors.contains(investor) ? '/investors/remove-temp' : '/investors/delete'}" method="post" style="display:inline;">
+                        <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
+                        <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
     <!-- Phân trang -->
     <div class="pagination">
@@ -89,8 +102,7 @@
         <span th:each="i : ${#numbers.sequence(0, investors.totalPages-1)}">
             <a th:href="@{/investors(page=${i},size=${investors.size})}"
                th:text="${i+1}"
-               th:classappend="${i==investors.number} ? 'active'">
-            </a>
+               th:classappend="${i==investors.number} ? 'active'"></a>
         </span>
         <span th:if="${investors.hasNext()}">
             <a th:href="@{/investors(page=${investors.number+1},size=${investors.size})}">Sau »</a>
@@ -140,7 +152,7 @@
         <h3>Sửa nhà đầu tư</h3>
         <form th:action="@{/investors/edit-temp}" method="post">
             <input type="hidden" name="maNDT" id="maNDT" />
-            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
+            <label>Họ tên: <input type="text"Psychology name="hoTen" maxlength="50" required/></label><br/>
             <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
             <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
             <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
@@ -166,7 +178,7 @@
                     <th>Hành động</th>
                 </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody id="edit-form-body"></tbody>
             </table>
             <button type="button" onclick="addBankAccount('bank-accounts-edit')">Thêm tài khoản ngân hàng</button><br/>
             <button type="submit">Lưu thay đổi</button>
@@ -180,7 +192,7 @@
         document.querySelectorAll(".edit-link").forEach(function (link) {
             link.addEventListener("click", function () {
                 const data = {
-                    maNDT: this.dataset.manadt,
+                    maNDT: this.dataset.mandt,
                     hoTen: this.dataset.hoten,
                     ngaySinh: this.dataset.ngaysinh,
                     diaChi: this.dataset.diachi,
@@ -203,6 +215,7 @@
     }
 
     function showEditForm(data) {
+        console.log(data);
         const form = document.querySelector('#edit-form form');
         form.maNDT.value = data.maNDT;
         form.hoTen.value = data.hoTen;
@@ -212,13 +225,48 @@
         form.cmnd.value = data.cmnd;
         form.email.value = data.email;
 
-        const genderInputs = form.querySelectorAll('input[name="gioiTinh"]');
-        genderInputs.forEach(input => input.checked = input.value === data.gioiTinh);
+
+        // Correctly access gioiTinh from data object
+        const gioiTinhValue = data.gioiTinh?.trim().toLowerCase();
+
+        const gioiTinhNam = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nam"]');
+        const gioiTinhNu = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nữ"]');
+
+        if (gioiTinhValue === 'nam' && gioiTinhNam) {
+            gioiTinhNam.checked = true;
+        } else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
+            gioiTinhNu.checked = true;
+        }
+        // Xóa các tài khoản ngân hàng hiện có trong bảng
+        const tbody = document.querySelector('#edit-form-body');
+        tbody.innerHTML = '';  // Xóa hết nội dung cũ
+
+        // Kiểm tra xem có phần tử div nào chứa thông tin tài khoản ngân hàng không
+        const hiddenDivs = document.querySelectorAll(`div[data-maNDT="${data.maNDT}"]`);
+        console.log(hiddenDivs);
+
+        hiddenDivs.forEach(div => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" name="bankAccounts[][maTK]" value="${div.dataset.accountnumber}" maxlength="20" required /></td>
+                <td><input type="text" name="bankAccounts[][nganHang][tenNH]" value="${div.dataset.bankname}" maxlength="50" required /></td>
+                <td><input type="text" name="bankAccounts[][nganHang][maNH]" value="${div.dataset.bankcode}" maxlength="20" required /></td>
+                <td><input type="text" name="bankAccounts[][soTien]" value="${div.dataset.amount}" maxlength="20" required /></td>
+                <td><input type="text" name="bankAccounts[][nganHang][diaChi]" value="${div.dataset.address}" maxlength="100" required /></td>
+                <td><input type="text" name="bankAccounts[][nganHang][phone]" value="${div.dataset.phone}" maxlength="15" required /></td>
+                <td><input type="email" name="bankAccounts[][nganHang][email]" value="${div.dataset.email}" maxlength="50" required /></td>
+                <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
+        `;
+            tbody.appendChild(row);
+        });
 
         document.getElementById('edit-form').style.display = 'block';
         document.getElementById('add-form').style.display = 'none';
         disableToolbarButtons();
     }
+
+
+
 
     function hideSubform(id) {
         document.getElementById(id).style.display = 'none';
