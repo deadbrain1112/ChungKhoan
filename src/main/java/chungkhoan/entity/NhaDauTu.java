@@ -3,6 +3,8 @@ package chungkhoan.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -44,7 +46,7 @@ public class NhaDauTu {
     private Set<SoHuu> soHuus;
 
     @OneToMany(mappedBy = "nhaDauTu", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<TaiKhoanNganHang> taiKhoanNganHangs;
+    private List<TaiKhoanNganHang> taiKhoanNganHangs = new ArrayList<>();
 
     public NhaDauTu(NhaDauTu other) {
         this.maNDT = other.maNDT;

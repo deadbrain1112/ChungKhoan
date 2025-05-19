@@ -50,45 +50,49 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="investor : ${investors.content}" th:classappend="${temporaryInvestors.contains(investor)} ? 'unsaved'">
-                <td th:text="${investor.maNDT}"></td>
-                <td th:text="${investor.hoTen}"></td>
-                <td th:text="${investor.ngaySinh}"></td>
-                <td th:text="${investor.diaChi}"></td>
-                <td th:text="${investor.phone}"></td>
-                <td th:text="${investor.cmnd}"></td>
-                <td th:text="${investor.gioiTinh}"></td>
-                <td th:text="${investor.email}"></td>
-                <td class="action-cell">
-                    <!-- Nút Sửa -->
-                    <button type="button" class="edit-link"
-                            th:attr="data-maNDT=${investor.maNDT},
-                                     data-hoTen=${investor.hoTen},
-                                     data-ngaySinh=${investor.ngaySinh},
-                                     data-diaChi=${investor.diaChi},
-                                     data-phone=${investor.phone},
-                                     data-cmnd=${investor.cmnd},
-                                     data-gioiTinh=${investor.gioiTinh},
-                                     data-email=${investor.email}">Sửa</button> |
-                    <!-- Lưu trữ thông tin tài khoản ngân hàng -->
-                    <div class="hidden" th:each="account : ${bankAccountMap[investor.maNDT]}"
-                         th:data-maNDT="${investor.maNDT}"
-                         th:data-accountNumber="${account.maTK}"
-                         th:data-bankName="${account.nganHang.tenNH}"
-                         th:data-bankCode="${account.nganHang.maNH}"
-                         th:data-amount="${account.soTien}"
-                         th:data-address="${account.nganHang.diaChi}"
-                         th:data-phone="${account.nganHang.phone}"
-                         th:data-email="${account.nganHang.email}"
-                         style="display:none;">
-                    </div>
+            <tr th:each="investor : ${investors.content}" th:classappend="${tempInvestorMap != null and tempInvestorMap.containsKey(investor.maNDT)} ? 'unsaved'">
+                <!-- Lấy nhà đầu tư từ tempInvestorMap -->
+                <th:block th:with="tempInvestor=${tempInvestorMap != null ? tempInvestorMap[investor.maNDT] : null}">
+                    <td th:text="${tempInvestor != null ? tempInvestor.maNDT : investor.maNDT}"></td>
+                    <td th:text="${tempInvestor != null ? tempInvestor.hoTen : investor.hoTen}"></td>
+                    <td th:text="${tempInvestor != null ? tempInvestor.ngaySinh : investor.ngaySinh}"></td>
+                    <td th:text="${tempInvestor != null ? tempInvestor.diaChi : investor.diaChi}"></td>
+                    <td th:text="${tempInvestor != null ? tempInvestor.phone : investor.phone}"></td>
+                    <td th:text="${tempInvestor != null ? tempInvestor.cmnd : investor.cmnd}"></td>
+                    <td th:text="${tempInvestor != null ? tempInvestor.gioiTinh : investor.gioiTinh}"></td>
+                    <td th:text="${tempInvestor != null ? tempInvestor.email : investor.email}"></td>
+                    <td class="action-cell">
+                        <!-- Nút Sửa -->
+                        <button type="button" class="edit-link"
+                                th:attr="data-maNDT=${tempInvestor != null ? tempInvestor.maNDT : investor.maNDT},
+                             data-hoTen=${tempInvestor != null ? tempInvestor.hoTen : investor.hoTen},
+                             data-ngaySinh=${tempInvestor != null ? tempInvestor.ngaySinh : investor.ngaySinh},
+                             data-diaChi=${tempInvestor != null ? tempInvestor.diaChi : investor.diaChi},
+                             data-phone=${tempInvestor != null ? tempInvestor.phone : investor.phone},
+                             data-cmnd=${tempInvestor != null ? tempInvestor.cmnd : investor.cmnd},
+                             data-gioiTinh=${tempInvestor != null ? tempInvestor.gioiTinh : investor.gioiTinh},
+                             data-email=${tempInvestor != null ? tempInvestor.email : investor.email}">Sửa</button> |
 
-                    <!-- Nút Xóa -->
-                    <form th:action="${temporaryInvestors.contains(investor) ? '/investors/remove-temp' : '/investors/delete'}" method="post" style="display:inline;">
-                        <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
-                        <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
-                    </form>
-                </td>
+                        <div th:if="${tempInvestor != null and #lists.size(tempInvestor.taiKhoanNganHangs) > 0} or ${bankAccountMap[investor.maNDT] != null and #lists.size(bankAccountMap[investor.maNDT]) > 0}"
+                             th:each="account : ${tempInvestor != null ? tempInvestor.taiKhoanNganHangs : bankAccountMap[investor.maNDT]}"
+                             th:data-maNDT="${tempInvestor != null ? tempInvestor.maNDT : investor.maNDT}"
+                             th:data-accountNumber="${account.maTK}"
+                             th:data-bankName="${account.nganHang.tenNH}"
+                             th:data-bankCode="${account.nganHang.maNH}"
+                             th:data-amount="${account.soTien}"
+                             th:data-address="${account.nganHang.diaChi}"
+                             th:data-phone="${account.nganHang.phone}"
+                             th:data-email="${account.nganHang.email}"
+                             style="display:none;"
+                             th:onclick="'console.log(\'Debug div: maNDT=\' + ${tempInvestor != null ? tempInvestor.maNDT : investor.maNDT} + \', account=\' + ${account.maTK});'">
+                        </div>
+                        <!-- Nút Xóa -->
+                        <form th:action="${tempInvestorMap != null and tempInvestorMap.containsKey(investor.maNDT) ? '/investors/remove-temp' : '/investors/delete'}" method="post" style="display:inline;">
+                            <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
+                            <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                        </form>
+                    </td>
+                </th:block>
             </tr>
             </tbody>
         </table>
@@ -152,7 +156,7 @@
         <h3>Sửa nhà đầu tư</h3>
         <form th:action="@{/investors/edit-temp}" method="post">
             <input type="hidden" name="maNDT" id="maNDT" />
-            <label>Họ tên: <input type="text"Psychology name="hoTen" maxlength="50" required/></label><br/>
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
             <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
             <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
             <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
@@ -213,9 +217,10 @@
         document.querySelector('#bank-accounts-add tbody').innerHTML = '';
         disableToolbarButtons();
     }
+    let bankAccountIndex = 0;
 
     function showEditForm(data) {
-        console.log(data);
+        console.log("Edit form data:", data);
         const form = document.querySelector('#edit-form form');
         form.maNDT.value = data.maNDT;
         form.hoTen.value = data.hoTen;
@@ -225,10 +230,7 @@
         form.cmnd.value = data.cmnd;
         form.email.value = data.email;
 
-
-        // Correctly access gioiTinh from data object
         const gioiTinhValue = data.gioiTinh?.trim().toLowerCase();
-
         const gioiTinhNam = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nam"]');
         const gioiTinhNu = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nữ"]');
 
@@ -237,37 +239,34 @@
         } else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
             gioiTinhNu.checked = true;
         }
-        // Xóa các tài khoản ngân hàng hiện có trong bảng
-        const tbody = document.querySelector('#edit-form-body');
-        tbody.innerHTML = '';  // Xóa hết nội dung cũ
 
-        // Kiểm tra xem có phần tử div nào chứa thông tin tài khoản ngân hàng không
+        const tbody = document.querySelector('#edit-form-body');
+        tbody.innerHTML = '';
+        bankAccountIndex = 0; // Reset chỉ số khi mở form sửa
+
         const hiddenDivs = document.querySelectorAll(`div[data-maNDT="${data.maNDT}"]`);
-        console.log(hiddenDivs);
+        console.log("Hidden divs found:", hiddenDivs.length, hiddenDivs, "for maNDT:", data.maNDT);
 
         hiddenDivs.forEach(div => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" name="bankAccounts[][maTK]" value="${div.dataset.accountnumber}" maxlength="20" required /></td>
-                <td><input type="text" name="bankAccounts[][nganHang][tenNH]" value="${div.dataset.bankname}" maxlength="50" required /></td>
-                <td><input type="text" name="bankAccounts[][nganHang][maNH]" value="${div.dataset.bankcode}" maxlength="20" required /></td>
-                <td><input type="text" name="bankAccounts[][soTien]" value="${div.dataset.amount}" maxlength="20" required /></td>
-                <td><input type="text" name="bankAccounts[][nganHang][diaChi]" value="${div.dataset.address}" maxlength="100" required /></td>
-                <td><input type="text" name="bankAccounts[][nganHang][phone]" value="${div.dataset.phone}" maxlength="15" required /></td>
-                <td><input type="email" name="bankAccounts[][nganHang][email]" value="${div.dataset.email}" maxlength="50" required /></td>
-                <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
+            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" value="${div.dataset.accountnumber || ''}" maxlength="20" required /></td>
+            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" value="${div.dataset.bankname || ''}" maxlength="50" required /></td>
+            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" value="${div.dataset.bankcode || ''}" maxlength="20" required /></td>
+            <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" value="${div.dataset.amount || '0'}" min="0" required /></td>
+            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" value="${div.dataset.address || ''}" maxlength="100" required /></td>
+            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" value="${div.dataset.phone || ''}" maxlength="15" required /></td>
+            <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" value="${div.dataset.email || ''}" maxlength="50" required /></td>
+            <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
         `;
             tbody.appendChild(row);
+            bankAccountIndex++;
         });
 
         document.getElementById('edit-form').style.display = 'block';
         document.getElementById('add-form').style.display = 'none';
         disableToolbarButtons();
     }
-
-
-
-
     function hideSubform(id) {
         document.getElementById(id).style.display = 'none';
         enableToolbarButtons();
@@ -281,24 +280,27 @@
         document.querySelectorAll('.toolbar-btn, .edit-link, .delete-btn').forEach(btn => btn.disabled = false);
     }
 
+
     function addBankAccount(tableId) {
         const table = document.getElementById(tableId).querySelector('tbody');
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
-            <td><input type="text" name="bankAccounts[][accountNumber]" maxlength="20" required /></td>
-            <td><input type="text" name="bankAccounts[][bankName]" maxlength="50" required /></td>
-            <td><input type="text" name="bankAccounts[][bankCode]" maxlength="20" required /></td>
-            <td><input type="text" name="bankAccounts[][amount]" maxlength="20" required /></td>
-            <td><input type="text" name="bankAccounts[][address]" maxlength="100" required /></td>
-            <td><input type="text" name="bankAccounts[][phone]" maxlength="15" required /></td>
-            <td><input type="email" name="bankAccounts[][email]" maxlength="50" required /></td>
-            <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
-        `;
+        <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" maxlength="20" required /></td>
+        <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required /></td>
+        <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" maxlength="20" required /></td>
+        <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" value="0" required /></td>
+        <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" maxlength="100" required /></td>
+        <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="15" required /></td>
+        <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required /></td>
+        <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
+    `;
         table.appendChild(newRow);
+        bankAccountIndex++;
     }
 
     function removeBankAccount(button) {
-        button.closest("tr").remove();
+        const row = button.parentElement.parentElement;
+        row.remove();
     }
 </script>
 </body>

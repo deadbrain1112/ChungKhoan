@@ -19,7 +19,7 @@ public class TaiKhoanNganHang {
     @JoinColumn(name = "MaNDT", nullable = false)
     private NhaDauTu nhaDauTu;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MaNH", nullable = false)
     private NganHang nganHang;
 
