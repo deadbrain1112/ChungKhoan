@@ -86,7 +86,13 @@ public class InvestorsController {
 
 		List<NhaDauTu> allInvestorsPageContent = (start < end) ? allInvestors.subList(start, end) : new ArrayList<>();
 		Page<NhaDauTu> allInvestorsPage = new PageImpl<>(allInvestorsPageContent, PageRequest.of(page, size), totalItems);
-
+		
+		List<TaiKhoanNganHang> usedAccounts = taiKhoanNganHangService.findTaiKhoanNganHangInLenhDat();
+		Set<String> usedMaTKs = usedAccounts.stream()
+	            .map(TaiKhoanNganHang::getMaTK)
+	            .collect(Collectors.toSet());
+		model.addAttribute("usedMaTKs", usedMaTKs);
+		
 		model.addAttribute("investors", allInvestorsPage);
 		model.addAttribute("temporaryInvestors", tempList);
 		model.addAttribute("tempInvestorMap", tempInvestorMap);

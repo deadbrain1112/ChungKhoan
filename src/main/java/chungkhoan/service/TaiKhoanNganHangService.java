@@ -80,4 +80,8 @@ public class TaiKhoanNganHangService {
             throw new RuntimeException("Lỗi khi thêm tài khoản ngân hàng: " + e.getMessage());
         }
     }
+    
+    public List<TaiKhoanNganHang> findTaiKhoanNganHangInLenhDat() {
+        return taiKhoanNganHangRepository.findTaiKhoanNganHangInLenhDat();
+    }
 }

@@ -191,6 +191,10 @@
     </div>
 </div>
 
+<script th:inline="javascript">
+    let usedMaTKs = /*[[${usedMaTKs}]]*/ [];
+</script>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll(".edit-link").forEach(function (link) {
@@ -248,20 +252,24 @@
         console.log("Hidden divs found:", hiddenDivs.length, hiddenDivs, "for maNDT:", data.maNDT);
 
         hiddenDivs.forEach(div => {
+            const maTK = div.dataset.accountnumber || '';
+            const isUsed = usedMaTKs.includes(maTK);
+            
             const row = document.createElement('tr');
             row.innerHTML = `
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" value="${div.dataset.accountnumber || ''}" maxlength="20" required /></td>
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" value="${div.dataset.bankname || ''}" maxlength="50" required /></td>
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" value="${div.dataset.bankcode || ''}" maxlength="20" required /></td>
-            <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" value="${div.dataset.amount || '0'}" min="0" required /></td>
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" value="${div.dataset.address || ''}" maxlength="100" required /></td>
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" value="${div.dataset.phone || ''}" maxlength="15" required /></td>
-            <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" value="${div.dataset.email || ''}" maxlength="50" required /></td>
-            <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
-        `;
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" value="${maTK}" maxlength="20" required ${isUsed ? 'disabled' : ''} /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" value="${div.dataset.bankname || ''}" maxlength="50" required ${isUsed ? 'disabled' : ''} /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" value="${div.dataset.bankcode || ''}" maxlength="20" required ${isUsed ? 'disabled' : ''} /></td>
+                <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" value="${div.dataset.amount || '0'}" min="0" required ${isUsed ? 'disabled' : ''} /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" value="${div.dataset.address || ''}" maxlength="100" required ${isUsed ? 'disabled' : ''} /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" value="${div.dataset.phone || ''}" maxlength="15" required ${isUsed ? 'disabled' : ''} /></td>
+                <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" value="${div.dataset.email || ''}" maxlength="50" required ${isUsed ? 'disabled' : ''} /></td>
+                <td><button type="button" onclick="removeBankAccount(this)" ${isUsed ? 'disabled' : ''}>Xóa</button></td> 	
+            `;
             tbody.appendChild(row);
             bankAccountIndex++;
         });
+
 
         document.getElementById('edit-form').style.display = 'block';
         document.getElementById('add-form').style.display = 'none';
