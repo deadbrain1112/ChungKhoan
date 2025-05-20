@@ -27,11 +27,18 @@ public class KhopLenhService {
 
     @Transactional
     public void khopLenh(String maCP) {
+    	System.out.println(">>> Bắt đầu khớp cho mã cổ phiếu: " + maCP);
         List<LenhDat> muaList = lenhDatRepo.findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaDescNgayGDAsc(maCP, "M", "Chờ");
         List<LenhDat> banList = lenhDatRepo.findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaAscNgayGDAsc(maCP, "B", "Chờ");
 
+        System.out.println(">>> Khớp lệnh cho mã: " + maCP);
+        System.out.println(">>> Số lệnh MUA: " + muaList.size());
+        System.out.println(">>> Số lệnh BÁN: " + banList.size());
+
         for (LenhDat mua : muaList) {
             for (LenhDat ban : banList) {
+                System.out.println("Đang xét MUA#" + mua.getMaGD() + " vs BÁN#" + ban.getMaGD());
+
                 if (mua.getSoLuong() <= 0 || ban.getSoLuong() <= 0) continue;
                 if (mua.getGia() >= ban.getGia()) {
                     int slKhop = Math.min(mua.getSoLuong(), ban.getSoLuong());
@@ -39,30 +46,40 @@ public class KhopLenhService {
                     BigDecimal tien = BigDecimal.valueOf(slKhop * giaKhop);
 
                     if (!taiKhoanNganHangService.truTien(mua.getTaiKhoanNganHang().getMaTK(), tien)) {
-                        continue; // Bỏ qua nếu không đủ tiền
+                        System.out.println("Không đủ tiền để mua - bỏ qua.");
+                        continue;
                     }
+
                     if (!soHuuService.giamSoHuu(ban.getTaiKhoanNganHang().getNhaDauTu(), maCP, slKhop)) {
+                        System.out.println("Không đủ cổ phiếu để bán - hoàn tiền.");
                         taiKhoanNganHangService.congTien(mua.getTaiKhoanNganHang().getMaTK(), tien);
-                        continue; // Bỏ qua nếu không đủ cổ phiếu
+                        continue;
                     }
 
                     taiKhoanNganHangService.congTien(ban.getTaiKhoanNganHang().getMaTK(), tien);
                     soHuuService.tangSoHuu(mua.getTaiKhoanNganHang().getNhaDauTu(), maCP, slKhop);
 
-                    // Cập nhật giá cổ phiếu
                     coPhieuService.capNhatGiaMoiNhat(maCP, giaKhop);
 
-                    // Ghi khớp lệnh
-                    LenhKhop lenhKhop = LenhKhop.builder()
+                    // Ghi khớp cho MUA
+                    lenhKhopRepo.save(LenhKhop.builder()
                             .lenhDat(mua)
                             .ngayGioKhop(LocalDateTime.now())
                             .soLuongKhop(slKhop)
                             .giaKhop(giaKhop)
                             .kieuKhop((mua.getSoLuong() == slKhop && ban.getSoLuong() == slKhop) ? "Khớp hết" : "Khớp 1 phần")
-                            .build();
-                    lenhKhopRepo.save(lenhKhop);
+                            .build());
 
-                    // Cập nhật trạng thái lệnh
+                    // Ghi khớp cho BÁN
+                    lenhKhopRepo.save(LenhKhop.builder()
+                            .lenhDat(ban)
+                            .ngayGioKhop(LocalDateTime.now())
+                            .soLuongKhop(slKhop)
+                            .giaKhop(giaKhop)
+                            .kieuKhop((mua.getSoLuong() == slKhop && ban.getSoLuong() == slKhop) ? "Khớp hết" : "Khớp 1 phần")
+                            .build());
+
+                    // Cập nhật trạng thái
                     mua.setSoLuong(mua.getSoLuong() - slKhop);
                     ban.setSoLuong(ban.getSoLuong() - slKhop);
                     mua.setTrangThai(mua.getSoLuong() == 0 ? "Khớp" : "Một phần");
@@ -71,11 +88,14 @@ public class KhopLenhService {
                     lenhDatRepo.save(mua);
                     lenhDatRepo.save(ban);
 
+                    System.out.println("✅ Khớp thành công " + slKhop + " cổ phiếu AAA @ " + giaKhop);
+
                     if (mua.getSoLuong() == 0) break;
                 }
             }
         }
     }
+
 
     private boolean isTrongGioGiaoDich() {
         LocalDateTime now = LocalDateTime.now();
@@ -89,12 +109,15 @@ public class KhopLenhService {
 
     @Scheduled(fixedDelay = 1000)
     public void khopLenhTuDong() {
+    	System.out.println("[SCHEDULED] Tự động kiểm tra khớp lệnh lúc " + LocalDateTime.now());
         if (!isTrongGioGiaoDich()) {
             System.out.println("[KHOP LENH] Ngoai gio giao dich, khong thuc hien.");
             return;
         }
-        List<String> dsMaCP = lenhDatRepo.findAllMaCPDangChoKhop();
+        List<String> dsMaCP = lenhDatRepo.findAllMaCPDangChoKhop("Chờ");
+        System.out.println(">>> Danh sách mã CP đang chờ khớp: " + dsMaCP);
         for (String maCP : dsMaCP) {
+        	System.out.println(">>> Đang xử lý mã CP: " + maCP);
             khopLenh(maCP);
         }
     }

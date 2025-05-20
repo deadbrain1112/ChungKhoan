@@ -39,6 +39,7 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     // Khớp lệnhs
     List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaDescNgayGDAsc(String maCP, String loaiGD, String trangThai);
     List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaAscNgayGDAsc(String maCP, String loaiGD, String trangThai);
-    @Query("SELECT DISTINCT ld.coPhieu.maCP FROM LenhDat ld WHERE ld.trangThai = 'Chờ'")
-    List<String> findAllMaCPDangChoKhop();
+    @Query("SELECT DISTINCT ld.coPhieu.maCP FROM LenhDat ld WHERE LOWER(ld.trangThai) = LOWER(:status)")
+    List<String> findAllMaCPDangChoKhop(@Param("status") String status);
+
 }
