@@ -22,13 +22,13 @@ public class LichSuGia {
     private Timestamp ngay;
 
     @Column(name = "GiaTran", nullable = false)
-    private float giaTran;
+    private double giaTran;
 
     @Column(name = "GiaSan", nullable = false)
-    private float giaSan;
+    private double giaSan;
 
     @Column(name = "GiaTC", nullable = false)
-    private float giaTC;
+    private double giaTC;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MaCP", insertable = false, updatable = false)

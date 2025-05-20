@@ -29,9 +29,9 @@ public class StockBoardController {
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = now.toLocalDate().plusDays(1).atStartOfDay();
 
-        Map<String, Float> giaTCMap = new HashMap<>();
-        Map<String, Float> giaTranMap = new HashMap<>();
-        Map<String, Float> giaSanMap = new HashMap<>();
+        Map<String, Double> giaTCMap = new HashMap<>();
+        Map<String, Double> giaTranMap = new HashMap<>();
+        Map<String, Double> giaSanMap = new HashMap<>();
         Map<String, LenhKhop> lenhKhopMoiNhatMap = new HashMap<>();
         Map<String, Long> tongKLMoiMap = new HashMap<>();
         Map<String, List<Map<String, Object>>> benMuaMap = new HashMap<>();
@@ -45,23 +45,23 @@ public class StockBoardController {
 
             if (lichSuGiaOpt.isPresent()) {
                 LichSuGia gia = lichSuGiaOpt.get();
-                Float giaTC = gia.getGiaTC();
-                Float giaTran = gia.getGiaTran();
-                Float giaSan = gia.getGiaSan();
+                Double giaTC = gia.getGiaTC();
+                Double giaTran = gia.getGiaTran();
+                Double giaSan = gia.getGiaSan();
 
                 // Đảm bảo luôn có giá tham chiếu
-                giaTCMap.put(maCP, giaTC != null ? giaTC : 0f);
+                giaTCMap.put(maCP, giaTC != null ? giaTC : 0.0);
 
                 // Nếu không có giá trần/sàn, tự tính (giả sử ±7% theo quy định HOSE)
                 if (giaTC != null) {
-                    giaTranMap.put(maCP, giaTran != null ? giaTran : giaTC * 1.07f);
-                    giaSanMap.put(maCP, giaSan != null ? giaSan : giaTC * 0.93f);
+                    giaTranMap.put(maCP, giaTran != null ? giaTran : giaTC * 1.07);
+                    giaSanMap.put(maCP, giaSan != null ? giaSan : giaTC * 0.93);
                 } 
             } else {
                 // Nếu không có dữ liệu lịch sử giá, gán giá mặc định
-                giaTCMap.put(maCP, 0f);
-                giaTranMap.put(maCP, 0f);
-                giaSanMap.put(maCP, 0f);
+                giaTCMap.put(maCP, 0.0);
+                giaTranMap.put(maCP, 0.0);
+                giaSanMap.put(maCP, 0.0);
             }
 
             // Lấy danh sách lệnh đặt mua (chờ khớp, trong ngày hiện tại)
@@ -113,8 +113,10 @@ public class StockBoardController {
             benBanMap.put(maCP, banCongDon);
 
             // Lấy lệnh khớp mới nhất theo ngayGioKhop, chỉ lấy trong ngày hiện tại
-            LenhKhop lenhKhop = lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay);
-            lenhKhopMoiNhatMap.put(maCP, lenhKhop);
+            List<LenhKhop> list = lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay);
+            if (!list.isEmpty()) {
+                lenhKhopMoiNhatMap.put(maCP, list.get(0)); // Lấy bản ghi mới nhất
+            }
 
             // Tính tổng khối lượng khớp trong ngày hiện tại
             Long tongKL = lenhKhopRepo.sumSoLuongKhopByCoPhieu(cp, startOfDay, endOfDay);

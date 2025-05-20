@@ -35,4 +35,10 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     
     @Query(value = "EXEC sp_TimLenhDatTheoNhaDauTu :maNDT", nativeQuery = true)
     List<LenhDat> timLenhDatTheoMaNDT(@Param("maNDT") String maNDT);
+    
+    // Khớp lệnhs
+    List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaDescNgayGDAsc(String maCP, String loaiGD, String trangThai);
+    List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaAscNgayGDAsc(String maCP, String loaiGD, String trangThai);
+    @Query("SELECT DISTINCT ld.coPhieu.maCP FROM LenhDat ld WHERE ld.trangThai = 'Chờ'")
+    List<String> findAllMaCPDangChoKhop();
 }

@@ -1,6 +1,7 @@
 package chungkhoan.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +18,6 @@ public interface SoHuuRepository extends JpaRepository<SoHuu, SoHuuKey> {
     // Lấy danh sách mã cổ phiếu mà nhà đầu tư sở hữu
     @Query("SELECT DISTINCT s.maCP FROM SoHuu s WHERE s.maNDT = :maNDT")
     List<String> findMaCPByMaNDT(@Param("maNDT") String maNDT);
+    
+    Optional<SoHuu> findByMaNDTAndMaCP(String maNDT, String maCP);
 }

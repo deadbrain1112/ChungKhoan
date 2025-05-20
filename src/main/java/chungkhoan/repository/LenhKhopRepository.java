@@ -8,6 +8,7 @@ import chungkhoan.entity.CoPhieu;
 import chungkhoan.entity.LenhKhop;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface LenhKhopRepository extends JpaRepository<LenhKhop, Long> {
 
@@ -15,7 +16,7 @@ public interface LenhKhopRepository extends JpaRepository<LenhKhop, Long> {
     @Query("SELECT lk FROM LenhKhop lk WHERE lk.lenhDat.coPhieu = :cp " +
            "AND lk.ngayGioKhop >= :startOfDay AND lk.ngayGioKhop < :endOfDay " +
            "ORDER BY lk.ngayGioKhop DESC, lk.maLK DESC")
-    LenhKhop findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(
+    List<LenhKhop> findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(
             @Param("cp") CoPhieu cp,
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay

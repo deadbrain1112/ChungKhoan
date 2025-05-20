@@ -6,6 +6,7 @@ import chungkhoan.entity.UndoAction;
 import chungkhoan.repository.CoPhieuRepository;
 import chungkhoan.repository.LichSuGiaRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -24,6 +25,9 @@ public class CoPhieuService {
 
     @Autowired
     private LichSuGiaRepository lichSuGiaRepository;
+    
+    @Autowired 
+    private LichSuGiaService lichSuGiaService;
     
     private Deque<UndoAction> undoStack = new ArrayDeque<>();
 
@@ -128,5 +132,14 @@ public class CoPhieuService {
 
     public void clearUndoStack() {
         undoStack.clear();
+    }
+    
+    public void capNhatGiaMoiNhat(String maCP, double giaKhop) {
+        // Ghi lại lịch sử giá mới sau mỗi lần khớp
+        lichSuGiaService.luuGiaMoi(maCP, giaKhop, LocalDateTime.now());
+    }
+
+    public double layGiaMoiNhat(String maCP) {
+        return lichSuGiaService.layGiaMoiNhat(maCP).getGiaTC();
     }
 }

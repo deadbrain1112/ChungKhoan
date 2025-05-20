@@ -84,4 +84,20 @@ public class TaiKhoanNganHangService {
     public List<TaiKhoanNganHang> findTaiKhoanNganHangInLenhDat() {
         return taiKhoanNganHangRepository.findTaiKhoanNganHangInLenhDat();
     }
+    
+    public boolean truTien(String maTK, BigDecimal soTien) {
+        TaiKhoanNganHang tk = taiKhoanNganHangRepository.findById(maTK).orElse(null);
+        if (tk == null || tk.getSoTien().compareTo(soTien) < 0) return false;
+        tk.setSoTien(tk.getSoTien().subtract(soTien));
+        taiKhoanNganHangRepository.save(tk);
+        return true;
+    }
+
+    public void congTien(String maTK, BigDecimal soTien) {
+        TaiKhoanNganHang tk = taiKhoanNganHangRepository.findById(maTK).orElse(null);
+        if (tk != null) {
+            tk.setSoTien(tk.getSoTien().add(soTien));
+            taiKhoanNganHangRepository.save(tk);
+        }
+    }
 }

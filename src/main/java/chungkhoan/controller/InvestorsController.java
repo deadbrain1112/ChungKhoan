@@ -119,6 +119,7 @@ public class InvestorsController {
 								  @RequestParam(defaultValue = "5") int size,
 								  HttpSession session,
 								  RedirectAttributes ra) {
+		
 		@SuppressWarnings("unchecked")
 		List<NhaDauTu> tempList = (List<NhaDauTu>) session.getAttribute("temporaryInvestors");
 		if (tempList == null) {
@@ -354,6 +355,12 @@ public class InvestorsController {
 		allInvestors.addAll(tempList);
 
 		Page<NhaDauTu> investorPage = new PageImpl<>(allInvestors, PageRequest.of(0, Integer.MAX_VALUE), allInvestors.size());
+		
+		List<TaiKhoanNganHang> usedAccounts = taiKhoanNganHangService.findTaiKhoanNganHangInLenhDat();
+		Set<String> usedMaTKs = usedAccounts.stream()
+				.map(TaiKhoanNganHang::getMaTK)
+				.collect(Collectors.toSet());
+		model.addAttribute("usedMaTKs", usedMaTKs);
 
 		model.addAttribute("investors", investorPage);
 		model.addAttribute("temporaryInvestors", tempList);
