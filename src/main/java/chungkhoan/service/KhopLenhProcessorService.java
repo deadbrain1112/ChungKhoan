@@ -83,7 +83,17 @@ public class KhopLenhProcessorService {
         soHuuService.tangSoHuu(maNDTMua, maCP, slKhop);
         coPhieuService.capNhatGiaMoiNhat(maCP, giaKhop);
 
-        String kieuKhop = (mua.getSoLuong() == slKhop && ban.getSoLuong() == slKhop) ? "Khớp hết" : "Khớp 1 phần";
+        String kieuKhop;
+        boolean hetMua = mua.getSoLuong() == slKhop;
+        boolean hetBan = ban.getSoLuong() == slKhop;
+
+        if (hetMua && hetBan) {
+            kieuKhop = "Khớp hết";
+        } else if (hetMua || hetBan) {
+            kieuKhop = "Khớp 1 phần (1 lệnh hết)";
+        } else {
+            kieuKhop = "Khớp 1 phần";
+        }
 
         lenhKhopRepo.save(LenhKhop.builder().lenhDat(mua).ngayGioKhop(LocalDateTime.now()).soLuongKhop(slKhop).giaKhop(giaKhop).kieuKhop(kieuKhop).build());
         lenhKhopRepo.save(LenhKhop.builder().lenhDat(ban).ngayGioKhop(LocalDateTime.now()).soLuongKhop(slKhop).giaKhop(giaKhop).kieuKhop(kieuKhop).build());

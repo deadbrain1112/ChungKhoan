@@ -60,3 +60,21 @@ thead {
     background-color: #2a2a2a;
     font-weight: bold;
 }
+
+ /* Hiệu ứng hover nổi dòng */
+tbody tr:hover {
+   background-color: #333333;
+   transform: scale(1.01);
+   transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+/* Hiệu ứng nhấp nháy */
+.flash {
+    animation: flash-animation 1s ease-in-out;
+}
+
+@keyframes flash-animation {
+    0% { background-color: #444; }
+    50% { background-color: #777; }
+    100% { background-color: transparent; }
+}

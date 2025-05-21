@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" th:href="@{/css/stock_board.css}">
     <title>Bảng giá cổ phiếu</title>
+    <link rel="stylesheet" th:href="@{/css/stock_board.css}">
+
 </head>
 <body>
     <h2>BẢNG GIÁ CỔ PHIẾU TRỰC TUYẾN</h2>
@@ -35,12 +36,12 @@
             <tr th:each="cp : ${dsCP}">
                 <td th:text="${cp.maCP}"></td>
 
-                <!-- Giá tham chiếu, trần, sàn (định dạng POINT) -->
+                <!-- Tham chiếu / Trần / Sàn -->
                 <td class="gia-tham-chieu" th:text="${#numbers.formatDecimal(giaTCMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
                 <td class="gia-tran" th:text="${#numbers.formatDecimal(giaTranMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
                 <td class="gia-san" th:text="${#numbers.formatDecimal(giaSanMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
 
-                <!-- Bên mua (định dạng POINT cho giá, COMMA cho khối lượng) -->
+                <!-- Bên mua -->
                 <td th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
                 <td th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
                 <td th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
@@ -48,26 +49,21 @@
                 <td th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
                 <td th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
-                <!-- Khớp lệnh (định dạng POINT cho giá, COMMA cho khối lượng) -->
-                <td th:text="${lenhKhopMap[cp.maCP]?.giaKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop, 0, 'COMMA', 0, 'COMMA') : '-'}" 
-                    th:classappend="|${
-                        lenhKhopMap[cp.maCP]?.giaKhop == null ? '' :
-                        lenhKhopMap[cp.maCP]?.giaKhop == giaTranMap[cp.maCP] ? 'gia-tran' :
-                        lenhKhopMap[cp.maCP]?.giaKhop == giaSanMap[cp.maCP] ? 'gia-san' :
-                        lenhKhopMap[cp.maCP]?.giaKhop > giaTCMap[cp.maCP] ? 'gia-tang' :
-                        lenhKhopMap[cp.maCP]?.giaKhop < giaTCMap[cp.maCP] ? 'gia-giam' :
-                        'gia-tham-chieu'
-                    }|">
+                <!-- Giá khớp -->
+                <td th:text="${lenhKhopMap[cp.maCP]?.giaKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop, 0, 'COMMA', 0, 'COMMA') : '-'}"
+                    th:classappend="${colorMap[cp.maCP]} + ' flash'">
                 </td>
 
-                <td th:text="${lenhKhopMap[cp.maCP]?.soLuongKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].soLuongKhop, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-
-                <td th:if="${lenhKhopMap[cp.maCP]?.giaKhop != null and giaTCMap[cp.maCP] != null}"
-                    th:text="${#numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop - giaTCMap[cp.maCP], 0, 'COMMA', 0, 'COMMA')}">
+                <!-- Khối lượng khớp -->
+                <td th:text="${lenhKhopMap[cp.maCP]?.soLuongKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].soLuongKhop, 0, 'COMMA', 0, 'COMMA') : '-'}">
                 </td>
-                <td th:unless="${lenhKhopMap[cp.maCP]?.giaKhop != null and giaTCMap[cp.maCP] != null}">-</td>
 
-                <!-- Bên bán (định dạng POINT cho giá, COMMA cho khối lượng) -->
+                <!-- +/- -->
+                <td th:text="${deltaMap[cp.maCP] != null ? #numbers.formatDecimal(deltaMap[cp.maCP], 0, 'COMMA', 0, 'COMMA') : '-'}"
+                    th:classappend="${colorMap[cp.maCP]} + ' flash'">
+                </td>
+
+                <!-- Bên bán -->
                 <td th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
                 <td th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
                 <td th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
@@ -75,6 +71,7 @@
                 <td th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
                 <td th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
+                <!-- Tổng khối lượng -->
                 <td class="tong-kl" th:text="${#numbers.formatDecimal(tongKhopMap[cp.maCP], 0, 'COMMA', 0, 'COMMA')}"></td>
             </tr>
         </tbody>

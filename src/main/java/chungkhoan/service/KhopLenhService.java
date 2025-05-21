@@ -36,7 +36,7 @@ public class KhopLenhService implements ApplicationContextAware {
             return false;
 
         boolean sang = !time.isBefore(LocalTime.of(6, 0)) && time.isBefore(LocalTime.of(12, 0));
-        boolean chieu = !time.isBefore(LocalTime.of(13, 0)) && time.isBefore(LocalTime.of(16, 0));
+        boolean chieu = !time.isBefore(LocalTime.of(13, 0)) && time.isBefore(LocalTime.of(16, 00));
         return sang || chieu;
     }
 
@@ -61,7 +61,6 @@ public class KhopLenhService implements ApplicationContextAware {
         List<LenhDat> lenhCho = lenhDatRepo.findByTrangThai("Chờ");
 
         int huyCount = 0;
-        LocalTime time = LocalTime.now();
 
         for (LenhDat lenh : List.copyOf(lenhCho)) {
             LocalTime gioLenh = lenh.getNgayGD().toLocalTime();
@@ -69,7 +68,7 @@ public class KhopLenhService implements ApplicationContextAware {
             // Hủy những lệnh đặt sau phiên giao dịch liên tục chưa được khớp
             boolean trongGioLienTuc = 
                 (!gioLenh.isBefore(LocalTime.of(6, 0)) && gioLenh.isBefore(LocalTime.of(12, 0))) ||
-                (!gioLenh.isBefore(LocalTime.of(13, 0)) && gioLenh.isBefore(LocalTime.of(16, 0)));
+                (!gioLenh.isBefore(LocalTime.of(13, 0)) && gioLenh.isBefore(LocalTime.of(16, 00)));
 
             if (trongGioLienTuc) {
                 lenh.setTrangThai("Hủy");

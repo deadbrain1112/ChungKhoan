@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,47 +39,72 @@ public class StockBoardController {
         Map<String, Long> tongKLMoiMap = new HashMap<>();
         Map<String, List<Map<String, Object>>> benMuaMap = new HashMap<>();
         Map<String, List<Map<String, Object>>> benBanMap = new HashMap<>();
+        Map<String, String> colorMap = new HashMap<>();
+        Map<String, Double> deltaMap = new HashMap<>();
 
         for (CoPhieu cp : dsCP) {
             String maCP = cp.getMaCP();
 
             // Tham chiếu, trần, sàn
             lichSuGiaRepo.findFirstByMaCPAndNgayLessThan(maCP, Timestamp.valueOf(now)).ifPresentOrElse(lichSuGia -> {
-                Double giaTC = lichSuGia.getGiaTC();
-                Double giaTran = lichSuGia.getGiaTran();
-                Double giaSan = lichSuGia.getGiaSan();
+                double giaTC = Optional.ofNullable(lichSuGia.getGiaTC()).orElse(0.0);
+                double giaTran = Optional.ofNullable(lichSuGia.getGiaTran()).orElse(giaTC * 1.07);
+                double giaSan = Optional.ofNullable(lichSuGia.getGiaSan()).orElse(giaTC * 0.93);
 
-                giaTCMap.put(maCP, giaTC != null ? giaTC : 0.0);
-                giaTranMap.put(maCP, giaTran != null ? giaTran : (giaTC != null ? giaTC * 1.07 : 0.0));
-                giaSanMap.put(maCP, giaSan != null ? giaSan : (giaTC != null ? giaTC * 0.93 : 0.0));
+                giaTCMap.put(maCP, giaTC);
+                giaTranMap.put(maCP, giaTran);
+                giaSanMap.put(maCP, giaSan);
             }, () -> {
                 giaTCMap.put(maCP, 0.0);
                 giaTranMap.put(maCP, 0.0);
                 giaSanMap.put(maCP, 0.0);
             });
 
+            // Lệnh khớp mới nhất trong giờ
+            lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay).stream()
+                .filter(lk -> isTrongGioGiaoDich(lk.getNgayGioKhop()))
+                .findFirst()
+                .ifPresent(lk -> {
+                    lenhKhopMoiNhatMap.put(maCP, lk);
+                    double giaKhop = lk.getGiaKhop();
+                    double giaTC = giaTCMap.get(maCP);
+
+                    String cls = "gia-tham-chieu";
+                    if (giaKhop == giaTranMap.get(maCP)) cls = "gia-tran";
+                    else if (giaKhop == giaSanMap.get(maCP)) cls = "gia-san";
+                    else if (giaKhop > giaTC) cls = "gia-tang";
+                    else if (giaKhop < giaTC) cls = "gia-giam";
+
+                    colorMap.put(maCP, cls);
+                    deltaMap.put(maCP, giaKhop - giaTC);
+                });
+
             List<String> statuses = Arrays.asList("Chờ", "Một phần");
 
-            // Mua
+            // Mua trong giờ
             List<LenhDat> lenhMua = lenhDatRepo
-                    .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", statuses);
+                .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", statuses).stream()
+                .filter(ld -> isTrongGioGiaoDich(ld.getNgayGD()))
+                .collect(Collectors.toList());
             benMuaMap.put(maCP, tongHopTheoGia(lenhMua, true));
 
-            // Bán
+            // Bán trong giờ
             List<LenhDat> lenhBan = lenhDatRepo
-                    .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(maCP, "B", statuses);
+                .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(maCP, "B", statuses).stream()
+                .filter(ld -> isTrongGioGiaoDich(ld.getNgayGD()))
+                .collect(Collectors.toList());
             benBanMap.put(maCP, tongHopTheoGia(lenhBan, false));
 
-            // Lệnh khớp mới nhất
-            lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay)
-                    .stream().findFirst()
-                    .ifPresent(lk -> lenhKhopMoiNhatMap.put(maCP, lk));
-
-            // Tổng khối lượng
-            Long tongKL = lenhKhopRepo.sumSoLuongKhopByCoPhieu(cp, startOfDay, endOfDay);
-            tongKLMoiMap.put(maCP, tongKL != null ? tongKL : 0L);
+            // Tổng KL khớp trong giờ
+            Long tongKL = lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay).stream()
+                .filter(lk -> isTrongGioGiaoDich(lk.getNgayGioKhop()))
+                .mapToLong(LenhKhop::getSoLuongKhop)
+                .sum();
+            tongKLMoiMap.put(maCP, tongKL);
         }
 
+        model.addAttribute("colorMap", colorMap);
+        model.addAttribute("deltaMap", deltaMap);
         model.addAttribute("dsCP", dsCP);
         model.addAttribute("giaTCMap", giaTCMap);
         model.addAttribute("giaTranMap", giaTranMap);
@@ -109,5 +136,19 @@ public class StockBoardController {
                 : Double.compare((Double) a.get("gia"), (Double) b.get("gia")))
             .limit(3)
             .collect(Collectors.toList());
+    }
+    
+    private boolean isTrongGioGiaoDich(LocalDateTime thoiDiem) {
+        if (thoiDiem == null) return false;
+
+        DayOfWeek day = thoiDiem.getDayOfWeek();
+        LocalTime time = thoiDiem.toLocalTime();
+
+        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) return false;
+
+        boolean sang = !time.isBefore(LocalTime.of(9, 0)) && time.isBefore(LocalTime.of(11, 30));
+        boolean chieu = !time.isBefore(LocalTime.of(13, 0)) && time.isBefore(LocalTime.of(16, 00));
+
+        return sang || chieu;
     }
 }
