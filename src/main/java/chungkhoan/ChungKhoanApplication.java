@@ -3,6 +3,7 @@ package chungkhoan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -12,6 +13,7 @@ import javax.sql.DataSource;
 
 @SpringBootApplication
 @EnableScheduling
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ChungKhoanApplication {
 
     @Value("${spring.datasource.url}")

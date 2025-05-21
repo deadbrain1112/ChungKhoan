@@ -19,8 +19,8 @@ public interface LichSuGiaRepository extends JpaRepository<LichSuGia, LichSuGiaK
     Float getGiaThamChieuMoiNhat(@Param("maCP") String maCP);
 
     // Lấy bản ghi mới nhất trước ngày hiện tại, đảm bảo chỉ trả về 1 bản ghi
-    @Query("SELECT l FROM LichSuGia l WHERE l.maCP = :maCP AND l.ngay < :ngay ORDER BY l.ngay DESC")
-    Optional<LichSuGia> findFirstByMaCPAndNgayLessThanOrderByNgayDesc(
+    @Query(value = "SELECT TOP 1 * FROM LichSuGia WHERE maCP = :maCP AND ngay < :ngay ORDER BY ngay DESC", nativeQuery = true)
+    Optional<LichSuGia> findFirstByMaCPAndNgayLessThan(
             @Param("maCP") String maCP,
             @Param("ngay") Timestamp ngay
     );

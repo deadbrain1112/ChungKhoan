@@ -9,6 +9,7 @@ import chungkhoan.entity.CoPhieu;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.SoHuu;
 import chungkhoan.repository.CoPhieuRepository;
+import chungkhoan.repository.NDTRepository;
 import chungkhoan.repository.SoHuuRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +19,7 @@ public class SoHuuService {
 
     private final SoHuuRepository soHuuRepository;
     private final CoPhieuRepository coPhieuRepository;
+    private final NDTRepository ndtRepository;
 
     // Lấy danh sách sở hữu của một nhà đầu tư
     public List<SoHuu> getSoHuuByNDT(String maNDT) {
@@ -36,8 +38,8 @@ public class SoHuuService {
                 .orElse(0);
     }
 
-    public boolean giamSoHuu(NhaDauTu ndt, String maCP, int soLuong) {
-        return soHuuRepository.findByMaNDTAndMaCP(ndt.getMaNDT(), maCP).map(sh -> {
+    public boolean giamSoHuu(String maNDT, String maCP, int soLuong) {
+        return soHuuRepository.findByMaNDTAndMaCP(maNDT, maCP).map(sh -> {
             if (sh.getSoLuong() < soLuong) return false;
             sh.setSoLuong(sh.getSoLuong() - soLuong);
             soHuuRepository.save(sh);
@@ -45,12 +47,14 @@ public class SoHuuService {
         }).orElse(false);
     }
 
-    public void tangSoHuu(NhaDauTu ndt, String maCP, int soLuong) {
-        SoHuu soHuu = soHuuRepository.findByMaNDTAndMaCP(ndt.getMaNDT(), maCP)
+    public void tangSoHuu(String maNDT, String maCP, int soLuong) {
+        SoHuu soHuu = soHuuRepository.findByMaNDTAndMaCP(maNDT, maCP)
                 .orElseGet(() -> {
                     CoPhieu cp = coPhieuRepository.findById(maCP)
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy cổ phiếu: " + maCP));
-                    return new SoHuu(ndt.getMaNDT(), maCP, ndt, cp, 0);
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy cổ phiếu: " + maCP));
+                    NhaDauTu ndt = ndtRepository.findById(maNDT)
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy NĐT: " + maNDT));
+                    return new SoHuu(maNDT, maCP, ndt, cp, 0);
                 });
 
         soHuu.setSoLuong(soHuu.getSoLuong() + soLuong);

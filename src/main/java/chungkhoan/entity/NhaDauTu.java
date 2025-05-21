@@ -59,5 +59,19 @@ public class NhaDauTu {
         this.gioiTinh = other.gioiTinh;
         this.email = other.email;
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NhaDauTu)) return false;
+        NhaDauTu that = (NhaDauTu) o;
+        return maNDT != null && maNDT.equals(that.getMaNDT());
+    }
+
+    @Override
+    public int hashCode() {
+        return maNDT != null ? maNDT.hashCode() : 0;
+    }
+
 
 }

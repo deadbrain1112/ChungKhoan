@@ -46,12 +46,18 @@ public class LenhDat {
     @PrePersist
     @PreUpdate
     private void validateLenhDat() {
-        if (this.soLuong <= 0) {
-            throw new IllegalArgumentException("Số lượng cổ phiếu đặt phải lớn hơn 0!");
+        if (this.soLuong < 0) {
+            throw new IllegalArgumentException("Số lượng cổ phiếu đặt phải lớn hơn hoặc bằng 0!");
         }
+
+        if (this.soLuong == 0 && !"Hết".equalsIgnoreCase(this.trangThai)) {
+            throw new IllegalArgumentException("Nếu số lượng = 0, trạng thái phải là 'Hết'");
+        }
+
         if (this.gia <= 0) {
             throw new IllegalArgumentException("Giá đặt phải lớn hơn 0!");
         }
+
         if (!this.trangThai.matches("Hủy|Chưa|Một phần|Hết|Chờ")) {
             throw new IllegalArgumentException("Trạng thái lệnh không hợp lệ!");
         }

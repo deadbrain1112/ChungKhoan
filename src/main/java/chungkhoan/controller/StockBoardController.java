@@ -2,7 +2,7 @@ package chungkhoan.controller;
 
 import chungkhoan.entity.*;
 import chungkhoan.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,20 +14,21 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/stock-board")
 public class StockBoardController {
 
-    @Autowired private CoPhieuRepository coPhieuRepo;
-    @Autowired private LichSuGiaRepository lichSuGiaRepo;
-    @Autowired private LenhDatRepository lenhDatRepo;
-    @Autowired private LenhKhopRepository lenhKhopRepo;
+    private final CoPhieuRepository coPhieuRepo;
+    private final LichSuGiaRepository lichSuGiaRepo;
+    private final LenhDatRepository lenhDatRepo;
+    private final LenhKhopRepository lenhKhopRepo;
 
     @GetMapping
     public String getBangGia(Model model) {
         List<CoPhieu> dsCP = coPhieuRepo.findAll();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
-        LocalDateTime endOfDay = now.toLocalDate().plusDays(1).atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
 
         Map<String, Double> giaTCMap = new HashMap<>();
         Map<String, Double> giaTranMap = new HashMap<>();
@@ -40,85 +41,39 @@ public class StockBoardController {
         for (CoPhieu cp : dsCP) {
             String maCP = cp.getMaCP();
 
-            // Lấy giá TC, trần, sàn từ lịch sử giá (lấy phiên gần nhất trước ngày hiện tại)
-            Optional<LichSuGia> lichSuGiaOpt = lichSuGiaRepo.findFirstByMaCPAndNgayLessThanOrderByNgayDesc(maCP, Timestamp.valueOf(now));
+            // Tham chiếu, trần, sàn
+            lichSuGiaRepo.findFirstByMaCPAndNgayLessThan(maCP, Timestamp.valueOf(now)).ifPresentOrElse(lichSuGia -> {
+                Double giaTC = lichSuGia.getGiaTC();
+                Double giaTran = lichSuGia.getGiaTran();
+                Double giaSan = lichSuGia.getGiaSan();
 
-            if (lichSuGiaOpt.isPresent()) {
-                LichSuGia gia = lichSuGiaOpt.get();
-                Double giaTC = gia.getGiaTC();
-                Double giaTran = gia.getGiaTran();
-                Double giaSan = gia.getGiaSan();
-
-                // Đảm bảo luôn có giá tham chiếu
                 giaTCMap.put(maCP, giaTC != null ? giaTC : 0.0);
-
-                // Nếu không có giá trần/sàn, tự tính (giả sử ±7% theo quy định HOSE)
-                if (giaTC != null) {
-                    giaTranMap.put(maCP, giaTran != null ? giaTran : giaTC * 1.07);
-                    giaSanMap.put(maCP, giaSan != null ? giaSan : giaTC * 0.93);
-                } 
-            } else {
-                // Nếu không có dữ liệu lịch sử giá, gán giá mặc định
+                giaTranMap.put(maCP, giaTran != null ? giaTran : (giaTC != null ? giaTC * 1.07 : 0.0));
+                giaSanMap.put(maCP, giaSan != null ? giaSan : (giaTC != null ? giaTC * 0.93 : 0.0));
+            }, () -> {
                 giaTCMap.put(maCP, 0.0);
                 giaTranMap.put(maCP, 0.0);
                 giaSanMap.put(maCP, 0.0);
-            }
+            });
 
-            // Lấy danh sách lệnh đặt mua (chờ khớp, trong ngày hiện tại)
-            List<LenhDat> lenhMua = lenhDatRepo.findByCoPhieuAndLoaiGDOrderByGiaDesc(
-                    cp, "M", startOfDay, endOfDay
-            );
+            List<String> statuses = Arrays.asList("Chờ", "Một phần");
 
-            // Nhóm lệnh mua theo giá và cộng dồn số lượng
-            Map<Double, Integer> muaTheoGia = new HashMap<>();
-            for (LenhDat lenh : lenhMua) {
-                muaTheoGia.merge(lenh.getGia(), lenh.getSoLuong(), Integer::sum);
-            }
+            // Mua
+            List<LenhDat> lenhMua = lenhDatRepo
+                    .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", statuses);
+            benMuaMap.put(maCP, tongHopTheoGia(lenhMua, true));
 
-            // Chuyển dữ liệu thành danh sách các Map để truyền lên giao diện
-            List<Map<String, Object>> muaCongDon = muaTheoGia.entrySet().stream()
-                    .map(entry -> {
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("gia", entry.getKey());
-                        map.put("soLuong", entry.getValue());
-                        return map;
-                    })
-                    .sorted((a, b) -> ((Double) b.get("gia")).compareTo((Double) a.get("gia"))) // Sắp xếp giá giảm dần
-                    .limit(3) // Lấy 3 mức giá cao nhất
-                    .collect(Collectors.toList());
-            benMuaMap.put(maCP, muaCongDon);
+            // Bán
+            List<LenhDat> lenhBan = lenhDatRepo
+                    .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(maCP, "B", statuses);
+            benBanMap.put(maCP, tongHopTheoGia(lenhBan, false));
 
-            // Lấy danh sách lệnh đặt bán (chờ khớp, trong ngày hiện tại)
-            List<LenhDat> lenhBan = lenhDatRepo.findByCoPhieuAndLoaiGDOrderByGiaAsc(
-                    cp, "B", startOfDay, endOfDay
-            );
+            // Lệnh khớp mới nhất
+            lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay)
+                    .stream().findFirst()
+                    .ifPresent(lk -> lenhKhopMoiNhatMap.put(maCP, lk));
 
-            // Nhóm lệnh bán theo giá và cộng dồn số lượng
-            Map<Double, Integer> banTheoGia = new HashMap<>();
-            for (LenhDat lenh : lenhBan) {
-                banTheoGia.merge(lenh.getGia(), lenh.getSoLuong(), Integer::sum);
-            }
-
-            // Chuyển dữ liệu thành danh sách các Map để truyền lên giao diện
-            List<Map<String, Object>> banCongDon = banTheoGia.entrySet().stream()
-                    .map(entry -> {
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("gia", entry.getKey());
-                        map.put("soLuong", entry.getValue());
-                        return map;
-                    })
-                    .sorted(Comparator.comparing(m -> (Double) m.get("gia"))) // Sắp xếp giá tăng dần
-                    .limit(3) // Lấy 3 mức giá thấp nhất
-                    .collect(Collectors.toList());
-            benBanMap.put(maCP, banCongDon);
-
-            // Lấy lệnh khớp mới nhất theo ngayGioKhop, chỉ lấy trong ngày hiện tại
-            List<LenhKhop> list = lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay);
-            if (!list.isEmpty()) {
-                lenhKhopMoiNhatMap.put(maCP, list.get(0)); // Lấy bản ghi mới nhất
-            }
-
-            // Tính tổng khối lượng khớp trong ngày hiện tại
+            // Tổng khối lượng
             Long tongKL = lenhKhopRepo.sumSoLuongKhopByCoPhieu(cp, startOfDay, endOfDay);
             tongKLMoiMap.put(maCP, tongKL != null ? tongKL : 0L);
         }
@@ -133,5 +88,26 @@ public class StockBoardController {
         model.addAttribute("tongKhopMap", tongKLMoiMap);
 
         return "ndt/stock_board";
+    }
+
+    private List<Map<String, Object>> tongHopTheoGia(List<LenhDat> lenhList, boolean isMua) {
+        return lenhList.stream()
+            .collect(Collectors.groupingBy(
+                LenhDat::getGia,
+                LinkedHashMap::new,
+                Collectors.summingInt(LenhDat::getSoLuong)
+            ))
+            .entrySet().stream()
+            .map(e -> {
+                Map<String, Object> m = new HashMap<>();
+                m.put("gia", e.getKey());
+                m.put("soLuong", e.getValue());
+                return m;
+            })
+            .sorted((a, b) -> isMua
+                ? Double.compare((Double) b.get("gia"), (Double) a.get("gia"))
+                : Double.compare((Double) a.get("gia"), (Double) b.get("gia")))
+            .limit(3)
+            .collect(Collectors.toList());
     }
 }
