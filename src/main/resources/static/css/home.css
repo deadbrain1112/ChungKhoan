@@ -110,3 +110,28 @@ table th {
     background-color: #003b73;
     color: white;
 }
+
+/* === Form chọn tài khoản ngân hàng === */
+form select[name="maTK"] {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    max-width: 100%;
+}
+
+form select[name="maTK"]:hover {
+    border-color: #007bff;
+}
+
+form select[name="maTK"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
+}
+
+

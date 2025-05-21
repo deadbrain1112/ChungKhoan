@@ -1,46 +1,54 @@
 @charset "UTF-8";
 
 body {
-    height: 100%;
     margin: 0;
-    font-family: Arial, sans-serif; /* Cải thiện font chữ */
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    padding: 20px;
 }
 
 .buy-container {
-    padding: 20px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    gap: 20px;
 }
 
 .buy-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
 }
 
 .buy-table th,
 .buy-table td {
-    border: 1px solid #ddd;
     padding: 12px 15px;
-    text-align: left;
+    border: 1px solid #ddd;
+    vertical-align: middle;
 }
 
 .buy-table th {
     background-color: #003b73;
-    color: white;
+    color: #fff;
+    font-weight: bold;
+    text-align: left;
 }
 
 .buy-table input[type="number"],
 .buy-table input[type="text"],
 .buy-table input[type="password"],
 .buy-table select {
+    width: 100%;
     padding: 10px;
     font-size: 14px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
     box-sizing: border-box;
+    transition: border-color 0.3s;
 }
 
 .buy-table input[type="number"]:focus,
@@ -53,73 +61,78 @@ body {
 
 .action-buttons {
     display: flex;
-    justify-content: space-between;
+    gap: 10px;
     padding-top: 10px;
 }
 
 .submit-btn,
-.reset-btn {
+.reset-btn,
+#xemGiaBtn {
+    flex: 1;
+    size: 40px;
     padding: 10px 20px;
-    border-radius: 5px;
     font-size: 16px;
-    cursor: pointer;
     border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
-.submit-btn {
+.submit-btn,
+#xemGiaBtn {
     background-color: #28a745;
-    color: white;
 }
-
-.submit-btn:hover {
+.submit-btn:hover,
+#xemGiaBtn:hover {
     background-color: #218838;
 }
 
 .reset-btn {
     background-color: #dc3545;
-    color: white;
 }
-
 .reset-btn:hover {
     background-color: #c82333;
-}
-
-button {
-    cursor: pointer;
 }
 
 button:focus {
     outline: none;
 }
 
-/* Cải thiện khoảng cách giữa các ô input */
-.buy-table td {
-    padding: 15px;
-}
-
-/* Đảm bảo các phần tử trong bảng có thể căn chỉnh theo chiều dọc */
-td, th {
-    vertical-align: middle;
-}
-
-/* New color styles for specific elements */
-#soDuTien {
-    color: red; /* Red color for available balance */
-}
-
-#tongTienMua {
-    color: red; /* Red color for total money */
+/* Highlight styles */
+#soDuTien,
+#tongTienMua,
+#tongTienBan {
+    color: red;
+    font-weight: bold;
 }
 
 #giaThamChieu {
-    color: yellow; /* Yellow color for reference price */
-}
-
-#giaSan {
-    color: green; /* Green color for floor price */
+    color: #fdd835;
+    font-weight: bold;
 }
 
 #giaTran {
-    color: purple; /* Purple color for ceiling price */
+    color: #d28eff;
+    font-weight: bold;
 }
+
+#giaSan {
+    color: #00bfff;
+    font-weight: bold;
+}
+
+input[list]::-webkit-calendar-picker-indicator {
+    opacity: 1;
+    cursor: pointer;
+    filter: invert(0.5);
+}
+
+input[list] {
+    background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px 16px;
+    padding-right: 35px;
+}
+

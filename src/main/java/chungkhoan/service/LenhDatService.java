@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +22,10 @@ public class LenhDatService {
             throw new IllegalArgumentException("Không tìm thấy mã của nhà đầu tư.");
         }
         return lenhDatRepository.timLenhDatTheoMaNDT(maNDT);
+    }
+    
+    public Optional<LenhDat> findById(Long maGD) {
+        return lenhDatRepository.findById(maGD);
     }
     
     public void save(LenhDat lenhDat) {

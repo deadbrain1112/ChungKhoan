@@ -15,27 +15,34 @@
                 <h2>Tra Cứu Số Dư</h2>
                 <div class="info">
                     <!-- Kiểm tra taiKhoan và soTien không null trước khi hiển thị -->
-                    <p><strong>Tên chủ TK:</strong> <span th:text="${taiKhoan != null ? taiKhoan.nhaDauTu.hoTen : 'Chưa có thông tin'}"></span></p>
-                    <p><strong>Số dư hiện tại của quý khách:</strong>
-                        <span class="highlight" th:if="${taiKhoan != null and taiKhoan.soTien != null}" th:text="${formattedSoTien}"></span>
-                        <span class="highlight" th:if="${taiKhoan == null or taiKhoan.soTien == null}" th:text="'0'"></span> VND
-                    </p>
-                    <p><strong>Mã Số Tài Khoản:</strong> <span th:text="${taiKhoan != null ? taiKhoan.maTK : 'Chưa có thông tin'}"></span></p>
-                    <p><strong>Ngân Hàng:</strong>
-                        <select name="nganHang" th:if="${taiKhoan != null}">
-                            <option th:each="tk : ${danhSachTaiKhoan}"
-                                    th:value="${tk.nganHang.maNH}"
-                                    th:text="${tk.nganHang.tenNH}"
-                                    th:selected="${tk.nganHang.maNH == taiKhoan.nganHang.maNH}">
-                            </option>
-                        </select>
-                        <span th:if="${taiKhoan == null}">Không có ngân hàng</span>
-                    </p>
-                    <p><strong>Số dư còn lại được phép giao dịch:</strong>
-                        <span class="highlight" th:if="${taiKhoan != null and taiKhoan.soTien != null}"
-                              th:text="${formattedSoTien}"></span>
-                        <span class="highlight" th:if="${taiKhoan == null or taiKhoan.soTien == null}">0</span> VND
-                    </p>
+                    <p><strong>Tên chủ TK:</strong>
+					    <span th:text="${taiKhoan?.nhaDauTu?.hoTen ?: 'Chưa có thông tin'}"></span>
+					</p>
+					
+					<p><strong>Số dư hiện tại của quý khách:</strong>
+					    <span class="highlight" th:text="${formattedSoTien}"></span> VND
+					</p>
+					
+					<p><strong>Mã Số Tài Khoản:</strong>
+					    <span th:text="${taiKhoan?.maTK ?: 'Chưa có thông tin'}"></span>
+					</p>
+					
+					<form th:action="@{/nhadautu/home}" method="get">
+					    <label><strong>Ngân Hàng:</strong></label>
+					    <select name="maTK" onchange="this.form.submit()">
+					        <option th:each="tk : ${danhSachTaiKhoan}"
+					                th:value="${tk.maTK}"
+					                th:text="${tk.nganHang.tenNH + ' - ' + tk.maTK}"
+					                th:selected="${tk.maTK == taiKhoan?.maTK}">
+					        </option>
+					    </select>
+					</form>
+					
+					<p th:if="${taiKhoan == null}" class="warning">Không có tài khoản được chọn hoặc tài khoản không tồn tại!</p>
+			
+					<p><strong>Số dư còn lại được phép giao dịch:</strong>
+					    <span class="highlight" th:text="${formattedSoTien}"></span> VND
+					</p>
                 </div>
             </section>
 

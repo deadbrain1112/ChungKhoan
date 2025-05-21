@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class KhopLenhService implements ApplicationContextAware {
+
     private final LenhDatRepository lenhDatRepo;
     private ApplicationContext context;
 
@@ -30,7 +31,10 @@ public class KhopLenhService implements ApplicationContextAware {
         LocalDateTime now = LocalDateTime.now();
         DayOfWeek day = now.getDayOfWeek();
         LocalTime time = now.toLocalTime();
-        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) return false;
+
+        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
+            return false;
+
         boolean sang = !time.isBefore(LocalTime.of(6, 0)) && time.isBefore(LocalTime.of(12, 0));
         boolean chieu = !time.isBefore(LocalTime.of(13, 0)) && time.isBefore(LocalTime.of(16, 0));
         return sang || chieu;
@@ -39,7 +43,7 @@ public class KhopLenhService implements ApplicationContextAware {
     @Scheduled(fixedDelay = 1000)
     public void khopLenhTuDong() {
         if (!isTrongGioGiaoDich()) {
-            huyLenhHetGio();
+            huyLenhHetGio();  
             return;
         }
 
@@ -56,12 +60,26 @@ public class KhopLenhService implements ApplicationContextAware {
     public void huyLenhHetGio() {
         List<LenhDat> lenhCho = lenhDatRepo.findByTrangThai("Chờ");
 
-        // Duyệt sao chép an toàn, tránh truy cập đồng thời
+        int huyCount = 0;
+        LocalTime time = LocalTime.now();
+
         for (LenhDat lenh : List.copyOf(lenhCho)) {
-            lenh.setTrangThai("Hủy");
-            lenhDatRepo.save(lenh);  // Tránh saveAll để tránh lỗi hashCode
+            LocalTime gioLenh = lenh.getNgayGD().toLocalTime();
+
+            // Hủy những lệnh đặt sau phiên giao dịch liên tục chưa được khớp
+            boolean trongGioLienTuc = 
+                (!gioLenh.isBefore(LocalTime.of(6, 0)) && gioLenh.isBefore(LocalTime.of(12, 0))) ||
+                (!gioLenh.isBefore(LocalTime.of(13, 0)) && gioLenh.isBefore(LocalTime.of(16, 0)));
+
+            if (trongGioLienTuc) {
+                lenh.setTrangThai("Hủy");
+                lenhDatRepo.save(lenh);
+                huyCount++;
+            }
         }
 
-        System.out.println("[HUY LENH] Đã chuyển " + lenhCho.size() + " lệnh 'Chờ' sang 'Hủy' do hết giờ.");
+        if (huyCount > 0) {
+            System.out.println("[HUY LENH] Đã hủy " + huyCount + " lệnh 'Chờ' được đặt trong giờ giao dịch liên tục.");
+        }
     }
 }

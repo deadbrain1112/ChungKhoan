@@ -33,15 +33,18 @@
                         <th>Chứng khoán</th>
                         <td>
                             <div style="display: flex; align-items: center;">
-                                <input type="text" name="maCP" id="maCP" placeholder="Nhập mã cổ phiếu..." style="flex: 1; margin-right: 10px;" />
+                                <input list="dsMaCP" type="text" name="maCP" id="maCP" placeholder="Nhập hoặc chọn mã cổ phiếu..." style="flex: 1; margin-right: 10px;" />
+								<datalist id="dsMaCP">
+								    <option th:each="cp : ${tatCaCoPhieu}" th:value="${cp.maCP}" th:text="${cp.maCP}"></option>
+								</datalist>
                                 <button type="button" id="xemGiaBtn">Xem giá</button>
                             </div>
-                            <div id="giaHienThi" th:if="${coPhieu != null}" style="margin-top: 10px;">
-                                <div><strong>Mã cổ phiếu: </strong><span id="maCPHienThi" th:text="${coPhieu.maCP}"></span></div>
-                                <div><strong>Giá tham chiếu: </strong><span id="giaThamChieu" th:text="${#numbers.formatDecimal(coPhieu.giaTC, 0, 'POINT', 'VND')}"></span></div>
-                                <div><strong>Giá trần: </strong><span id="giaTran" th:text="${#numbers.formatDecimal(coPhieu.giaTran, 0, 'POINT', 'VND')}"></span></div>
-                                <div><strong>Giá sàn: </strong><span id="giaSan" th:text="${#numbers.formatDecimal(coPhieu.giaSan, 0, 'POINT', 'VND')}"></span></div>
-                            </div>
+                            <div id="giaHienThi" th:if="${lichSuGia != null}" style="margin-top: 10px;">
+							    <div><strong>Mã cổ phiếu: </strong><span th:text="${lichSuGia.maCP}"></span></div>
+							    <div><strong>Giá tham chiếu: </strong><span id="giaThamChieu" th:text="${giaThamChieu}"></span></div>
+							    <div><strong>Giá trần: </strong><span id="giaTran" th:text="${giaTran}"></span></div>
+							    <div><strong>Giá sàn: </strong><span id="giaSan" th:text="${giaSan}"></span></div>
+							</div>
                             <div id="khongTimThay" th:if="${khongTimThay}" style="color:red;">Không tìm thấy cổ phiếu!</div>
                         </td>
                     </tr>
