@@ -31,4 +31,8 @@ public class LenhDatService {
     public void save(LenhDat lenhDat) {
     	lenhDatRepository.save(lenhDat);
     }
+    
+    public List<LenhDat> timTheoMaNhaDauTuVaTrangThai(String maNDT, String trangThai) {
+        return lenhDatRepository.findByTaiKhoanNganHang_NhaDauTu_MaNDTAndTrangThai(maNDT, trangThai);
+    }
 }

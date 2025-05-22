@@ -54,8 +54,9 @@ public class LenhDat {
             throw new IllegalArgumentException("Nếu số lượng = 0, trạng thái phải là 'Hết'");
         }
 
-        if (this.gia <= 0) {
-            throw new IllegalArgumentException("Giá đặt phải lớn hơn 0!");
+        // Chỉ kiểm tra giá > 0 nếu là lệnh LO
+        if ("LO".equalsIgnoreCase(this.loaiLenh) && this.gia <= 0) {
+            throw new IllegalArgumentException("Giá đặt phải lớn hơn 0 cho lệnh LO!");
         }
 
         if (!this.trangThai.matches("Hủy|Chưa|Một phần|Hết|Chờ")) {

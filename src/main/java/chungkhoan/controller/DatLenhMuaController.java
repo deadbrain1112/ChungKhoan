@@ -79,7 +79,7 @@ public class DatLenhMuaController {
                              @RequestParam String nganHang,
                              @RequestParam String loaiLenh,
                              @RequestParam Integer soLuong,
-                             @RequestParam double gia,
+                             @RequestParam(required = false) Double gia,
                              @RequestParam String matKhau,
                              Model model,
                              HttpSession session) {
@@ -103,21 +103,41 @@ public class DatLenhMuaController {
             return "ndt/dat_lenh_mua";
         }
 
+        if (soLuong == null || soLuong <= 0) {
+            model.addAttribute("error", "Số lượng đặt lệnh phải lớn hơn 0!");
+            return "ndt/dat_lenh_mua";
+        }
+
         LichSuGia lichSuGia = lichSuGiaService.layGiaMoiNhat(maCP);
         if (lichSuGia == null) {
             model.addAttribute("error", "Không có dữ liệu giá sàn cho cổ phiếu này");
             return "ndt/dat_lenh_mua";
         }
 
-        if ("LO".equalsIgnoreCase(loaiLenh) && gia < lichSuGia.getGiaSan()) {
-            model.addAttribute("error", "Giá mua không được thấp hơn giá sàn!");
-            return "ndt/dat_lenh_mua";
-        }
+        double giaDat = 0;
 
-        double tongTien = gia * soLuong;
-        if (soTien < tongTien) {
-            model.addAttribute("error", "Số dư không đủ để đặt lệnh mua!");
-            return "ndt/dat_lenh_mua";
+        if ("LO".equalsIgnoreCase(loaiLenh)) {
+            if (gia == null || gia < lichSuGia.getGiaSan()) {
+                model.addAttribute("error", "Giá mua không được thấp hơn giá sàn!");
+                return "ndt/dat_lenh_mua";
+            }
+            giaDat = gia;
+            double tongTien = giaDat * soLuong;
+            if (soTien < tongTien) {
+                model.addAttribute("error", "Số dư không đủ để đặt lệnh mua!");
+                return "ndt/dat_lenh_mua";
+            }
+        } else {
+            // Với ATO hoặc ATC
+        	Double giaTranObj = lichSuGia.getGiaTran();
+        	double maxGia = (giaTranObj != null) ? giaTranObj : 0.0;
+        	
+            double tongTien = maxGia * soLuong;
+            if (soTien < tongTien) {
+                model.addAttribute("error", "Số dư không đủ để đặt lệnh " + loaiLenh + " theo giá trần!");
+                return "ndt/dat_lenh_mua";
+            }
+            giaDat = 0; // để hệ thống xử lý giá khớp sau
         }
 
         LenhDat lenh = LenhDat.builder()
@@ -126,14 +146,13 @@ public class DatLenhMuaController {
                 .loaiGD("M")
                 .loaiLenh(loaiLenh)
                 .soLuong(soLuong)
-                .gia(gia)
+                .gia(giaDat)
                 .trangThai("Chờ")
                 .ngayGD(LocalDateTime.now())
                 .build();
 
         lenhDatService.save(lenh);
         model.addAttribute("success", "Đặt lệnh mua thành công!");
-        
         model.addAttribute("tatCaCoPhieu", coPhieuService.getAllCoPhieu());
 
         return "redirect:/nhadautu/dat-lenh-mua";

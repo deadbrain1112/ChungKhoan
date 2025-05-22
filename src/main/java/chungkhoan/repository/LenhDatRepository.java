@@ -49,4 +49,9 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     @Transactional
     @Query("UPDATE LenhDat l SET l.trangThai = 'Hủy' WHERE l.trangThai = 'Chờ'")
     void huyTatCaLenhCho();
+    
+    // Sao kê
+    List<LenhDat> findByTaiKhoanNganHang_NhaDauTu_MaNDT(String maNDT);
+    List<LenhDat> findByTaiKhoanNganHang_NhaDauTu_MaNDTAndTrangThai(String maNDT, String trangThai);
+
 }

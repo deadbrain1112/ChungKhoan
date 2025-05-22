@@ -12,6 +12,17 @@
 
     <main class="sao-ke-container">
         <h2>Sao Kê Giao Dịch Chứng Khoán</h2>
+        
+        <form id="filterForm" method="post" th:action="@{/nhadautu/sao-ke-gdck}">
+		    <label for="trangThai">Lọc theo trạng thái:</label>
+		    <select name="trangThai" id="trangThai">
+		        <option value="">Tất cả</option>
+		        <option value="Chờ" th:selected="${selectedTrangThai == 'Chờ'}">Chờ</option>
+		        <option value="Hết" th:selected="${selectedTrangThai == 'Hết'}">Hết</option>
+		        <option value="Hủy" th:selected="${selectedTrangThai == 'Hủy'}">Hủy</option>
+		        <option value="Một phần" th:selected="${selectedTrangThai == 'Một phần'}">Một phần</option>
+		    </select>
+		</form>
 
         <div th:if="${lenhDatList != null and #lists.isEmpty(lenhDatList)}">
             <p>Không tìm thấy giao dịch nào cho nhà đầu tư.</p>
@@ -68,6 +79,45 @@
                     alert("Không thể hủy lệnh. Vui lòng thử lại sau.");
                 }
             });
+        }
+    }
+    
+    document.getElementById("trangThai").addEventListener("change", function () {
+        document.getElementById("filterForm").submit();
+    });
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        const openButton = document.getElementById("openPasswordPopup");
+        if (openButton) {
+            console.log("Open button found");
+            openButton.addEventListener("click", function (e) {
+                e.preventDefault();
+                console.log("Open button clicked");
+                openPopup();
+            });
+        } else {
+            console.error("Element #openPasswordPopup not found");
+        }
+    });
+
+    // Đổi mk
+    window.openPopup = function () {
+        const popup = document.getElementById("changePasswordPopup");
+        if (popup) {
+            console.log("Opening popup");
+            popup.style.display = "flex";
+        } else {
+            console.error("Element #changePasswordPopup not found");
+        }
+    }
+
+    window.closePopup = function () {
+        const popup = document.getElementById("changePasswordPopup");
+        if (popup) {
+            console.log("Closing popup");
+            popup.style.display = "none";
+        } else {
+            console.error("Element #changePasswordPopup not found");
         }
     }
 </script>

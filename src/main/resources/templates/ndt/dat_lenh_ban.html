@@ -126,6 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const soLuongInput = document.getElementById("soLuong");
     const giaInput = document.getElementById("gia");
     const tongTienSpan = document.getElementById("tongTienBan");
+    const loaiLenhRadios = document.querySelectorAll("input[name='loaiLenh']");
 
     function updateTongTien() {
         const soLuong = parseFloat(soLuongInput.value) || 0;
@@ -133,14 +134,66 @@ document.addEventListener("DOMContentLoaded", function () {
         tongTienSpan.textContent = (soLuong * gia).toLocaleString('vi-VN') + " VND";
     }
 
+    loaiLenhRadios.forEach(radio => {
+        radio.addEventListener("change", function () {
+            if (this.value === "ATO" || this.value === "ATC") {
+                giaInput.value = "";
+                giaInput.readOnly = true;
+                giaInput.removeAttribute("name");
+            } else {
+                giaInput.readOnly = false;
+                giaInput.setAttribute("name", "gia");
+            }
+            updateTongTien();
+        });
+    });
+
     soLuongInput.addEventListener("input", updateTongTien);
     giaInput.addEventListener("input", updateTongTien);
 
     document.getElementById("xoaBtn").addEventListener("click", function() {
         document.getElementById("datLenhForm").reset();
         tongTienSpan.textContent = "0 VND";
+        giaInput.readOnly = false;
+        giaInput.setAttribute("name", "gia");
     });
 });
+
+// Đổi mk
+document.addEventListener("DOMContentLoaded", function () {
+    const openButton = document.getElementById("openPasswordPopup");
+    if (openButton) {
+        console.log("Open button found");
+        openButton.addEventListener("click", function (e) {
+            e.preventDefault();
+            console.log("Open button clicked");
+            openPopup();
+        });
+    } else {
+        console.error("Element #openPasswordPopup not found");
+    }
+});
+
+window.openPopup = function () {
+    const popup = document.getElementById("changePasswordPopup");
+    if (popup) {
+        console.log("Opening popup");
+        popup.style.display = "flex";
+    } else {
+        console.error("Element #changePasswordPopup not found");
+    }
+}
+
+window.closePopup = function () {
+    const popup = document.getElementById("changePasswordPopup");
+    if (popup) {
+        console.log("Closing popup");
+        popup.style.display = "none";
+    } else {
+        console.error("Element #changePasswordPopup not found");
+    }
+}
 </script>
+
 </body>
 </html>

@@ -10,6 +10,14 @@
 <body>
     <h2>BẢNG GIÁ CỔ PHIẾU TRỰC TUYẾN</h2>
 
+	<form method="get" th:action="@{/stock-board}">
+	    <label for="filter">Lọc danh sách:</label>
+	    <select name="filter" id="filter" onchange="this.form.submit()">
+	        <option value="tatca" th:selected="${filter == 'tatca'}">Tất cả</option>
+	        <option value="sohuu" th:selected="${filter == 'sohuu'}">Đã sở hữu</option>
+	    </select>
+	</form>
+	
     <table>
         <thead>
             <tr>
@@ -50,7 +58,7 @@
                 <td th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
                 <!-- Giá khớp -->
-                <td th:text="${lenhKhopMap[cp.maCP]?.giaKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop, 0, 'COMMA', 0, 'COMMA') : '-'}"
+                <td th:text="${lenhKhopMap[cp.maCP]?.giaKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop, 0, 'POINT', 0, 'POINT') : '-'}"
                     th:classappend="${colorMap[cp.maCP]} + ' flash'">
                 </td>
 
@@ -59,7 +67,7 @@
                 </td>
 
                 <!-- +/- -->
-                <td th:text="${deltaMap[cp.maCP] != null ? #numbers.formatDecimal(deltaMap[cp.maCP], 0, 'COMMA', 0, 'COMMA') : '-'}"
+                <td th:text="${deltaMap[cp.maCP] != null ? #numbers.formatDecimal(deltaMap[cp.maCP], 0, 'POINT', 0, 'POINT') : '-'}"
                     th:classappend="${colorMap[cp.maCP]} + ' flash'">
                 </td>
 

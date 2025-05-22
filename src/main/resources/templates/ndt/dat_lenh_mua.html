@@ -15,11 +15,11 @@
             <table class="buy-table">
                 <tbody>
                     <tr th:if="${error}">
-					    <td colspan="2"><strong th:text="${error}"></strong></td>
-					</tr>
-					<tr th:if="${success}">
-					    <td colspan="2"><strong th:text="${success}"></strong></td>
-					</tr>
+                        <td colspan="2"><strong th:text="${error}"></strong></td>
+                    </tr>
+                    <tr th:if="${success}">
+                        <td colspan="2"><strong th:text="${success}"></strong></td>
+                    </tr>
 
                     <tr>
                         <th>Số dư tiền được phép giao dịch</th>
@@ -31,17 +31,17 @@
                         <td>
                             <div style="display: flex; align-items: center;">
                                 <input list="dsMaCP" type="text" name="maCP" id="maCP" placeholder="Nhập hoặc chọn mã cổ phiếu..." style="flex: 1; margin-right: 10px;" />
-								<datalist id="dsMaCP">
-								    <option th:each="cp : ${tatCaCoPhieu}" th:value="${cp.maCP}" th:text="${cp.maCP}"></option>
-								</datalist>
+                                <datalist id="dsMaCP">
+                                    <option th:each="cp : ${tatCaCoPhieu}" th:value="${cp.maCP}" th:text="${cp.maCP}"></option>
+                                </datalist>
                                 <button type="button" id="xemGiaBtn">Xem giá</button>
                             </div>
-                           	<div id="giaHienThi" th:if="${lichSuGia != null}" style="margin-top: 10px;">
-							    <div><strong>Mã cổ phiếu: </strong><span th:text="${lichSuGia.maCP}"></span></div>
-							    <div><strong>Giá tham chiếu: </strong><span id="giaThamChieu" th:text="${giaThamChieu}"></span></div>
-							    <div><strong>Giá trần: </strong><span id="giaTran" th:text="${giaTran}"></span></div>
-							    <div><strong>Giá sàn: </strong><span id="giaSan" th:text="${giaSan}"></span></div>
-							</div>
+                            <div id="giaHienThi" th:if="${lichSuGia != null}" style="margin-top: 10px;">
+                                <div><strong>Mã cổ phiếu: </strong><span th:text="${lichSuGia.maCP}"></span></div>
+                                <div><strong>Giá tham chiếu: </strong><span id="giaThamChieu" th:text="${giaThamChieu}"></span></div>
+                                <div><strong>Giá trần: </strong><span id="giaTran" th:text="${giaTran}"></span></div>
+                                <div><strong>Giá sàn: </strong><span id="giaSan" th:text="${giaSan}"></span></div>
+                            </div>
                             <div id="khongTimThay" th:if="${khongTimThay}" style="color:red;">Không tìm thấy cổ phiếu!</div>
                         </td>
                     </tr>
@@ -75,7 +75,7 @@
 
                     <tr>
                         <th>Giá</th>
-                        <td><input type="number" name="gia" id="gia" /></td>
+                        <td><input type="number" name="gia" id="gia" step="0.01" required /></td>
                     </tr>
 
                     <tr>
@@ -112,19 +112,75 @@ document.addEventListener("DOMContentLoaded", function () {
         window.location.href = url.toString();
     });
 
+    const giaInput = document.getElementById("gia");
+    const loaiLenhRadios = document.querySelectorAll("input[name='loaiLenh']");
+    const soLuongInput = document.getElementById("soLuong");
+    const tongTienMua = document.getElementById("tongTienMua");
+
     const updateTongTien = () => {
-        const soLuong = parseFloat(document.getElementById("soLuong").value) || 0;
-        const gia = parseFloat(document.getElementById("gia").value) || 0;
-        document.getElementById("tongTienMua").textContent = (soLuong * gia).toLocaleString('vi-VN') + " VND";
+        const soLuong = parseFloat(soLuongInput.value) || 0;
+        const gia = parseFloat(giaInput.value) || 0;
+        tongTienMua.textContent = (soLuong * gia).toLocaleString('vi-VN') + " VND";
     };
 
-    document.getElementById("soLuong").addEventListener("input", updateTongTien);
-    document.getElementById("gia").addEventListener("input", updateTongTien);
+    loaiLenhRadios.forEach(radio => {
+        radio.addEventListener("change", function () {
+            if (this.value === "ATO" || this.value === "ATC") {
+                giaInput.value = "";
+                giaInput.readOnly = true;
+                giaInput.removeAttribute("name"); 
+            } else {
+                giaInput.readOnly = false;
+                giaInput.setAttribute("name", "gia"); 
+            }
+            updateTongTien();
+        });
+    });
+
+    soLuongInput.addEventListener("input", updateTongTien);
+    giaInput.addEventListener("input", updateTongTien);
+
     document.getElementById("xoaBtn").addEventListener("click", () => {
         document.getElementById("datLenhForm").reset();
-        document.getElementById("tongTienMua").textContent = "0 VND";
+        tongTienMua.textContent = "0 VND";
+        giaInput.removeAttribute("disabled");
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const openButton = document.getElementById("openPasswordPopup");
+    if (openButton) {
+        console.log("Open button found");
+        openButton.addEventListener("click", function (e) {
+            e.preventDefault();
+            console.log("Open button clicked");
+            openPopup();
+        });
+    } else {
+        console.error("Element #openPasswordPopup not found");
+    }
+});
+
+// Đổi mk
+window.openPopup = function () {
+    const popup = document.getElementById("changePasswordPopup");
+    if (popup) {
+        console.log("Opening popup");
+        popup.style.display = "flex";
+    } else {
+        console.error("Element #changePasswordPopup not found");
+    }
+}
+
+window.closePopup = function () {
+    const popup = document.getElementById("changePasswordPopup");
+    if (popup) {
+        console.log("Closing popup");
+        popup.style.display = "none";
+    } else {
+        console.error("Element #changePasswordPopup not found");
+    }
+}
 </script>
 </body>
 </html>

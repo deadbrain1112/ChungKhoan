@@ -75,6 +75,41 @@
                 </table>
             </section>
         </main>
-    </div>            
+    </div>    
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const openButton = document.getElementById("openPasswordPopup");
+    if (openButton) {
+        console.log("Open button found");
+        openButton.addEventListener("click", function (e) {
+            e.preventDefault();
+            console.log("Open button clicked");
+            openPopup();
+        });
+    } else {
+        console.error("Element #openPasswordPopup not found");
+    }
+});
+
+window.openPopup = function () {
+    const popup = document.getElementById("changePasswordPopup");
+    if (popup) {
+        console.log("Opening popup");
+        popup.style.display = "flex";
+    } else {
+        console.error("Element #changePasswordPopup not found");
+    }
+}
+
+window.closePopup = function () {
+    const popup = document.getElementById("changePasswordPopup");
+    if (popup) {
+        console.log("Closing popup");
+        popup.style.display = "none";
+    } else {
+        console.error("Element #changePasswordPopup not found");
+    }
+}
+</script>        
 </body>
 </html>

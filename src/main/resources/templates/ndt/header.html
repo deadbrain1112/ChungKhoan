@@ -15,12 +15,30 @@
         </div>
         <div class="header-right">
             <p th:if="${nhaDauTu != null}">
-			    Xin Chào - <span th:text="${nhaDauTu.hoTen}"></span>
-			</p>
+                Xin Chào - <span th:text="${nhaDauTu.hoTen}"></span>
+            </p>
             <p th:if="${nhaDauTu == null}">
-			    Xin Chào - <span>Thông tin nhà đầu tư không tồn tại</span>
-			</p>
+                Xin Chào - <span>Thông tin nhà đầu tư không tồn tại</span>
+            </p>
+            <a href="#" id="openPasswordPopup" style="margin-right: 12px;">Đổi mật khẩu giao dịch</a>
             <a th:href="@{/logout}">Đăng Xuất</a>
+        </div>
+
+        <!-- Popup container -->
+        <div id="changePasswordPopup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <h3>Đổi Mật Khẩu Giao Dịch</h3>
+                <form id="changePasswordForm" action="/nhadautu/doi-mat-khau-gd" method="post">
+                    <label>Mật khẩu mới:</label>
+                    <input type="password" name="newPassword" required />
+                    <label>Nhập lại mật khẩu:</label>
+                    <input type="password" name="confirmPassword" required />
+                    <div class="popup-actions">
+                        <button type="submit">Xác nhận</button>
+                        <button type="button" onclick="closePopup()">Hủy</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </header>
 
@@ -37,5 +55,41 @@
         </div>
     </nav>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const openButton = document.getElementById("openPasswordPopup");
+    if (openButton) {
+        console.log("Open button found");
+        openButton.addEventListener("click", function (e) {
+            e.preventDefault();
+            console.log("Open button clicked");
+            openPopup();
+        });
+    } else {
+        console.error("Element #openPasswordPopup not found");
+    }
+});
+
+window.openPopup = function () {
+    const popup = document.getElementById("changePasswordPopup");
+    if (popup) {
+        console.log("Opening popup");
+        popup.style.display = "flex";
+    } else {
+        console.error("Element #changePasswordPopup not found");
+    }
+}
+
+window.closePopup = function () {
+    const popup = document.getElementById("changePasswordPopup");
+    if (popup) {
+        console.log("Closing popup");
+        popup.style.display = "none";
+    } else {
+        console.error("Element #changePasswordPopup not found");
+    }
+}
+</script>
 </body>
 </html>

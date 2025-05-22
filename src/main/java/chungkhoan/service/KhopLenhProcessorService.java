@@ -18,35 +18,29 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class KhopLenhProcessorService {
-    @Autowired
-    private LenhDatRepository lenhDatRepo;
 
-    @Autowired
-    private LenhKhopRepository lenhKhopRepo;
-
-    @Autowired
-    private TaiKhoanNganHangService taiKhoanNganHangService;
-
-    @Autowired
-    private SoHuuService soHuuService;
-
-    @Autowired
-    private CoPhieuService coPhieuService;
+    @Autowired private LenhDatRepository lenhDatRepo;
+    @Autowired private LenhKhopRepository lenhKhopRepo;
+    @Autowired private TaiKhoanNganHangService taiKhoanNganHangService;
+    @Autowired private SoHuuService soHuuService;
+    @Autowired private CoPhieuService coPhieuService;
 
     @Transactional
     public void khopLenh(String maCP) {
         System.out.println(">>> Bắt đầu khớp cho mã cổ phiếu: " + maCP);
 
         List<LenhDat> muaList = lenhDatRepo
-                .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", Arrays.asList("Chờ", "Một phần"));
+            .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", Arrays.asList("Chờ", "Một phần"));
 
         List<LenhDat> banList = lenhDatRepo
-                .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(maCP, "B", Arrays.asList("Chờ", "Một phần"));
+            .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(maCP, "B", Arrays.asList("Chờ", "Một phần"));
 
         int banIndex = 0;
-        for (LenhDat mua : muaList) {
+
+        for (LenhDat mua : muaList) {	
             while (mua.getSoLuong() > 0 && banIndex < banList.size()) {
                 LenhDat ban = banList.get(banIndex);
+
                 if (ban.getSoLuong() <= 0) {
                     banIndex++;
                     continue;
@@ -68,36 +62,46 @@ public class KhopLenhProcessorService {
 
         String maNguoiMua = mua.getTaiKhoanNganHang().getMaTK();
         String maNguoiBan = ban.getTaiKhoanNganHang().getMaTK();
-        String maNDTBan = ban.getTaiKhoanNganHang().getNhaDauTu().getMaNDT();
         String maNDTMua = mua.getTaiKhoanNganHang().getNhaDauTu().getMaNDT();
+        String maNDTBan = ban.getTaiKhoanNganHang().getNhaDauTu().getMaNDT();
 
         if (!taiKhoanNganHangService.truTien(maNguoiMua, tien)) return;
 
         if (!soHuuService.giamSoHuu(maNDTBan, maCP, slKhop)) {
-            taiKhoanNganHangService.congTien(maNguoiMua, tien); // hoàn tiền nếu thất bại
+            taiKhoanNganHangService.congTien(maNguoiMua, tien); // hoàn tiền nếu lỗi
             return;
         }
 
-        // Thực hiện giao dịch thành công
+        // Xử lý chuyển tiền và cập nhật sở hữu
         taiKhoanNganHangService.congTien(maNguoiBan, tien);
         soHuuService.tangSoHuu(maNDTMua, maCP, slKhop);
         coPhieuService.capNhatGiaMoiNhat(maCP, giaKhop);
 
-        String kieuKhop;
+        // Xác định trạng thái khớp của từng lệnh
         boolean hetMua = mua.getSoLuong() == slKhop;
         boolean hetBan = ban.getSoLuong() == slKhop;
 
-        if (hetMua && hetBan) {
-            kieuKhop = "Khớp hết";
-        } else if (hetMua || hetBan) {
-            kieuKhop = "Khớp 1 phần (1 lệnh hết)";
-        } else {
-            kieuKhop = "Khớp 1 phần";
-        }
+        String kieuKhopMua = hetMua ? "Khớp hết" : "Khớp 1 phần";
+        String kieuKhopBan = hetBan ? "Khớp hết" : "Khớp 1 phần";
 
-        lenhKhopRepo.save(LenhKhop.builder().lenhDat(mua).ngayGioKhop(LocalDateTime.now()).soLuongKhop(slKhop).giaKhop(giaKhop).kieuKhop(kieuKhop).build());
-        lenhKhopRepo.save(LenhKhop.builder().lenhDat(ban).ngayGioKhop(LocalDateTime.now()).soLuongKhop(slKhop).giaKhop(giaKhop).kieuKhop(kieuKhop).build());
+        // Ghi nhận lệnh khớp cho từng phía
+        lenhKhopRepo.save(LenhKhop.builder()
+            .lenhDat(mua)
+            .ngayGioKhop(LocalDateTime.now())
+            .soLuongKhop(slKhop)
+            .giaKhop(giaKhop)
+            .kieuKhop(kieuKhopMua)
+            .build());
 
+        lenhKhopRepo.save(LenhKhop.builder()
+            .lenhDat(ban)
+            .ngayGioKhop(LocalDateTime.now())
+            .soLuongKhop(slKhop)
+            .giaKhop(giaKhop)
+            .kieuKhop(kieuKhopBan)
+            .build());
+
+        // Cập nhật trạng thái đơn hàng
         capNhatTrangThai(mua, slKhop);
         capNhatTrangThai(ban, slKhop);
     }

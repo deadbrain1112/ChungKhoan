@@ -68,7 +68,7 @@ public class KhopLenhService implements ApplicationContextAware {
             // Hủy những lệnh đặt sau phiên giao dịch liên tục chưa được khớp
             boolean trongGioLienTuc = 
                 (!gioLenh.isBefore(LocalTime.of(6, 0)) && gioLenh.isBefore(LocalTime.of(12, 0))) ||
-                (!gioLenh.isBefore(LocalTime.of(13, 0)) && gioLenh.isBefore(LocalTime.of(16, 00)));
+                (!gioLenh.isBefore(LocalTime.of(13, 0)) && gioLenh.isBefore(LocalTime.of(23, 59)));
 
             if (trongGioLienTuc) {
                 lenh.setTrangThai("Hủy");

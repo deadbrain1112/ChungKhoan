@@ -20,10 +20,65 @@
 					<li><a th:href="@{/employees}">Cập nhật nhân viên</a></li>
 					<li><a th:href="@{/backup}">Sao lưu và khôi phục dữ liệu</a></li>
 					<li><a th:href="@{/register}">Tạo tài khoản</a></li>
+					<li><a href="#" id="openPasswordPopup">Đổi mật khẩu</a></li>
 					<li><a th:href="@{/logout}">Đăng xuất</a></li>
 				</ul>
 			</li>
 		</ul>
 	</div>
+	
+	<!-- Popup container -->
+    <div id="changePasswordPopup" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <h3>Đổi Mật Khẩu</h3>
+            <form id="changePasswordForm" action="/doi-mat-khau" method="post">
+                <label>Mật khẩu mới:</label>
+                <input type="password" name="newPassword" required />
+                <label>Nhập lại mật khẩu:</label>
+                <input type="password" name="confirmPassword" required />
+                <div class="popup-actions">
+                    <button type="submit">Xác nhận</button>
+                    <button type="button" onclick="closePopup()">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("DOM fully loaded");
+        const openButton = document.getElementById("openPasswordPopup");
+        if (openButton) {
+            console.log("Open button found");
+            openButton.addEventListener("click", function (e) {
+                e.preventDefault();
+                console.log("Open button clicked");
+                openPopup();
+            });
+        } else {
+            console.error("Element #openPasswordPopup not found in DOM");
+        }
+    });
+
+    window.openPopup = function () {
+        const popup = document.getElementById("changePasswordPopup");
+        if (popup) {
+            console.log("Opening popup");
+            popup.style.display = "flex";
+        } else {
+            console.error("Element #changePasswordPopup not found in DOM");
+        }
+    }
+
+    window.closePopup = function () {
+        const popup = document.getElementById("changePasswordPopup");
+        if (popup) {
+            console.log("Closing popup");
+            popup.style.display = "none";
+        } else {
+            console.error("Element #changePasswordPopup not found in DOM");
+        }
+    }
+    </script>
 </body>
 </html>

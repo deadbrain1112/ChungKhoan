@@ -1,6 +1,5 @@
 package chungkhoan.controller;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -64,7 +63,7 @@ public class DatLenhBanController {
         if (maCP != null && !maCP.isBlank()) {
             LichSuGia gia = lichSuGiaService.layGiaMoiNhat(maCP.trim());
             if (gia != null) {
-            	model.addAttribute("lichSuGia", gia);
+                model.addAttribute("lichSuGia", gia);
                 model.addAttribute("giaThamChieu", formatGia(gia.getGiaTC()));
                 model.addAttribute("giaTran", formatGia(gia.getGiaTran()));
                 model.addAttribute("giaSan", formatGia(gia.getGiaSan()));
@@ -72,7 +71,7 @@ public class DatLenhBanController {
                 model.addAttribute("khongTimThay", true);
             }
         }
-        
+
         model.addAttribute("tatCaCoPhieu", coPhieuService.findByMaCPIn(soHuuService.getMaCPByNDT(nhaDauTu.getMaNDT())));
 
         return "ndt/dat_lenh_ban";
@@ -83,7 +82,7 @@ public class DatLenhBanController {
                              @RequestParam String nganHang,
                              @RequestParam String loaiLenh,
                              @RequestParam Integer soLuong,
-                             @RequestParam double gia,
+                             @RequestParam(required = false) Double gia,
                              @RequestParam String matKhau,
                              Model model,
                              HttpSession session) {
@@ -107,15 +106,27 @@ public class DatLenhBanController {
             return "ndt/dat_lenh_ban";
         }
 
+        if (soLuong == null || soLuong <= 0) {
+            model.addAttribute("error", "Số lượng đặt lệnh phải lớn hơn 0!");
+            return "ndt/dat_lenh_ban";
+        }
+
         LichSuGia lichSuGia = lichSuGiaService.layGiaMoiNhat(maCP);
         if (lichSuGia == null) {
             model.addAttribute("error", "Không có dữ liệu giá sàn cho cổ phiếu này");
             return "ndt/dat_lenh_ban";
         }
 
-        if ("LO".equalsIgnoreCase(loaiLenh) && gia < lichSuGia.getGiaSan()) {
-            model.addAttribute("error", "Giá bán không được thấp hơn giá sàn!");
-            return "ndt/dat_lenh_ban";
+        double giaDat = 0;
+
+        if ("LO".equalsIgnoreCase(loaiLenh)) {
+            if (gia == null || gia < lichSuGia.getGiaSan()) {
+                model.addAttribute("error", "Giá bán không được thấp hơn giá sàn!");
+                return "ndt/dat_lenh_ban";
+            }
+            giaDat = gia;
+        } else {
+            giaDat = 0; 
         }
 
         int soLuongSoHuu = soHuuService.getSoLuong(nhaDauTu.getMaNDT(), maCP);
@@ -130,14 +141,14 @@ public class DatLenhBanController {
                 .loaiGD("B")
                 .loaiLenh(loaiLenh)
                 .soLuong(soLuong)
-                .gia(gia)
+                .gia(giaDat)
                 .trangThai("Chờ")
                 .ngayGD(LocalDateTime.now())
                 .build();
 
         lenhDatService.save(lenh);
         model.addAttribute("success", "Đặt lệnh bán thành công, chờ khớp lệnh!");
-        
+
         model.addAttribute("tatCaCoPhieu", coPhieuService.findByMaCPIn(soHuuService.getMaCPByNDT(nhaDauTu.getMaNDT())));
 
         return "redirect:/nhadautu/dat-lenh-ban";
@@ -147,4 +158,3 @@ public class DatLenhBanController {
         return new DecimalFormat("#,###").format(value) + " VND";
     }
 }
-
