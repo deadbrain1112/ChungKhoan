@@ -36,11 +36,11 @@ public class KhopLenhService implements ApplicationContextAware {
             return false;
 
         boolean sang = !time.isBefore(LocalTime.of(6, 0)) && time.isBefore(LocalTime.of(12, 0));
-        boolean chieu = !time.isBefore(LocalTime.of(13, 0)) && time.isBefore(LocalTime.of(16, 00));
+        boolean chieu = !time.isBefore(LocalTime.of(13, 0)) && time.isBefore(LocalTime.of(23, 59));
         return sang || chieu;
     }
 
-    @Scheduled(fixedDelay = 1000)
+    //@Scheduled(fixedDelay = 1000)
     public void khopLenhTuDong() {
         if (!isTrongGioGiaoDich()) {
             huyLenhHetGio();  

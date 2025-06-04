@@ -140,16 +140,16 @@ public class DatLenhMuaController {
             giaDat = 0; // để hệ thống xử lý giá khớp sau
         }
 
-        LenhDat lenh = LenhDat.builder()
-                .coPhieu(coPhieuOpt.get())
-                .taiKhoanNganHang(taiKhoan)
-                .loaiGD("M")
-                .loaiLenh(loaiLenh)
-                .soLuong(soLuong)
-                .gia(giaDat)
-                .trangThai("Chờ")
-                .ngayGD(LocalDateTime.now())
-                .build();
+       LenhDat lenh = LenhDat.builder()
+               .coPhieu(coPhieuOpt.get())
+               .taiKhoanNganHang(taiKhoan)
+               .loaiGD("M")
+               .loaiLenh(loaiLenh)
+               .soLuong(soLuong)
+               .gia(giaDat)
+               .trangThai("Chờ")
+               .ngayGD(LocalDateTime.now())
+               .build();
 
         lenhDatService.save(lenh);
         model.addAttribute("success", "Đặt lệnh mua thành công!");

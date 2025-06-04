@@ -73,19 +73,20 @@
                              data-gioiTinh=${tempInvestor != null ? tempInvestor.gioiTinh : investor.gioiTinh},
                              data-email=${tempInvestor != null ? tempInvestor.email : investor.email}">Sửa</button> |
 
-                        <div th:if="${tempInvestor != null and #lists.size(tempInvestor.taiKhoanNganHangs) > 0} or ${bankAccountMap[investor.maNDT] != null and #lists.size(bankAccountMap[investor.maNDT]) > 0}"
-                             th:each="account : ${tempInvestor != null ? tempInvestor.taiKhoanNganHangs : bankAccountMap[investor.maNDT]}"
-                             th:data-maNDT="${tempInvestor != null ? tempInvestor.maNDT : investor.maNDT}"
-                             th:data-accountNumber="${account.maTK}"
-                             th:data-bankName="${account.nganHang.tenNH}"
-                             th:data-bankCode="${account.nganHang.maNH}"
-                             th:data-amount="${account.soTien}"
-                             th:data-address="${account.nganHang.diaChi}"
-                             th:data-phone="${account.nganHang.phone}"
-                             th:data-email="${account.nganHang.email}"
-                             style="display:none;"
-                             th:onclick="'console.log(\'Debug div: maNDT=\' + ${tempInvestor != null ? tempInvestor.maNDT : investor.maNDT} + \', account=\' + ${account.maTK});'">
-                        </div>
+                        <div th:if="${bankAccountMap != null and bankAccountMap[investor.maNDT] != null and #lists.size(bankAccountMap[investor.maNDT]) > 0}"
+						     th:each="account : ${bankAccountMap[investor.maNDT]}"
+						     th:data-maNDT="${investor.maNDT}"
+						     th:data-accountNumber="${account.maTK}"
+						     th:data-bankName="${account.nganHang.tenNH}"
+						     th:data-bankCode="${account.nganHang.maNH}"
+						     th:data-amount="${account.soTien}"
+						     th:data-address="${account.nganHang.diaChi}"
+						     th:data-phone="${account.nganHang.phone}"
+						     th:data-email="${account.nganHang.email}"
+						     style="display:none;"
+						     th:onclick="'console.log(\'Debug div: maNDT=\' + ${investor.maNDT} + \', account=\' + ${account.maTK});'">
+						</div>
+
                         <!-- Nút Xóa -->
                         <form th:action="${tempInvestorMap != null and tempInvestorMap.containsKey(investor.maNDT) ? '/investors/remove-temp' : '/investors/delete'}" method="post" style="display:inline;">
                             <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
@@ -269,7 +270,6 @@
             tbody.appendChild(row);
             bankAccountIndex++;
         });
-
 
         document.getElementById('edit-form').style.display = 'block';
         document.getElementById('add-form').style.display = 'none';

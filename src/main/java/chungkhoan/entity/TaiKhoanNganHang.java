@@ -25,4 +25,12 @@ public class TaiKhoanNganHang {
 
     @Column(name = "sotien", nullable = false, precision = 18, scale = 2)
     private BigDecimal soTien;
+    
+    public NganHang getNganHang() {
+        if (this.nganHang == null) {
+            this.nganHang = new NganHang();
+        }
+        return nganHang;
+    }
+
 }

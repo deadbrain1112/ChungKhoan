@@ -170,6 +170,7 @@ public class InvestorsController {
 		Map<String, List<TaiKhoanNganHang>> tempBankAccounts = (Map<String, List<TaiKhoanNganHang>>) session.getAttribute("tempBankAccounts");
 		if (tempBankAccounts == null) {
 			tempBankAccounts = new HashMap<>();
+			session.setAttribute("tempBankAccounts", tempBankAccounts);
 		}
 
 		System.out.println("Received investor from form (edit): " + investor);
@@ -187,8 +188,10 @@ public class InvestorsController {
 			tempList.add(investor);
 		}
 
-		if (investor.getTaiKhoanNganHangs() != null) {
-			tempBankAccounts.put(investor.getMaNDT(), new ArrayList<>(investor.getTaiKhoanNganHangs()));
+		if (investor.getTaiKhoanNganHangs() != null && !investor.getTaiKhoanNganHangs().isEmpty()) {
+		    tempBankAccounts.put(investor.getMaNDT(), new ArrayList<>(investor.getTaiKhoanNganHangs()));
+		} else {
+		    tempBankAccounts.remove(investor.getMaNDT()); 
 		}
 
 		System.out.println("Edited investor: " + investor.getMaNDT());
