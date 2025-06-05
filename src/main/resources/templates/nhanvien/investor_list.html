@@ -97,6 +97,24 @@
             </tr>
             </tbody>
         </table>
+        
+        <!-- Div ẩn chứa tài khoản ngân hàng từ session tạm -->
+		<div style="display: none;" id="temp-bank-accounts-data">
+		    <th:block th:each="entry : ${tempBankAccounts}">
+		        <th:block th:each="account : ${entry.value}">
+		            <div th:data-maNDT="${entry.key}"
+		                 th:data-accountNumber="${account.maTK}"
+		                 th:data-bankName="${account.nganHang.tenNH}"
+		                 th:data-bankCode="${account.nganHang.maNH}"
+		                 th:data-amount="${account.soTien}"
+		                 th:data-address="${account.nganHang.diaChi}"
+		                 th:data-phone="${account.nganHang.phone}"
+		                 th:data-email="${account.nganHang.email}">
+		            </div>
+		        </th:block>
+		    </th:block>
+		</div>
+        
     </div>
 
     <!-- Phân trang -->
@@ -247,15 +265,20 @@
 
         const tbody = document.querySelector('#edit-form-body');
         tbody.innerHTML = '';
-        bankAccountIndex = 0; // Reset chỉ số khi mở form sửa
+        bankAccountIndex = 0;
 
-        const hiddenDivs = document.querySelectorAll(`div[data-maNDT="${data.maNDT}"]`);
-        console.log("Hidden divs found:", hiddenDivs.length, hiddenDivs, "for maNDT:", data.maNDT);
+        const allDivs = document.querySelectorAll(
+            `div[data-maNDT="${data.maNDT}"]`
+        );
 
-        hiddenDivs.forEach(div => {
+        console.log("Hidden divs found:", allDivs.length, "for maNDT:", data.maNDT);
+
+        allDivs.forEach(div => {
             const maTK = div.dataset.accountnumber || '';
+            if (!maTK.trim()) return; 
+
             const isUsed = usedMaTKs.includes(maTK);
-            
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" value="${maTK}" maxlength="20" required ${isUsed ? 'disabled' : ''} /></td>
@@ -265,7 +288,7 @@
                 <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" value="${div.dataset.address || ''}" maxlength="100" required ${isUsed ? 'disabled' : ''} /></td>
                 <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" value="${div.dataset.phone || ''}" maxlength="15" required ${isUsed ? 'disabled' : ''} /></td>
                 <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" value="${div.dataset.email || ''}" maxlength="50" required ${isUsed ? 'disabled' : ''} /></td>
-                <td><button type="button" onclick="removeBankAccount(this)" ${isUsed ? 'disabled' : ''}>Xóa</button></td> 	
+                <td><button type="button" onclick="removeBankAccount(this)" ${isUsed ? 'disabled' : ''}>Xóa</button></td>
             `;
             tbody.appendChild(row);
             bankAccountIndex++;
@@ -275,6 +298,7 @@
         document.getElementById('add-form').style.display = 'none';
         disableToolbarButtons();
     }
+    
     function hideSubform(id) {
         document.getElementById(id).style.display = 'none';
         enableToolbarButtons();

@@ -67,9 +67,39 @@ public class InvestorsController {
 		allInvestors.addAll(tempList);
 
 		Map<String, List<TaiKhoanNganHang>> bankAccountMap = taiKhoanNganHangService.getBankAccountsForInvestors(allInvestors);
-		for (String maNDT : tempBankAccounts.keySet()) {
-			bankAccountMap.put(maNDT, tempBankAccounts.get(maNDT));
+		// Đảm bảo có dữ liệu tài khoản ngân hàng mới nhất sau khi save
+		for (NhaDauTu investor : allInvestors) {
+		    if (!bankAccountMap.containsKey(investor.getMaNDT())) {
+		        List<TaiKhoanNganHang> accounts = taiKhoanNganHangService.findByInvestorMaNDT(investor.getMaNDT());
+		        if (accounts != null && !accounts.isEmpty()) {
+		            bankAccountMap.put(investor.getMaNDT(), accounts);
+		        }
+		    }
 		}
+
+		for (Map.Entry<String, List<TaiKhoanNganHang>> entry : tempBankAccounts.entrySet()) {
+		    String maNDT = entry.getKey();
+		    List<TaiKhoanNganHang> tempAccounts = entry.getValue();
+
+		    List<TaiKhoanNganHang> merged = new ArrayList<>();
+		    Map<String, TaiKhoanNganHang> seen = new LinkedHashMap<>();
+
+		    // Từ DB trước
+		    if (bankAccountMap.containsKey(maNDT)) {
+		        for (TaiKhoanNganHang acc : bankAccountMap.get(maNDT)) {
+		            seen.put(acc.getMaTK(), acc);
+		        }
+		    }
+
+		    // Override hoặc thêm mới
+		    for (TaiKhoanNganHang acc : tempAccounts) {
+		        seen.put(acc.getMaTK(), acc);
+		    }
+
+		    merged.addAll(seen.values());
+		    bankAccountMap.put(maNDT, merged);
+		}
+
 
 		int totalItems = allInvestors.size();
 		int start = page * size;
