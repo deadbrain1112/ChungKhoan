@@ -14,11 +14,11 @@ body {
 /* Container cho form */
 .register-container {
     background-color: #fff;
-    padding: 20px;
+    padding: 30px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
 }
 
 /* Tiêu đề form */
@@ -26,6 +26,8 @@ h2 {
     text-align: center;
     color: #4CAF50;
     margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
 }
 
 /* Định dạng label */
@@ -59,16 +61,12 @@ input[type="password"] {
     font-weight: normal;
 }
 
-.radio-group input[type="radio"] {
-    margin-right: 5px;
-}
 
 /* Định dạng button */
 button {
-    width: 48%;
+    width: 100%;
     padding: 10px;
-    margin-right: 4%;
-    background-color: #4CAF50;
+    background-color: #f44336;
     color: white;
     border: none;
     border-radius: 4px;
@@ -98,4 +96,24 @@ button:disabled {
     padding: 10px;
     border-radius: 4px;
     background-color: #f8d7da;
+}
+
+.radio-group-row {
+    display: grid;
+    grid-template-columns: 120px 1fr 1fr; /* Label | Nhóm 1 | Nhóm 2 */
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.radio-pair {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+
+
+.radio-group input[type="radio"] {
+    margin-right: 5px;
 }
