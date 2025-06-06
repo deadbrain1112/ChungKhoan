@@ -134,10 +134,10 @@ public class CoPhieuService {
         undoStack.clear();
     }
     
-    public void capNhatGiaMoiNhat(String maCP, double giaKhop) {
-        // Ghi lại lịch sử giá mới sau mỗi lần khớp
-        lichSuGiaService.luuGiaMoi(maCP, giaKhop, LocalDateTime.now());
-    }
+//    public void capNhatGiaMoiNhat(String maCP, double giaKhop) {
+//        // Ghi lại lịch sử giá mới sau mỗi lần khớp
+//        lichSuGiaService.luuGiaMoi(maCP, giaKhop, LocalDateTime.now());
+//    }
 
     public double layGiaMoiNhat(String maCP) {
         return lichSuGiaService.layGiaMoiNhat(maCP).getGiaTC();

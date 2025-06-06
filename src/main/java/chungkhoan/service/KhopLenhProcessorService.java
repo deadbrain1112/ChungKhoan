@@ -23,12 +23,9 @@ public class KhopLenhProcessorService {
     @Autowired private LenhKhopRepository lenhKhopRepo;
     @Autowired private TaiKhoanNganHangService taiKhoanNganHangService;
     @Autowired private SoHuuService soHuuService;
-    @Autowired private CoPhieuService coPhieuService;
 
     @Transactional
     public void khopLenh(String maCP) {
-        System.out.println(">>> Bắt đầu khớp cho mã cổ phiếu: " + maCP);
-
         List<LenhDat> muaList = lenhDatRepo
             .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", Arrays.asList("Chờ", "Một phần"));
 
@@ -37,7 +34,7 @@ public class KhopLenhProcessorService {
 
         int banIndex = 0;
 
-        for (LenhDat mua : muaList) {	
+        for (LenhDat mua : muaList) {
             while (mua.getSoLuong() > 0 && banIndex < banList.size()) {
                 LenhDat ban = banList.get(banIndex);
 
@@ -68,23 +65,19 @@ public class KhopLenhProcessorService {
         if (!taiKhoanNganHangService.truTien(maNguoiMua, tien)) return;
 
         if (!soHuuService.giamSoHuu(maNDTBan, maCP, slKhop)) {
-            taiKhoanNganHangService.congTien(maNguoiMua, tien); // hoàn tiền nếu lỗi
+            taiKhoanNganHangService.congTien(maNguoiMua, tien);
             return;
         }
 
-        // Xử lý chuyển tiền và cập nhật sở hữu
         taiKhoanNganHangService.congTien(maNguoiBan, tien);
         soHuuService.tangSoHuu(maNDTMua, maCP, slKhop);
-        coPhieuService.capNhatGiaMoiNhat(maCP, giaKhop);
 
-        // Xác định trạng thái khớp của từng lệnh
         boolean hetMua = mua.getSoLuong() == slKhop;
         boolean hetBan = ban.getSoLuong() == slKhop;
 
         String kieuKhopMua = hetMua ? "Khớp hết" : "Khớp 1 phần";
         String kieuKhopBan = hetBan ? "Khớp hết" : "Khớp 1 phần";
 
-        // Ghi nhận lệnh khớp cho từng phía
         lenhKhopRepo.save(LenhKhop.builder()
             .lenhDat(mua)
             .ngayGioKhop(LocalDateTime.now())
@@ -101,7 +94,6 @@ public class KhopLenhProcessorService {
             .kieuKhop(kieuKhopBan)
             .build());
 
-        // Cập nhật trạng thái đơn hàng
         capNhatTrangThai(mua, slKhop);
         capNhatTrangThai(ban, slKhop);
     }

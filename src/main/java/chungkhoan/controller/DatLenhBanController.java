@@ -120,8 +120,8 @@ public class DatLenhBanController {
         double giaDat = 0;
 
         if ("LO".equalsIgnoreCase(loaiLenh)) {
-            if (gia == null || gia < lichSuGia.getGiaSan()) {
-                model.addAttribute("error", "Giá bán không được thấp hơn giá sàn!");
+            if (gia == null || gia < lichSuGia.getGiaSan() || gia > lichSuGia.getGiaTran()) {
+                model.addAttribute("error", "Giá bán không được thấp hơn giá sàn hoặc lớn hơn giá trần!");
                 return "ndt/dat_lenh_ban";
             }
             giaDat = gia;

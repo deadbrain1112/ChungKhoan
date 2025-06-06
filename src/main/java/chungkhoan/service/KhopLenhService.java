@@ -35,12 +35,12 @@ public class KhopLenhService implements ApplicationContextAware {
         if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY)
             return false;
 
-        boolean sang = !time.isBefore(LocalTime.of(6, 0)) && time.isBefore(LocalTime.of(12, 0));
+        boolean sang = !time.isBefore(LocalTime.of(6, 0)) && time.isBefore(LocalTime.of(12, 59));
         boolean chieu = !time.isBefore(LocalTime.of(13, 0)) && time.isBefore(LocalTime.of(23, 59));
         return sang || chieu;
     }
 
-    //@Scheduled(fixedDelay = 1000)
+    @Scheduled(fixedDelay = 1000)
     public void khopLenhTuDong() {
         if (!isTrongGioGiaoDich()) {
             huyLenhHetGio();  
@@ -67,7 +67,7 @@ public class KhopLenhService implements ApplicationContextAware {
 
             // Hủy những lệnh đặt sau phiên giao dịch liên tục chưa được khớp
             boolean trongGioLienTuc = 
-                (!gioLenh.isBefore(LocalTime.of(6, 0)) && gioLenh.isBefore(LocalTime.of(12, 0))) ||
+                (!gioLenh.isBefore(LocalTime.of(6, 0)) && gioLenh.isBefore(LocalTime.of(12, 59))) ||
                 (!gioLenh.isBefore(LocalTime.of(13, 0)) && gioLenh.isBefore(LocalTime.of(23, 59)));
 
             if (trongGioLienTuc) {
