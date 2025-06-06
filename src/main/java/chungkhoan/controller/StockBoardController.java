@@ -48,6 +48,7 @@ public class StockBoardController {
         for (CoPhieu cp : dsCP) {
             String maCP = cp.getMaCP();
 
+
             // Tham chiếu, trần, sàn
             Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCP);
             double giaTC = giaMap.get("tc");
@@ -119,23 +120,23 @@ public class StockBoardController {
 
     private List<Map<String, Object>> tongHopTheoGia(List<LenhDat> lenhList, boolean isMua) {
         return lenhList.stream()
-            .collect(Collectors.groupingBy(
-                LenhDat::getGia,
-                LinkedHashMap::new,
-                Collectors.summingInt(LenhDat::getSoLuong)
-            ))
-            .entrySet().stream()
-            .map(e -> {
-                Map<String, Object> m = new HashMap<>();
-                m.put("gia", e.getKey());
-                m.put("soLuong", e.getValue());
-                return m;
-            })
-            .sorted((a, b) -> isMua
-                ? Double.compare((Double) b.get("gia"), (Double) a.get("gia"))
-                : Double.compare((Double) a.get("gia"), (Double) b.get("gia")))
-            .limit(3)
-            .collect(Collectors.toList());
+                .collect(Collectors.groupingBy(
+                        LenhDat::getGia,
+                        LinkedHashMap::new,
+                        Collectors.summingInt(LenhDat::getSoLuong)
+                ))
+                .entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("gia", e.getKey());
+                    m.put("soLuong", e.getValue());
+                    return m;
+                })
+                .sorted((a, b) -> isMua
+                        ? Double.compare((Double) b.get("gia"), (Double) a.get("gia"))
+                        : Double.compare((Double) a.get("gia"), (Double) b.get("gia")))
+                .limit(3)
+                .collect(Collectors.toList());
     }
     
     private boolean isTrongGioGiaoDich(LocalDateTime thoiDiem) {

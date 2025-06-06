@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @Builder
 public class LichSuGia {
     @Id
-    @Column(name = "MaCP", columnDefinition = "NCHAR(10)")
+    @Column(name = "MaCP", columnDefinition = "VARCHAR(10)")
     private String maCP;
 
     @Id

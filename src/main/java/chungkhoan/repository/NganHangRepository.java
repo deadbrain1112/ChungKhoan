@@ -4,4 +4,6 @@ import chungkhoan.entity.NganHang;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface NganHangRepository extends JpaRepository<NganHang, String> {
+
+    boolean existsByMaNH(String maNH);
 }

@@ -142,4 +142,6 @@ public class CoPhieuService {
     public double layGiaMoiNhat(String maCP) {
         return lichSuGiaService.layGiaMoiNhat(maCP).getGiaTC();
     }
+
+
 }

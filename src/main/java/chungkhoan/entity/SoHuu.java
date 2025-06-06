@@ -16,7 +16,7 @@ public class SoHuu {
     private String maNDT;
 
     @Id
-    @Column(name = "MaCP", columnDefinition = "NCHAR(10)")
+    @Column(name = "MaCP", columnDefinition = "VARCHAR(10)")
     private String maCP;
 
     @ManyToOne(fetch = FetchType.LAZY)

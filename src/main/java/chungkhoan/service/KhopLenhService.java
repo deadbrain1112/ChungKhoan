@@ -43,7 +43,7 @@ public class KhopLenhService implements ApplicationContextAware {
     @Scheduled(fixedDelay = 1000)
     public void khopLenhTuDong() {
         if (!isTrongGioGiaoDich()) {
-            huyLenhHetGio();  
+            huyLenhHetGio();
             return;
         }
 

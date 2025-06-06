@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Controller
 public class InvestorsController {
+
 
 	@Autowired
 	private NDTService nhaDauTuService;
@@ -48,10 +50,8 @@ public class InvestorsController {
 			tempBankAccounts = new HashMap<>();
 		}
 
-		Map<String, NhaDauTu> tempInvestorMap = tempList.isEmpty()
-				? Collections.emptyMap()
-				: tempList.stream()
-				.filter(investor -> investor.getMaNDT() != null)
+		Map<String, NhaDauTu> tempInvestorMap = tempList.stream()
+				.filter(investor -> Objects.nonNull(investor.getMaNDT()) && !investor.getMaNDT().isEmpty())
 				.collect(Collectors.toMap(
 						NhaDauTu::getMaNDT,
 						investor -> investor,
@@ -66,40 +66,15 @@ public class InvestorsController {
 		}
 		allInvestors.addAll(tempList);
 
-		Map<String, List<TaiKhoanNganHang>> bankAccountMap = taiKhoanNganHangService.getBankAccountsForInvestors(allInvestors);
-		// Đảm bảo có dữ liệu tài khoản ngân hàng mới nhất sau khi save
+		Map<String, List<TaiKhoanNganHang>> bankAccountMap = new HashMap<>();
 		for (NhaDauTu investor : allInvestors) {
-		    if (!bankAccountMap.containsKey(investor.getMaNDT())) {
-		        List<TaiKhoanNganHang> accounts = taiKhoanNganHangService.findByInvestorMaNDT(investor.getMaNDT());
-		        if (accounts != null && !accounts.isEmpty()) {
-		            bankAccountMap.put(investor.getMaNDT(), accounts);
-		        }
-		    }
+			String maNDT = investor.getMaNDT();
+			if (tempBankAccounts.containsKey(maNDT)) {
+				bankAccountMap.put(maNDT, new ArrayList<>(tempBankAccounts.get(maNDT)));
+			} else {
+				bankAccountMap.put(maNDT, taiKhoanNganHangService.findByInvestorMaNDT(maNDT));
+			}
 		}
-
-		for (Map.Entry<String, List<TaiKhoanNganHang>> entry : tempBankAccounts.entrySet()) {
-		    String maNDT = entry.getKey();
-		    List<TaiKhoanNganHang> tempAccounts = entry.getValue();
-
-		    List<TaiKhoanNganHang> merged = new ArrayList<>();
-		    Map<String, TaiKhoanNganHang> seen = new LinkedHashMap<>();
-
-		    // Từ DB trước
-		    if (bankAccountMap.containsKey(maNDT)) {
-		        for (TaiKhoanNganHang acc : bankAccountMap.get(maNDT)) {
-		            seen.put(acc.getMaTK(), acc);
-		        }
-		    }
-
-		    // Override hoặc thêm mới
-		    for (TaiKhoanNganHang acc : tempAccounts) {
-		        seen.put(acc.getMaTK(), acc);
-		    }
-
-		    merged.addAll(seen.values());
-		    bankAccountMap.put(maNDT, merged);
-		}
-
 
 		int totalItems = allInvestors.size();
 		int start = page * size;
@@ -116,13 +91,14 @@ public class InvestorsController {
 
 		List<NhaDauTu> allInvestorsPageContent = (start < end) ? allInvestors.subList(start, end) : new ArrayList<>();
 		Page<NhaDauTu> allInvestorsPage = new PageImpl<>(allInvestorsPageContent, PageRequest.of(page, size), totalItems);
-		
+
 		List<TaiKhoanNganHang> usedAccounts = taiKhoanNganHangService.findTaiKhoanNganHangInLenhDat();
 		Set<String> usedMaTKs = usedAccounts.stream()
-	            .map(TaiKhoanNganHang::getMaTK)
-	            .collect(Collectors.toSet());
+				.map(TaiKhoanNganHang::getMaTK)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
 		model.addAttribute("usedMaTKs", usedMaTKs);
-		
+
 		model.addAttribute("investors", allInvestorsPage);
 		model.addAttribute("temporaryInvestors", tempList);
 		model.addAttribute("tempInvestorMap", tempInvestorMap);
@@ -134,60 +110,13 @@ public class InvestorsController {
 
 		model.addAttribute("canUndo", !nhaDauTuService.isUndoStackEmpty());
 
-		System.out.println("TempList size: " + tempList.size());
-		System.out.println("Temp investor map: " + tempInvestorMap);
-		System.out.println("Temp bank accounts: " + tempBankAccounts);
-		System.out.println("AllInvestors size: " + allInvestors.size());
-		System.out.println("Page content size: " + allInvestorsPageContent.size());
-
 		return "nhanvien/investor_list";
-	}
-
-	@PostMapping("/investors/add-temp")
-	public String addTempInvestor(@ModelAttribute NhaDauTu investor,
-								  @RequestParam(defaultValue = "0") int page,
-								  @RequestParam(defaultValue = "5") int size,
-								  HttpSession session,
-								  RedirectAttributes ra) {
-		
-		@SuppressWarnings("unchecked")
-		List<NhaDauTu> tempList = (List<NhaDauTu>) session.getAttribute("temporaryInvestors");
-		if (tempList == null) {
-			tempList = new ArrayList<>();
-		}
-
-		@SuppressWarnings("unchecked")
-		Map<String, List<TaiKhoanNganHang>> tempBankAccounts = (Map<String, List<TaiKhoanNganHang>>) session.getAttribute("tempBankAccounts");
-		if (tempBankAccounts == null) {
-			tempBankAccounts = new HashMap<>();
-		}
-
-		System.out.println("Received investor from form (add): " + investor);
-		System.out.println("Bank accounts from form (add): " + investor.getTaiKhoanNganHangs());
-
-		boolean exists = tempList.stream().anyMatch(i -> i.getMaNDT().equals(investor.getMaNDT()));
-		if (exists) {
-			ra.addFlashAttribute("message", "Mã NDT " + investor.getMaNDT() + " đã tồn tại trong danh sách tạm!");
-			ra.addFlashAttribute("messageType", "error");
-		} else {
-			tempList.add(investor);
-			if (investor.getTaiKhoanNganHangs() != null && !investor.getTaiKhoanNganHangs().isEmpty()) {
-				tempBankAccounts.put(investor.getMaNDT(), new ArrayList<>(investor.getTaiKhoanNganHangs()));
-			}
-			session.setAttribute("temporaryInvestors", tempList);
-			session.setAttribute("tempBankAccounts", tempBankAccounts);
-			ra.addFlashAttribute("message", "Đã thêm tạm nhà đầu tư " + investor.getMaNDT());
-			ra.addFlashAttribute("messageType", "success");
-		}
-
-		System.out.println("TempList after adding: " + tempList);
-		System.out.println("Temp bank accounts after adding: " + tempBankAccounts);
-
-		return "redirect:/investors?page=" + page + "&size=" + size;
 	}
 
 	@PostMapping("/investors/edit-temp")
 	public String editTempInvestor(@ModelAttribute NhaDauTu investor,
+								   @RequestParam(defaultValue = "0") int page,
+								   @RequestParam(defaultValue = "5") int size,
 								   HttpSession session,
 								   RedirectAttributes ra) {
 		@SuppressWarnings("unchecked")
@@ -200,12 +129,23 @@ public class InvestorsController {
 		Map<String, List<TaiKhoanNganHang>> tempBankAccounts = (Map<String, List<TaiKhoanNganHang>>) session.getAttribute("tempBankAccounts");
 		if (tempBankAccounts == null) {
 			tempBankAccounts = new HashMap<>();
-			session.setAttribute("tempBankAccounts", tempBankAccounts);
 		}
 
-		System.out.println("Received investor from form (edit): " + investor);
-		System.out.println("Bank accounts from form (edit): " + investor.getTaiKhoanNganHangs());
+		// Kiểm tra tính hợp lệ của MaNDT
+		if (Objects.isNull(investor.getMaNDT()) || investor.getMaNDT().isEmpty()) {
+			ra.addFlashAttribute("message", "Mã NDT không hợp lệ!");
+			ra.addFlashAttribute("messageType", "error");
+			return "redirect:/investors?page=" + page + "&size=" + size;
+		}
 
+		// Kiểm tra tài khoản ngân hàng đang sử dụng trong Lệnh Đặt
+		List<TaiKhoanNganHang> usedAccounts = taiKhoanNganHangService.findTaiKhoanNganHangInLenhDat();
+		Set<String> usedMaTKs = usedAccounts.stream()
+				.map(TaiKhoanNganHang::getMaTK)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+
+		// Cập nhật hoặc thêm nhà đầu tư vào tempList
 		boolean replaced = false;
 		for (int i = 0; i < tempList.size(); i++) {
 			if (tempList.get(i).getMaNDT().equals(investor.getMaNDT())) {
@@ -218,100 +158,237 @@ public class InvestorsController {
 			tempList.add(investor);
 		}
 
-		if (investor.getTaiKhoanNganHangs() != null && !investor.getTaiKhoanNganHangs().isEmpty()) {
-		    tempBankAccounts.put(investor.getMaNDT(), new ArrayList<>(investor.getTaiKhoanNganHangs()));
-		} else {
-		    tempBankAccounts.remove(investor.getMaNDT()); 
+		// Xử lý danh sách tài khoản ngân hàng
+		List<TaiKhoanNganHang> validAccounts = new ArrayList<>();
+		if (investor.getTaiKhoanNganHangs() != null) {
+			for (TaiKhoanNganHang tknh : investor.getTaiKhoanNganHangs()) {
+				if (Objects.nonNull(tknh.getMaTK()) && !tknh.getMaTK().isEmpty() &&
+						Objects.nonNull(tknh.getNganHang()) && Objects.nonNull(tknh.getNganHang().getMaNH()) &&
+						!tknh.getNganHang().getMaNH().isEmpty()) {
+					if (usedMaTKs.contains(tknh.getMaTK())) {
+						continue;
+					}
+					validAccounts.add(tknh);
+				} else {
+				}
+			}
 		}
 
-		System.out.println("Edited investor: " + investor.getMaNDT());
-		System.out.println("Temp bank accounts after edit: " + tempBankAccounts);
-		System.out.println("TempList after edit: " + tempList);
-
+		tempBankAccounts.put(investor.getMaNDT(), validAccounts);
 		session.setAttribute("temporaryInvestors", tempList);
 		session.setAttribute("tempBankAccounts", tempBankAccounts);
-		ra.addFlashAttribute("message", "Đã cập nhật tạm nhà đầu tư " + investor.getMaNDT());
+
+		ra.addFlashAttribute("message", "Đã cập nhật tạm nhà đầu tư " + investor.getMaNDT() + ". Một số tài khoản có thể bị bỏ qua do đang được sử dụng.");
 		ra.addFlashAttribute("messageType", "success");
 
-		return "redirect:/investors";
+
+		return "redirect:/investors?page=" + page + "&size=" + size;
+	}
+
+	@PostMapping("/investors/delete-bank-account")
+	public String deleteBankAccount(@RequestParam String maTK,
+									@RequestParam String maNDT,
+									@RequestParam(defaultValue = "0") int page,
+									@RequestParam(defaultValue = "5") int size,
+									HttpSession session,
+									RedirectAttributes ra) {
+		try {
+			// Kiểm tra tài khoản có đang được sử dụng trong Lệnh Đặt
+			List<TaiKhoanNganHang> usedAccounts = taiKhoanNganHangService.findTaiKhoanNganHangInLenhDat();
+			Set<String> usedMaTKs = usedAccounts.stream()
+					.map(TaiKhoanNganHang::getMaTK)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+
+			if (usedMaTKs.contains(maTK)) {
+				ra.addFlashAttribute("message", "Đã bỏ qua xóa tài khoản ngân hàng " + maTK + " vì đang được sử dụng!");
+				ra.addFlashAttribute("messageType", "warning");
+			} else {
+
+				@SuppressWarnings("unchecked")
+				Map<String, List<TaiKhoanNganHang>> tempBankAccounts = (Map<String, List<TaiKhoanNganHang>>) session.getAttribute("tempBankAccounts");
+				if (tempBankAccounts != null && tempBankAccounts.containsKey(maNDT)) {
+					tempBankAccounts.get(maNDT).removeIf(acc -> acc.getMaTK().equals(maTK));
+					if (tempBankAccounts.get(maNDT).isEmpty()) {
+						tempBankAccounts.remove(maNDT);
+					}
+					session.setAttribute("tempBankAccounts", tempBankAccounts);
+					ra.addFlashAttribute("message", "Đã xóa tạm tài khoản ngân hàng " + maTK);
+					ra.addFlashAttribute("messageType", "success");
+				} else {
+					ra.addFlashAttribute("message", "Không tìm thấy tài khoản ngân hàng " + maTK + " trong danh sách tạm!");
+					ra.addFlashAttribute("messageType", "warning");
+				}
+			}
+
+		} catch (Exception e) {
+			ra.addFlashAttribute("message", "Lỗi khi xóa tài khoản ngân hàng: " + e.getMessage());
+			ra.addFlashAttribute("messageType", "error");
+		}
+
+		return "redirect:/investors?page=" + page + "&size=" + size;
+	}
+
+	@PostMapping("/investors/add-temp")
+	public String addTempInvestor(@ModelAttribute NhaDauTu investor,
+								  @RequestParam(defaultValue = "0") int page,
+								  @RequestParam(defaultValue = "5") int size,
+								  HttpSession session,
+								  RedirectAttributes ra) {
+		@SuppressWarnings("unchecked")
+		List<NhaDauTu> tempList = (List<NhaDauTu>) session.getAttribute("temporaryInvestors");
+		if (tempList == null) {
+			tempList = new ArrayList<>();
+		}
+
+		@SuppressWarnings("unchecked")
+		Map<String, List<TaiKhoanNganHang>> tempBankAccounts = (Map<String, List<TaiKhoanNganHang>>) session.getAttribute("tempBankAccounts");
+		if (tempBankAccounts == null) {
+			tempBankAccounts = new HashMap<>();
+		}
+
+		if (Objects.isNull(investor.getMaNDT()) || investor.getMaNDT().isEmpty()) {
+			ra.addFlashAttribute("message", "Mã NDT không hợp lệ!");
+			ra.addFlashAttribute("messageType", "error");
+			return "redirect:/investors?page=" + page + "&size=" + size;
+		}
+
+		boolean exists = tempList.stream().anyMatch(i -> i.getMaNDT().equals(investor.getMaNDT()));
+		if (exists) {
+			ra.addFlashAttribute("message", "Mã NDT " + investor.getMaNDT() + " đã tồn tại trong danh sách tạm!");
+			ra.addFlashAttribute("messageType", "error");
+		} else {
+			// Kiểm tra tài khoản ngân hàng đang sử dụng trong Lệnh Đặt
+			List<TaiKhoanNganHang> usedAccounts = taiKhoanNganHangService.findTaiKhoanNganHangInLenhDat();
+			Set<String> usedMaTKs = usedAccounts.stream()
+					.map(TaiKhoanNganHang::getMaTK)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+
+			List<TaiKhoanNganHang> validAccounts = new ArrayList<>();
+			if (investor.getTaiKhoanNganHangs() != null) {
+				for (TaiKhoanNganHang tknh : investor.getTaiKhoanNganHangs()) {
+					if (Objects.nonNull(tknh.getMaTK()) && !tknh.getMaTK().isEmpty() &&
+							Objects.nonNull(tknh.getNganHang()) && Objects.nonNull(tknh.getNganHang().getMaNH()) &&
+							!tknh.getNganHang().getMaNH().isEmpty()) {
+						if (usedMaTKs.contains(tknh.getMaTK())) {
+							continue;
+						}
+						validAccounts.add(tknh);
+					} else {
+
+					}
+				}
+			}
+
+			tempList.add(investor);
+			if (!validAccounts.isEmpty()) {
+				tempBankAccounts.put(investor.getMaNDT(), new ArrayList<>(validAccounts));
+			}
+			session.setAttribute("temporaryInvestors", tempList);
+			session.setAttribute("tempBankAccounts", tempBankAccounts);
+			ra.addFlashAttribute("message", "Đã thêm tạm nhà đầu tư " + investor.getMaNDT() + ". Một số tài khoản có thể bị bỏ qua do đang được sử dụng.");
+			ra.addFlashAttribute("messageType", "success");
+		}
+		return "redirect:/investors?page=" + page + "&size=" + size;
 	}
 
 	@PostMapping("/investors/save-all")
+	@Transactional
 	public String saveAllInvestors(HttpSession session, RedirectAttributes ra) {
 		@SuppressWarnings("unchecked")
 		List<NhaDauTu> tempList = (List<NhaDauTu>) session.getAttribute("temporaryInvestors");
 		@SuppressWarnings("unchecked")
 		Map<String, List<TaiKhoanNganHang>> tempBankAccounts = (Map<String, List<TaiKhoanNganHang>>) session.getAttribute("tempBankAccounts");
 
-		if (tempList != null && !tempList.isEmpty()) {
-			try {
-				for (NhaDauTu investor : tempList) {
-					if (tempBankAccounts != null && tempBankAccounts.containsKey(investor.getMaNDT())) {
-						List<TaiKhoanNganHang> bankAccounts = tempBankAccounts.get(investor.getMaNDT());
-						investor.setTaiKhoanNganHangs(bankAccounts);
+		if (tempList == null || tempList.isEmpty()) {
+			ra.addFlashAttribute("message", "Không có nhà đầu tư tạm để lưu!");
+			ra.addFlashAttribute("messageType", "error");
+			return "redirect:/investors";
+		}
 
-						for (TaiKhoanNganHang tknh : bankAccounts) {
-							tknh.setNhaDauTu(investor);
-							System.out.println("Processing TaiKhoanNganHang: MaTK=" + tknh.getMaTK() + ", MaNH=" + (tknh.getNganHang() != null ? tknh.getNganHang().getMaNH() : "null"));
+		try {
+			List<TaiKhoanNganHang> usedAccounts = taiKhoanNganHangService.findTaiKhoanNganHangInLenhDat();
+			Set<String> usedMaTKs = usedAccounts.stream()
+					.map(TaiKhoanNganHang::getMaTK)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+
+			for (NhaDauTu investor : tempList) {
+				if (Objects.isNull(investor.getMaNDT()) || investor.getMaNDT().isEmpty()) {
+					continue;
+				}
+
+				// Lấy danh sách tài khoản hiện tại và tạm thời
+				List<TaiKhoanNganHang> existingBankAccounts = taiKhoanNganHangService.findByInvestorMaNDT(investor.getMaNDT());
+				List<TaiKhoanNganHang> tempAccounts = tempBankAccounts != null ? tempBankAccounts.getOrDefault(investor.getMaNDT(), new ArrayList<>()) : new ArrayList<>();
+
+				// Tạo map để so sánh
+				Map<String, TaiKhoanNganHang> existingAccountsMap = existingBankAccounts.stream()
+						.filter(acc -> Objects.nonNull(acc.getMaTK()))
+						.collect(Collectors.toMap(TaiKhoanNganHang::getMaTK, acc -> acc, (a1, a2) -> a1));
+				Map<String, TaiKhoanNganHang> tempAccountsMap = tempAccounts.stream()
+						.filter(acc -> Objects.nonNull(acc.getMaTK()))
+						.collect(Collectors.toMap(TaiKhoanNganHang::getMaTK, acc -> acc, (a1, a2) -> a1));
+
+				// Xóa các tài khoản không còn trong danh sách tạm
+				for (TaiKhoanNganHang existingAcc : existingBankAccounts) {
+					if (!tempAccountsMap.containsKey(existingAcc.getMaTK())) {
+						if (usedMaTKs.contains(existingAcc.getMaTK())) {
+							continue;
 						}
-					}
-
-					Optional<NhaDauTu> existing = nhaDauTuService.findById(investor.getMaNDT());
-					if (existing.isPresent()) {
-						// Cập nhật thông tin nhà đầu tư
-						nhaDauTuService.capNhatNhaDauTu(investor.getMaNDT(), investor);
-						taiKhoanNganHangService.deleteByInvestorMaNDT(investor.getMaNDT());
-
-						// Kiểm tra và thêm ngân hàng mới nếu cần trước khi lưu tài khoản ngân hàng
-						if (investor.getTaiKhoanNganHangs() != null && !investor.getTaiKhoanNganHangs().isEmpty()) {
-							for (TaiKhoanNganHang tknh : investor.getTaiKhoanNganHangs()) {
-								if (tknh.getNganHang() != null && tknh.getNganHang().getMaNH() != null) {
-
-									System.out.println("Checking NganHang with MaNH: " + tknh.getNganHang().getMaNH());
-
-									nganHangService.themNganHang(tknh.getNganHang());
-								}
-							}
-
-							// Sau đó lưu các tài khoản ngân hàng
-							for (TaiKhoanNganHang tknh : investor.getTaiKhoanNganHangs()) {
-								taiKhoanNganHangService.themTaiKhoanNganHang(tknh);
-							}
-						}
-					} else {
-						// Thêm mới nhà đầu tư
-						nhaDauTuService.themNhaDauTuBangSP(investor);
-
-						// Lưu thông tin ngân hàng trước
-						if (investor.getTaiKhoanNganHangs() != null && !investor.getTaiKhoanNganHangs().isEmpty()) {
-							for (TaiKhoanNganHang tknh : investor.getTaiKhoanNganHangs()) {
-								nganHangService.themNganHang(tknh.getNganHang());
-							}
-
-							// Sau đó lưu tài khoản ngân hàng
-							for (TaiKhoanNganHang tknh : investor.getTaiKhoanNganHangs()) {
-								taiKhoanNganHangService.themTaiKhoanNganHang(tknh);
-							}
-						}
+						taiKhoanNganHangService.deleteTaiKhoanNganHang(existingAcc.getMaTK());
 					}
 				}
 
-				session.removeAttribute("temporaryInvestors");
-				session.removeAttribute("tempBankAccounts");
-				ra.addFlashAttribute("message", "Đã ghi vào cơ sở dữ liệu!");
-				ra.addFlashAttribute("messageType", "success");
-			} catch (Exception e) {
-				System.out.println("Error in saveAllInvestors: " + e.getMessage());
-				ra.addFlashAttribute("message", "Lỗi khi ghi vào cơ sở dữ liệu: " + e.getMessage());
-				ra.addFlashAttribute("messageType", "error");
+				// Thêm hoặc cập nhật tài khoản ngân hàng
+				for (TaiKhoanNganHang tempAcc : tempAccounts) {
+					if (Objects.isNull(tempAcc.getMaTK()) || tempAcc.getMaTK().isEmpty() ||
+							Objects.isNull(tempAcc.getNganHang()) || Objects.isNull(tempAcc.getNganHang().getMaNH()) ||
+							tempAcc.getNganHang().getMaNH().isEmpty()) {
+						continue;
+					}
+
+					if (usedMaTKs.contains(tempAcc.getMaTK())) {
+						continue;
+					}
+
+					tempAcc.setNhaDauTu(investor);
+					if (!nganHangService.existsByMaNH(tempAcc.getNganHang().getMaNH())) {
+						nganHangService.themNganHang(tempAcc.getNganHang());
+					}
+
+					if (existingAccountsMap.containsKey(tempAcc.getMaTK())) {
+						taiKhoanNganHangService.capNhatHoacThemTaiKhoanNganHang(tempAcc);
+					} else {
+						taiKhoanNganHangService.themTaiKhoanNganHang(tempAcc);
+					}
+				}
+
+				// Lưu hoặc cập nhật nhà đầu tư
+				Optional<NhaDauTu> existing = nhaDauTuService.findById(investor.getMaNDT());
+				if (existing.isPresent()) {
+					nhaDauTuService.capNhatNhaDauTu(investor.getMaNDT(), investor);
+				} else {
+					nhaDauTuService.themNhaDauTuBangSP(investor);
+				}
 			}
-		} else {
-			ra.addFlashAttribute("message", "Không có nhà đầu tư tạm để ghi.");
+
+			// Xóa dữ liệu tạm sau khi lưu thành công
+			session.removeAttribute("temporaryInvestors");
+			session.removeAttribute("tempBankAccounts");
+			ra.addFlashAttribute("message", "Đã lưu tất cả nhà đầu tư và tài khoản ngân hàng! Một số tài khoản có thể được bỏ qua do đang được sử dụng.");
+			ra.addFlashAttribute("messageType", "success");
+
+		} catch (Exception e) {
+			ra.addFlashAttribute("message", "Lỗi khi lưu dữ liệu: " + e.getMessage());
 			ra.addFlashAttribute("messageType", "error");
+			throw new RuntimeException("Lỗi khi lưu dữ liệu", e);
 		}
 
 		return "redirect:/investors";
 	}
+
 	@PostMapping("/investors/delete")
 	public String deleteInvestor(@RequestParam String maNDT, RedirectAttributes ra) {
 		try {
@@ -319,7 +396,7 @@ public class InvestorsController {
 			ra.addFlashAttribute("message", "Đã xóa nhà đầu tư " + maNDT);
 			ra.addFlashAttribute("messageType", "success");
 		} catch (Exception e) {
-			ra.addFlashAttribute("message", "Xóa thất bại");
+			ra.addFlashAttribute("message", "Xóa thất bại: " + e.getMessage());
 			ra.addFlashAttribute("messageType", "error");
 		}
 		return "redirect:/investors";
@@ -333,13 +410,13 @@ public class InvestorsController {
 		Map<String, List<TaiKhoanNganHang>> tempBankAccounts = (Map<String, List<TaiKhoanNganHang>>) session.getAttribute("tempBankAccounts");
 
 		if (tempList != null) {
-			tempList.removeIf(investor -> investor.getMaNDT().equals(maNDT));
+			tempList.removeIf(investor -> Objects.equals(investor.getMaNDT(), maNDT));
 			if (tempBankAccounts != null) {
 				tempBankAccounts.remove(maNDT);
 			}
 			session.setAttribute("temporaryInvestors", tempList);
 			session.setAttribute("tempBankAccounts", tempBankAccounts);
-			ra.addFlashAttribute("message", "Đã xóa nhà đầu tư tạm có mã " + maNDT);
+			ra.addFlashAttribute("message", "Đã xóa nhà đầu tư tạm có mã " + maNDT + " và tài khoản ngân hàng liên quan");
 			ra.addFlashAttribute("messageType", "success");
 		} else {
 			ra.addFlashAttribute("message", "Không tìm thấy nhà đầu tư tạm nào để xóa.");
@@ -371,7 +448,7 @@ public class InvestorsController {
 	@PostMapping("/investors/clear-undo")
 	public String clearUndo() {
 		nhaDauTuService.clearUndoStack();
-		return "redirect:/nhanvien/layout";
+		return "redirect:/nhanvien/investors";
 	}
 
 	@PostMapping("/investors/search")
@@ -388,15 +465,32 @@ public class InvestorsController {
 		allInvestors.addAll(tempList);
 
 		Page<NhaDauTu> investorPage = new PageImpl<>(allInvestors, PageRequest.of(0, Integer.MAX_VALUE), allInvestors.size());
-		
+
 		List<TaiKhoanNganHang> usedAccounts = taiKhoanNganHangService.findTaiKhoanNganHangInLenhDat();
 		Set<String> usedMaTKs = usedAccounts.stream()
 				.map(TaiKhoanNganHang::getMaTK)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 		model.addAttribute("usedMaTKs", usedMaTKs);
 
+		Map<String, List<TaiKhoanNganHang>> bankAccountMap = new HashMap<>();
+		@SuppressWarnings("unchecked")
+		Map<String, List<TaiKhoanNganHang>> tempBankAccounts = (Map<String, List<TaiKhoanNganHang>>) session.getAttribute("tempBankAccounts");
+		if (tempBankAccounts == null) {
+			tempBankAccounts = new HashMap<>();
+		}
+		for (NhaDauTu investor : allInvestors) {
+			String maNDT = investor.getMaNDT();
+			if (tempBankAccounts.containsKey(maNDT)) {
+				bankAccountMap.put(maNDT, new ArrayList<>(tempBankAccounts.get(maNDT)));
+			} else {
+				bankAccountMap.put(maNDT, taiKhoanNganHangService.findByInvestorMaNDT(maNDT));
+			}
+		}
+
 		model.addAttribute("investors", investorPage);
 		model.addAttribute("temporaryInvestors", tempList);
+		model.addAttribute("bankAccountMap", bankAccountMap);
 		model.addAttribute("canUndo", !nhaDauTuService.isUndoStackEmpty());
 
 		if (allInvestors.isEmpty()) {

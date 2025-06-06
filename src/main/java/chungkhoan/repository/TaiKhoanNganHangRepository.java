@@ -23,11 +23,13 @@ public interface TaiKhoanNganHangRepository extends JpaRepository<TaiKhoanNganHa
     @Modifying
     @Query("DELETE FROM TaiKhoanNganHang t WHERE t.nhaDauTu.maNDT = :maNDT")
     void deleteByNhaDauTuMaNDT(@Param("maNDT") String maNDT);
-    
+
     @Query("SELECT DISTINCT tk FROM TaiKhoanNganHang tk " +
             "WHERE EXISTS (" +
             "    SELECT 1 FROM LenhDat ld " +
             "    WHERE ld.taiKhoanNganHang.maTK = tk.maTK" +
             ")")
-     List<TaiKhoanNganHang> findTaiKhoanNganHangInLenhDat();
+    List<TaiKhoanNganHang> findTaiKhoanNganHangInLenhDat();
+    List<TaiKhoanNganHang> findByMaTKIn(List<String> maTKs);
+    boolean existsByMaTK(String maTK);
 }

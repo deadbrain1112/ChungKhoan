@@ -3,9 +3,13 @@ package chungkhoan.service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import chungkhoan.entity.LichSuGia;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import chungkhoan.entity.LenhDat;
@@ -24,8 +28,15 @@ public class KhopLenhProcessorService {
     @Autowired private TaiKhoanNganHangService taiKhoanNganHangService;
     @Autowired private SoHuuService soHuuService;
 
+    @Autowired
+    private LichSuGiaService lichSuGiaService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @Transactional
     public void khopLenh(String maCP) {
+
         List<LenhDat> muaList = lenhDatRepo
             .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", Arrays.asList("Chờ", "Một phần"));
 
@@ -96,11 +107,13 @@ public class KhopLenhProcessorService {
 
         capNhatTrangThai(mua, slKhop);
         capNhatTrangThai(ban, slKhop);
+
     }
 
     private void capNhatTrangThai(LenhDat lenh, int slKhop) {
         lenh.setSoLuong(lenh.getSoLuong() - slKhop);
         lenh.setTrangThai(lenh.getSoLuong() == 0 ? "Hết" : "Một phần");
         lenhDatRepo.save(lenh);
+
     }
 }

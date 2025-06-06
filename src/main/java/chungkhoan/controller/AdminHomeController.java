@@ -14,3 +14,4 @@ public class AdminHomeController {
 		return "nhanvien/layout";
 	}
 }
+

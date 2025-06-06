@@ -8,11 +8,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 
 import javax.sql.DataSource;
 
 @SpringBootApplication
 @EnableScheduling
+@EnableWebSocketMessageBroker
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ChungKhoanApplication {
 

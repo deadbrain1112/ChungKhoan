@@ -13,7 +13,7 @@ import java.util.Set;
 @Builder
 public class CoPhieu {
     @Id
-    @Column(name = "MaCP", columnDefinition = "NCHAR(10)")
+    @Column(name = "MaCP", columnDefinition = "VARCHAR(10)")
     private String maCP;
 
     @Column(name = "tencty", columnDefinition = "NVARCHAR(50)", nullable = false, unique = true)
@@ -26,7 +26,7 @@ public class CoPhieu {
     private int soLuongPH;
 
     @OneToMany(mappedBy = "coPhieu", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<SoHuu> soHuus;  // Một cổ phiếu có thể thuộc về nhiều nhà đầu tư
+    private Set<SoHuu> soHuus;
 
     @PrePersist
     @PreUpdate

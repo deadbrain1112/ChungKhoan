@@ -13,29 +13,28 @@ import chungkhoan.entity.LenhDat;
 import jakarta.transaction.Transactional;
 
 public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
-	// MUA: Lấy lệnh mua đang chờ hoặc một phần khớp, theo giá giảm dần và ngày tăng dần
-	List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(
-	    String maCP,
-	    String loaiGD,
-	    List<String> trangThai
-	);
+    // MUA: Lấy lệnh mua đang chờ hoặc một phần khớp, theo giá giảm dần và ngày tăng dần
+    List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(
+            String maCP,
+            String loaiGD,
+            List<String> trangThai
+    );
 
-	// BÁN: Lấy lệnh bán đang chờ hoặc một phần khớp, theo giá tăng dần và ngày tăng dần
-	List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(
-	    String maCP,
-	    String loaiGD,
-	    List<String> trangThai
-	);
-    
+    // BÁN: Lấy lệnh bán đang chờ hoặc một phần khớp, theo giá tăng dần và ngày tăng dần
+    List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(
+            String maCP,
+            String loaiGD,
+            List<String> trangThai
+    );
+
     @Query(value = "EXEC sp_TimLenhDatTheoNhaDauTu :maNDT", nativeQuery = true)
     List<LenhDat> timLenhDatTheoMaNDT(@Param("maNDT") String maNDT);
-    
+
     // Khớp lệnhs
     List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaDescNgayGDAsc(String maCP, String loaiGD, String trangThai);
-    List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaAscNgayGDAsc(String maCP, String loaiGD, String trangThai);
     @Query("SELECT DISTINCT ld.coPhieu.maCP FROM LenhDat ld WHERE LOWER(ld.trangThai) = LOWER(:status)")
     List<String> findAllMaCPDangChoKhop(@Param("status") String status);
-    
+
     List<LenhDat> findByTrangThai(String trangThai);
 
     // Cập nhật trạng thái lệnh theo ID
@@ -49,9 +48,10 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     @Transactional
     @Query("UPDATE LenhDat l SET l.trangThai = 'Hủy' WHERE l.trangThai = 'Chờ'")
     void huyTatCaLenhCho();
-    
+
     // Sao kê
     List<LenhDat> findByTaiKhoanNganHang_NhaDauTu_MaNDT(String maNDT);
     List<LenhDat> findByTaiKhoanNganHang_NhaDauTu_MaNDTAndTrangThai(String maNDT, String trangThai);
-
+    @Query("SELECT DISTINCT tk.maTK FROM TaiKhoanNganHang tk WHERE tk.maTK NOT IN (SELECT l.taiKhoanNganHang.maTK FROM LenhDat l WHERE l.taiKhoanNganHang.maTK IS NOT NULL)")
+    List<String> findDistinctMaTK();
 }

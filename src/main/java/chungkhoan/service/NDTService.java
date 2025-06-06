@@ -3,6 +3,7 @@ package chungkhoan.service;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.UndoAction;
 import chungkhoan.repository.NDTRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -78,18 +79,29 @@ public class NDTService {
         if (ndtCu != null) {
             NhaDauTu copy = new NhaDauTu(ndtCu);
 
-            ndtMoi.setMaNDT(maNDT);
-            ndtMoi.setMkGiaoDich(ndtCu.getMkGiaoDich());
+            ndtCu.setHoTen(ndtMoi.getHoTen());
+            ndtCu.setNgaySinh(ndtMoi.getNgaySinh());
+            ndtCu.setDiaChi(ndtMoi.getDiaChi());
+            ndtCu.setPhone(ndtMoi.getPhone());
+            ndtCu.setCmnd(ndtMoi.getCmnd());
+            ndtCu.setGioiTinh(ndtMoi.getGioiTinh());
+            ndtCu.setEmail(ndtMoi.getEmail());
 
-            ndtRepository.save(ndtMoi);
+            ndtCu.setMkGiaoDich(ndtCu.getMkGiaoDich());
+
+            ndtRepository.save(ndtCu);
+
             undoStack.push(new UndoAction(
                     UndoAction.ActionType.EDIT,
                     UndoAction.EntityType.NHA_DAU_TU,
                     copy,
-                    ndtMoi
+                    ndtCu
             ));
+        } else {
+            throw new EntityNotFoundException("Không tìm thấy nhà đầu tư với mã: " + maNDT);
         }
     }
+
 
     @Transactional
     public boolean undoThaoTacCuoi() {
@@ -162,6 +174,18 @@ public class NDTService {
     public Optional<NhaDauTu> findById(String maNDT) {
         return ndtRepository.findById(maNDT);
     }
+
+    public boolean doiMatKhauGiaoDich(String username, String newPassword) {
+        NhaDauTu ndt = ndtRepository.findByUsername(username);
+        if (ndt != null) {
+            ndt.setMkGiaoDich(newPassword);
+            ndtRepository.save(ndt);
+            return true;
+        }
+        return false;
+    }
+
+
 
 
 }

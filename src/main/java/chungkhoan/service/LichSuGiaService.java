@@ -27,7 +27,7 @@ public class LichSuGiaService {
 	// Lấy giá tham chiếu mới nhất của cổ phiếu
 	public Float getGiaThamChieuMoiNhat(String maCP) {
         Float giaTC = lichSuGiaRepository.getGiaThamChieuMoiNhat(maCP);
-        return giaTC != null ? giaTC : 0f; // Trả về 0 nếu không tìm thấy giá
+        return giaTC != null ? giaTC : 0f;
     }	
 	
 	public LichSuGia layGiaMoiNhat(String maCP) {
@@ -51,7 +51,7 @@ public class LichSuGiaService {
 //
 //	    lichSuGiaRepository.save(lichSuGia);
 //	}
-	
+
 	public Map<String, Double> getGiaThamChieu(String maCP) {
         LocalDateTime now = LocalDateTime.now();
 

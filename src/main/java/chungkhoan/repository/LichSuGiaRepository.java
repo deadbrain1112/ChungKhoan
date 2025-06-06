@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LichSuGiaRepository extends JpaRepository<LichSuGia, LichSuGiaKey> {
     Optional<LichSuGia> findById(LichSuGiaKey key);
-    
+
     @Query("SELECT l.giaTC FROM LichSuGia l WHERE l.maCP = :maCP ORDER BY l.ngay DESC LIMIT 1")
     Float getGiaThamChieuMoiNhat(@Param("maCP") String maCP);
 
@@ -24,7 +24,7 @@ public interface LichSuGiaRepository extends JpaRepository<LichSuGia, LichSuGiaK
             @Param("maCP") String maCP,
             @Param("ngay") Timestamp ngay
     );
-    
+
     @Query(nativeQuery = true, value = "EXEC sp_LayGiaMoiNhat :maCP")
     LichSuGia layGiaMoiNhat(@Param("maCP") String maCP);
 }

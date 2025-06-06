@@ -24,8 +24,8 @@ public class ChangePasswordController {
 
     @GetMapping("/change-password")
     public String hienThiFormDoiMatKhau(Model model) {
-        model.addAttribute("nhanViens", nhanVienRepository.findAll());
-        model.addAttribute("nhaDauTus", ndtRepository.findAll());
+        model.addAttribute("nhanViens", nhanVienRepository.findAllNhanVienCoTaiKhoan());
+        model.addAttribute("nhaDauTus", ndtRepository.findAllNhaDauTuCoTaiKhoan());
         return "nhanvien/change_password"; 
     }
 }
