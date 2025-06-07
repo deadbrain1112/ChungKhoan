@@ -2,11 +2,13 @@ package chungkhoan.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import chungkhoan.entity.LenhDat;
@@ -29,6 +31,9 @@ public class KhopLenhProcessorService {
     public enum Phase {
         ATO, LO, ATC
     }
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public void khopLenh(String maCP, String phaseStr) {
@@ -185,11 +190,13 @@ public class KhopLenhProcessorService {
 
         capNhatTrangThai(mua, slKhop);
         capNhatTrangThai(ban, slKhop);
+
     }
 
     private void capNhatTrangThai(LenhDat lenh, int slKhop) {
         lenh.setSoLuong(lenh.getSoLuong() - slKhop);
         lenh.setTrangThai(lenh.getSoLuong() == 0 ? "Hết" : "Một phần");
         lenhDatRepo.save(lenh);
+
     }
 }

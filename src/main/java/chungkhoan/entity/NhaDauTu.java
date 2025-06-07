@@ -59,7 +59,7 @@ public class NhaDauTu {
         this.gioiTinh = other.gioiTinh;
         this.email = other.email;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

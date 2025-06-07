@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,9 @@ public class DatLenhBanController {
 
     @Autowired
     private SoHuuService soHuuService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/nhadautu/dat-lenh-ban")
     public String getView(@RequestParam(value = "maCP", required = false) String maCP,
@@ -111,6 +115,12 @@ public class DatLenhBanController {
             return "ndt/dat_lenh_ban";
         }
 
+        if (matKhau == null || !matKhau.equals(nhaDauTu.getMkGiaoDich())) {
+            model.addAttribute("error", "Mật khẩu giao dịch không đúng!");
+            return "ndt/dat_lenh_ban";
+        }
+
+
         LichSuGia lichSuGia = lichSuGiaService.layGiaMoiNhat(maCP);
         if (lichSuGia == null) {
             model.addAttribute("error", "Không có dữ liệu giá sàn cho cổ phiếu này");
@@ -166,11 +176,23 @@ public class DatLenhBanController {
                 .build();
 
         lenhDatService.save(lenh);
+
+        messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, gia, soLuong, "B"));
         model.addAttribute("success", "Đặt lệnh bán thành công, chờ khớp lệnh!");
 
         model.addAttribute("tatCaCoPhieu", coPhieuService.findByMaCPIn(soHuuService.getMaCPByNDT(nhaDauTu.getMaNDT())));
 
         return "redirect:/nhadautu/dat-lenh-ban";
+    }
+
+
+    private Object createOrderMessage(String maCPInput, double giaInput, int soLuongInput, String loaiGDInput) {
+        return new Object() {
+            public String maCP = maCPInput;
+            public double gia = giaInput;
+            public int soLuong = soLuongInput;
+            public String loaiGD = loaiGDInput;
+        };
     }
 
     private String formatGia(double value) {

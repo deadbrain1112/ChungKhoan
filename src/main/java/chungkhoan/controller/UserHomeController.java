@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import chungkhoan.entity.CoPhieu;
@@ -23,6 +24,7 @@ import chungkhoan.service.NDTService;
 import chungkhoan.service.SoHuuService;
 import chungkhoan.service.TaiKhoanNganHangService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class UserHomeController {
@@ -37,6 +39,9 @@ public class UserHomeController {
 
     @Autowired
     private SoHuuService soHuuService;
+
+    @Autowired
+    private NDTService ndtService;
 
     @GetMapping("/nhadautu/home")
     public String home(@RequestParam(value = "maTK", required = false) String maTK, 
@@ -92,4 +97,23 @@ public class UserHomeController {
 
         return "ndt/home";
     }
+
+    @PostMapping("/nhadautu/doi-mat-khau-gd")
+    public String doiMatKhau(@RequestParam String newPassword, HttpSession session, RedirectAttributes redirectAttrs) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) {
+            redirectAttrs.addFlashAttribute("error", "Bạn chưa đăng nhập");
+            return "redirect:/login";
+        }
+
+        boolean thanhCong = ndtService.doiMatKhauGiaoDich(username, newPassword);
+        if (thanhCong) {
+            redirectAttrs.addFlashAttribute("message", "Đổi mật khẩu thành công");
+        } else {
+            redirectAttrs.addFlashAttribute("error", "Lỗi khi đổi mật khẩu");
+        }
+
+        return "redirect:/nhadautu/home";
+    }
+
 }

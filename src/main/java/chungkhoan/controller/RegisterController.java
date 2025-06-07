@@ -30,8 +30,8 @@ public class RegisterController {
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
-        model.addAttribute("nhanViens", nhanVienRepository.findAll());
-        model.addAttribute("nhaDauTus", ndtRepository.findAll());
+        model.addAttribute("nhanViens", nhanVienRepository.findAllNhanVienChuaCoTaiKhoan());
+        model.addAttribute("nhaDauTus", ndtRepository.findAllNhaDauTuChuaCoTaiKhoan());
         return "nhanvien/register";
     }
 
@@ -48,8 +48,8 @@ public class RegisterController {
             model.addAttribute("error", "Lỗi khi tạo tài khoản: " + e.getMessage());
         }
 
-        model.addAttribute("nhanViens", nhanVienRepository.findAll());
-        model.addAttribute("nhaDauTus", ndtRepository.findAll());
+        model.addAttribute("nhanViens", nhanVienRepository.findAllNhanVienChuaCoTaiKhoan());
+        model.addAttribute("nhaDauTus", ndtRepository.findAllNhaDauTuChuaCoTaiKhoan());
         return "nhanvien/register";
     }
 

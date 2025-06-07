@@ -65,4 +65,8 @@ public class NganHangService {
             throw new RuntimeException("Lỗi khi thêm ngân hàng: " + e.getMessage());
         }
     }
+
+    public boolean existsByMaNH(String maNH) {
+        return nganHangRepository.existsByMaNH(maNH);
+    }
 }

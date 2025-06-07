@@ -60,7 +60,7 @@ public class BackupService {
 
         List<Map<String, Object>> rawList = jdbcTemplate.queryForList(sql, dbName);
 
-        // Format lại thời gian trong Java
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy hh:mm:ss a");
 
         for (Map<String, Object> row : rawList) {

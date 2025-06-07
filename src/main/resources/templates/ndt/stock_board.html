@@ -8,7 +8,7 @@
 
 </head>
 <body>
-    <h2>BẢNG GIÁ CỔ PHIẾU TRỰC TUYẾN</h2>
+<h2>BẢNG GIÁ CỔ PHIẾU TRỰC TUYẾN</h2>
 
 	<form method="get" th:action="@{/stock-board}">
 	    <label for="filter">Lọc danh sách:</label>
@@ -17,7 +17,7 @@
 	        <option value="sohuu" th:selected="${filter == 'sohuu'}">Đã sở hữu</option>
 	    </select>
 	</form>
-	
+
     <table>
         <thead>
             <tr>
@@ -84,5 +84,160 @@
             </tr>
         </tbody>
     </table>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+    <script>
+        const orderBook = {};
+
+        const socket = new SockJS('/ws-stock');
+        const stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function () {
+            console.log('WebSocket connected');
+
+            stompClient.subscribe('/topic/stock-board', function (message) {
+                try {
+                    const order = JSON.parse(message.body);
+                    console.log('Received:', order);
+
+                    // Kiểm tra dữ liệu hợp lệ chung
+                    if (!order || !order.maCP) {
+                        console.error('Invalid order:', order);
+                        return;
+                    }
+
+                    const maCP = order.maCP.trim();
+
+                    // Nếu có loaiGD thì xử lý mua/bán
+                    if (order.loaiGD && order.gia != null && order.soLuong != null) {
+                        const gia = parseFloat(order.gia).toFixed(2);
+                        const soLuong = parseInt(order.soLuong);
+                        const loaiGD = order.loaiGD;
+
+                        if (!orderBook[maCP]) {
+                            orderBook[maCP] = { buy: [], sell: [] };
+                        }
+
+                        if (loaiGD === 'M') {
+                            const existing = orderBook[maCP].buy.find(o => o.gia === parseFloat(gia));
+                            if (existing) {
+                                existing.soLuong += soLuong;
+                            } else {
+                                orderBook[maCP].buy.push({ gia: parseFloat(gia), soLuong });
+                            }
+                            orderBook[maCP].buy.sort((a, b) => b.gia - a.gia);
+                            orderBook[maCP].buy = orderBook[maCP].buy.slice(0, 3);
+                            updateOrderSide(maCP, 'buy');
+
+                        } else if (loaiGD === 'B') {
+                            const existing = orderBook[maCP].sell.find(o => o.gia === parseFloat(gia));
+                            if (existing) {
+                                existing.soLuong += soLuong;
+                            } else {
+                                orderBook[maCP].sell.push({ gia: parseFloat(gia), soLuong });
+                            }
+                            orderBook[maCP].sell.sort((a, b) => a.gia - b.gia);
+                            orderBook[maCP].sell = orderBook[maCP].sell.slice(0, 3);
+                            updateOrderSide(maCP, 'sell');
+                        }
+                    }
+
+                    // Nếu có thông tin khớp lệnh thì cập nhật bảng giá
+                    if (order.giaKhop != null || order.soLuongKhop != null) {
+                        updateStockBoard(order);
+                    }
+
+                } catch (e) {
+                    console.error('Error parsing WebSocket message:', e);
+                }
+            });
+
+
+        }, function (error) {
+            console.error('WebSocket connection failed:', error);
+        });
+
+        function updateOrderSide(maCP, side) {
+            const sideOrders = orderBook[maCP]?.[side] || [];
+            for (let i = 1; i <= 3; i++) {
+                const priceElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-gia${i}-${maCP}`);
+                const quantityElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-kl${i}-${maCP}`);
+                if (priceElem && quantityElem) {
+                    if (sideOrders[i - 1]) {
+                        priceElem.textContent = sideOrders[i - 1].gia.toFixed(2);
+                        quantityElem.textContent = sideOrders[i - 1].soLuong.toLocaleString();
+                    } else {
+                        priceElem.textContent = '-';
+                        quantityElem.textContent = '-';
+                    }
+                }
+            }
+        }
+
+        function updateStockBoard(order) {
+            if (!order || typeof order !== 'object' || !order.maCP) {
+                console.error('Invalid order for stock board update:', order);
+                return;
+            }
+
+            const maCP = order.maCP.trim();
+
+            const giaKhop = isValidNumber(order.giaKhop) ? parseFloat(order.giaKhop).toFixed(0) : '-';
+            const soLuongKhop = isValidNumber(order.soLuongKhop) ? parseInt(order.soLuongKhop).toLocaleString() : '-';
+            const giaThamChieu = isValidNumber(order.giaThamChieu) ? parseFloat(order.giaThamChieu).toFixed(0) : '-';
+            const giaTran = isValidNumber(order.giaTran) ? parseFloat(order.giaTran).toFixed(0) : '-';
+            const giaSan = isValidNumber(order.giaSan) ? parseFloat(order.giaSan).toFixed(0) : '-';
+            const chenhLech = (isValidNumber(order.giaKhop) && isValidNumber(order.giaThamChieu))
+                ? (order.giaKhop - order.giaThamChieu).toFixed(0) : '-';
+
+            const giaKhopElem = document.getElementById(`gia-${maCP}`);
+            const soLuongKhopElem = document.getElementById(`kl-${maCP}`);
+
+            if (giaKhopElem) {
+                giaKhopElem.textContent = giaKhop;
+                giaKhopElem.className = 'gia-khop';
+
+                if (order.giaKhop == order.giaTran) {
+                    giaKhopElem.classList.add('gia-tran');
+                } else if (order.giaKhop == order.giaSan) {
+                    giaKhopElem.classList.add('gia-san');
+                } else if (order.giaKhop > order.giaThamChieu) {
+                    giaKhopElem.classList.add('gia-tang');
+                } else if (order.giaKhop < order.giaThamChieu) {
+                    giaKhopElem.classList.add('gia-giam');
+                } else {
+                    giaKhopElem.classList.add('gia-tham-chieu');
+                }
+            }
+
+            if (soLuongKhopElem) {
+                soLuongKhopElem.textContent = soLuongKhop;
+            }
+
+            const row = Array.from(document.querySelectorAll('tr')).find(tr =>
+                tr.querySelector('td')?.textContent.trim() === maCP
+            );
+
+            if (row) {
+                const giaThamChieuElem = row.querySelector('.gia-tham-chieu');
+                const giaTranElem = row.querySelector('.gia-tran');
+                const giaSanElem = row.querySelector('.gia-san');
+                const chenhLechElem = row.querySelector('td:last-child');
+
+                if (giaThamChieuElem) giaThamChieuElem.textContent = giaThamChieu;
+                if (giaTranElem) giaTranElem.textContent = giaTran;
+                if (giaSanElem) giaSanElem.textContent = giaSan;
+                if (chenhLechElem) chenhLechElem.textContent = chenhLech;
+            } else {
+                console.warn(`Không tìm thấy hàng chứa mã cổ phiếu ${maCP}`);
+            }
+        }
+
+        function isValidNumber(val) {
+            return val !== null && val !== undefined && !isNaN(val);
+        }
+    </script>
 </body>
 </html>
