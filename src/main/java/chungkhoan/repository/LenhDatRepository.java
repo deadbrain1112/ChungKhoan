@@ -30,9 +30,9 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     @Query(value = "EXEC sp_TimLenhDatTheoNhaDauTu :maNDT", nativeQuery = true)
     List<LenhDat> timLenhDatTheoMaNDT(@Param("maNDT") String maNDT);
     
-    // Khớp lệnhs
-    List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaDescNgayGDAsc(String maCP, String loaiGD, String trangThai);
-    List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaAscNgayGDAsc(String maCP, String loaiGD, String trangThai);
+    // Khớp lệnh
+//    List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaDescNgayGDAsc(String maCP, String loaiGD, String trangThai);
+//    List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaAscNgayGDAsc(String maCP, String loaiGD, String trangThai);
     @Query("SELECT DISTINCT ld.coPhieu.maCP FROM LenhDat ld WHERE LOWER(ld.trangThai) = LOWER(:status)")
     List<String> findAllMaCPDangChoKhop(@Param("status") String status);
     
@@ -54,4 +54,6 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     List<LenhDat> findByTaiKhoanNganHang_NhaDauTu_MaNDT(String maNDT);
     List<LenhDat> findByTaiKhoanNganHang_NhaDauTu_MaNDTAndTrangThai(String maNDT, String trangThai);
 
+    List<LenhDat> findByCoPhieu_MaCPAndTrangThaiIn(String maCP, List<String> trangThai);
+    List<LenhDat> findByLoaiLenhInAndTrangThai(List<String> loaiLenh, String trangThai);
 }
