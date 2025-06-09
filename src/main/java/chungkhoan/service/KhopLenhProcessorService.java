@@ -38,26 +38,31 @@ public class KhopLenhProcessorService {
     @Transactional
     public void khopLenh(String maCP, String phaseStr) {
         Phase phase = Phase.valueOf(phaseStr);
-        List<LenhDat> all = lenhDatRepo.findByCoPhieu_MaCPAndTrangThaiIn(maCP, Arrays.asList("Chờ", "Một phần"));
+        List<LenhDat> all = lenhDatRepo.findKhoppableNative(maCP.trim(), Arrays.asList("Chờ", "Một phần"));
 
-        List<LenhDat> loMua = all.stream().filter(l -> l.getLoaiGD().equals("M") && l.getLoaiLenh().equals("LO"))
-            .sorted(Comparator.comparing(LenhDat::getGia).reversed().thenComparing(LenhDat::getNgayGD)).collect(Collectors.toList());
-        List<LenhDat> loBan = all.stream().filter(l -> l.getLoaiGD().equals("B") && l.getLoaiLenh().equals("LO"))
-            .sorted(Comparator.comparing(LenhDat::getGia).thenComparing(LenhDat::getNgayGD)).collect(Collectors.toList());
+        List<LenhDat> loMua = all.stream()
+                .filter(l -> "M".equalsIgnoreCase(l.getLoaiGD().trim()) && "LO".equalsIgnoreCase(l.getLoaiLenh().trim()))
+                .sorted(Comparator.comparing(LenhDat::getGia).reversed().thenComparing(LenhDat::getNgayGD))
+                .collect(Collectors.toList());
+
+        List<LenhDat> loBan = all.stream()
+                .filter(l -> "B".equalsIgnoreCase(l.getLoaiGD().trim()) && "LO".equalsIgnoreCase(l.getLoaiLenh().trim()))
+                .sorted(Comparator.comparing(LenhDat::getGia).thenComparing(LenhDat::getNgayGD))
+                .collect(Collectors.toList());
 
         List<LenhDat> atoMua = all.stream()
         	    .filter(l -> "M".equals(l.getLoaiGD()) && "ATO".equalsIgnoreCase(l.getLoaiLenh().trim()))
         	    .collect(Collectors.toList());
 
-        	List<LenhDat> atoBan = all.stream()
+        List<LenhDat> atoBan = all.stream()
         	    .filter(l -> "B".equals(l.getLoaiGD()) && "ATO".equalsIgnoreCase(l.getLoaiLenh().trim()))
         	    .collect(Collectors.toList());
 
-        	List<LenhDat> atcMua = all.stream()
+        List<LenhDat> atcMua = all.stream()
         		    .filter(l -> "M".equals(l.getLoaiGD()) && "ATC".equalsIgnoreCase(l.getLoaiLenh().trim()))
         		    .collect(Collectors.toList());
 
-        		List<LenhDat> atcBan = all.stream()
+        List<LenhDat> atcBan = all.stream()
         		    .filter(l -> "B".equals(l.getLoaiGD()) && "ATC".equalsIgnoreCase(l.getLoaiLenh().trim()))
         		    .collect(Collectors.toList());
 

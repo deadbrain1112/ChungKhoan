@@ -50,7 +50,6 @@ public class TradingTimeUtil {
         return Phase.NGHI;
     }
 
-
     public boolean isTrongGioGiaoDich(LocalDateTime thoiDiem) {
         if (thoiDiem == null) return false;
 
