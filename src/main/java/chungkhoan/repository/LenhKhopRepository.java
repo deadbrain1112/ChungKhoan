@@ -30,4 +30,5 @@ public interface LenhKhopRepository extends JpaRepository<LenhKhop, Long> {
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
     );
+
 }

@@ -58,4 +58,14 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     List<LenhDat> findByLoaiLenhInAndTrangThai(List<String> loaiLenh, String trangThai);
     @Query("SELECT DISTINCT tk.maTK FROM TaiKhoanNganHang tk WHERE tk.maTK NOT IN (SELECT l.taiKhoanNganHang.maTK FROM LenhDat l WHERE l.taiKhoanNganHang.maTK IS NOT NULL)")
     List<String> findDistinctMaTK();
+
+    @Query(
+            value = """
+                SELECT * FROM lenhdat 
+                WHERE LTRIM(RTRIM(MaCP)) = :maCP 
+                AND trangthai IN (:trangThai)
+            """,
+            nativeQuery = true
+    )
+    List<LenhDat> findKhoppableNative(@Param("maCP") String maCP, @Param("trangThai") List<String> trangThai);
 }

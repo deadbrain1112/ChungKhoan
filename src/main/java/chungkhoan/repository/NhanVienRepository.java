@@ -13,6 +13,7 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, String> {
     boolean existsByCmnd(String cmnd);
     @Query("SELECT n FROM NhanVien n WHERE n.maNV = :username")
     NhanVien findByUsername(@Param("username") String username);
+
     @Query(value = """
     SELECT * FROM nhanvien nv
     WHERE EXISTS (

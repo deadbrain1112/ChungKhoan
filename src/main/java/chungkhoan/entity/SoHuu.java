@@ -25,7 +25,7 @@ public class SoHuu {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MaCP", insertable = false, updatable = false)
-    private CoPhieu coPhieu;  // Mối quan hệ với Cổ Phiếu
+    private CoPhieu coPhieu;
 
     @Column(name = "SoLuong", nullable = false)
     private int soLuong;

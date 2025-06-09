@@ -116,6 +116,9 @@ public class DatLenhBanController {
         }
 
         if (matKhau == null || !matKhau.equals(nhaDauTu.getMkGiaoDich())) {
+            System.out.println("MK từ người dùng: " + matKhau);
+            System.out.println("MK từ DB: " + nhaDauTu.getMkGiaoDich());
+
             model.addAttribute("error", "Mật khẩu giao dịch không đúng!");
             return "ndt/dat_lenh_ban";
         }
