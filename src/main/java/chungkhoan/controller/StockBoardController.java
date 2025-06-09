@@ -147,4 +147,3 @@ public class StockBoardController {
             .collect(Collectors.toList());
     }
 }
-

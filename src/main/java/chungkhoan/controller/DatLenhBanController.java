@@ -116,6 +116,9 @@ public class DatLenhBanController {
         }
 
         if (matKhau == null || !matKhau.equals(nhaDauTu.getMkGiaoDich())) {
+            System.out.println("MK từ người dùng: " + matKhau);
+            System.out.println("MK từ DB: " + nhaDauTu.getMkGiaoDich());
+
             model.addAttribute("error", "Mật khẩu giao dịch không đúng!");
             return "ndt/dat_lenh_ban";
         }
@@ -147,12 +150,15 @@ public class DatLenhBanController {
                 model.addAttribute("error", "Giá bán không được thấp hơn giá sàn hoặc lớn hơn giá trần!");
                 return "ndt/dat_lenh_ban";
             }
-
             giaDat = gia;
+<<<<<<< HEAD
         } 
+=======
+        }
+>>>>>>> Tien
         else if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
             giaDat = 0.0; // Hệ thống sẽ xử lý sau khi khớp
-        } 
+        }
         else {
             model.addAttribute("error", "Loại lệnh không hợp lệ!");
             return "ndt/dat_lenh_ban";

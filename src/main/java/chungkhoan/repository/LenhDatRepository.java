@@ -30,6 +30,7 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
 
     // Khớp lệnhs
     List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaDescNgayGDAsc(String maCP, String loaiGD, String trangThai);
+    
     @Query("SELECT DISTINCT ld.coPhieu.maCP FROM LenhDat ld WHERE LOWER(ld.trangThai) = LOWER(:status)")
     List<String> findAllMaCPDangChoKhop(@Param("status") String status);
 
@@ -51,17 +52,18 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     List<LenhDat> findByTaiKhoanNganHang_NhaDauTu_MaNDT(String maNDT);
     List<LenhDat> findByTaiKhoanNganHang_NhaDauTu_MaNDTAndTrangThai(String maNDT, String trangThai);
 
+    List<LenhDat> findByCoPhieu_MaCPAndTrangThaiIn(String maCP, List<String> trangThai);
+    List<LenhDat> findByLoaiLenhInAndTrangThai(List<String> loaiLenh, String trangThai);
+    @Query("SELECT DISTINCT tk.maTK FROM TaiKhoanNganHang tk WHERE tk.maTK NOT IN (SELECT l.taiKhoanNganHang.maTK FROM LenhDat l WHERE l.taiKhoanNganHang.maTK IS NOT NULL)")
+    List<String> findDistinctMaTK();
+
     @Query(
             value = """
                 SELECT * FROM lenhdat 
                 WHERE LTRIM(RTRIM(MaCP)) = :maCP 
                 AND trangthai IN (:trangThai)
-            """, 
+            """,
             nativeQuery = true
-        )
+    )
     List<LenhDat> findKhoppableNative(@Param("maCP") String maCP, @Param("trangThai") List<String> trangThai);
-    List<LenhDat> findByLoaiLenhInAndTrangThai(List<String> loaiLenh, String trangThai);
-
-    @Query("SELECT DISTINCT tk.maTK FROM TaiKhoanNganHang tk WHERE tk.maTK NOT IN (SELECT l.taiKhoanNganHang.maTK FROM LenhDat l WHERE l.taiKhoanNganHang.maTK IS NOT NULL)")
-    List<String> findDistinctMaTK();
 }

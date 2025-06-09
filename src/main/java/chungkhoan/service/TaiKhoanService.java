@@ -26,4 +26,10 @@ public class TaiKhoanService {
             e.printStackTrace();
         }
     }
+
+    public void xoaTaiKhoan(String tenDangNhap) {
+        String sql = "DROP LOGIN [" + tenDangNhap + "]";
+        jdbcTemplate.execute(sql);
+
+    }
 }

@@ -2,10 +2,10 @@ package chungkhoan.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 import java.util.Arrays;
 import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -80,7 +80,7 @@ public class KhopLenhProcessorService {
 
         		        loMua.addAll(atoMua);
         		        loBan.addAll(atoBan);
-        		        
+
         		    } else {
         		        System.out.println("Không đủ 2 phía ATO, bỏ qua tính giá.");
         		    }
@@ -99,7 +99,7 @@ public class KhopLenhProcessorService {
 
         		        loMua.addAll(atcMua);
         		        loBan.addAll(atcBan);
-        		        
+
         		    } else {
         		        System.out.println("Không đủ 2 phía ATC, bỏ qua tính giá.");
         		    }
@@ -107,7 +107,7 @@ public class KhopLenhProcessorService {
 
         loMua.sort(Comparator.comparing(LenhDat::getGia).reversed().thenComparing(LenhDat::getNgayGD));
         loBan.sort(Comparator.comparing(LenhDat::getGia).thenComparing(LenhDat::getNgayGD));
-        
+
         System.out.println("Tổng số lệnh lọc được cho " + maCP + ": " + all.size());
 
         khopDanhSach(maCP, loMua, loBan);
@@ -195,13 +195,11 @@ public class KhopLenhProcessorService {
 
         capNhatTrangThai(mua, slKhop);
         capNhatTrangThai(ban, slKhop);
-
     }
 
     private void capNhatTrangThai(LenhDat lenh, int slKhop) {
         lenh.setSoLuong(lenh.getSoLuong() - slKhop);
         lenh.setTrangThai(lenh.getSoLuong() == 0 ? "Hết" : "Một phần");
         lenhDatRepo.save(lenh);
-
     }
 }
