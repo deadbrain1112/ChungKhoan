@@ -130,13 +130,31 @@ public class DatLenhBanController {
         double giaDat = 0;
 
         if ("LO".equalsIgnoreCase(loaiLenh)) {
-            if (gia == null || gia < lichSuGia.getGiaSan() || gia > lichSuGia.getGiaTran()) {
+            if (gia == null) {
+                model.addAttribute("error", "Thiếu dữ liệu giá bán!");
+                return "ndt/dat_lenh_ban";
+            }
+
+            Double giaTran = lichSuGia.getGiaTran();
+            Double giaSan = lichSuGia.getGiaSan();
+
+            if (giaTran == null || giaSan == null) {
+                model.addAttribute("error", "Thiếu thông tin giá trần hoặc sàn!");
+                return "ndt/dat_lenh_ban";
+            }
+
+            if (gia < giaSan || gia > giaTran) {
                 model.addAttribute("error", "Giá bán không được thấp hơn giá sàn hoặc lớn hơn giá trần!");
                 return "ndt/dat_lenh_ban";
             }
             giaDat = gia;
-        } else {
-            giaDat = 0;
+        }
+        else if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
+            giaDat = 0.0; // Hệ thống sẽ xử lý sau khi khớp
+        }
+        else {
+            model.addAttribute("error", "Loại lệnh không hợp lệ!");
+            return "ndt/dat_lenh_ban";
         }
 
         int soLuongSoHuu = soHuuService.getSoLuong(nhaDauTu.getMaNDT(), maCP);

@@ -126,27 +126,45 @@ public class DatLenhMuaController {
         double giaDat = 0;
 
         if ("LO".equalsIgnoreCase(loaiLenh)) {
-            if (gia == null || gia < lichSuGia.getGiaSan() || gia > lichSuGia.getGiaTran()) {
+            if (gia == null) {
+                model.addAttribute("error", "Thiếu dữ liệu giá mua!");
+                return "ndt/dat_lenh_mua";
+            }
+
+            Double giaTran = lichSuGia.getGiaTran();
+            Double giaSan = lichSuGia.getGiaSan();
+
+            if (giaTran == null || giaSan == null) {
+                model.addAttribute("error", "Thiếu thông tin giá trần hoặc sàn!");
+                return "ndt/dat_lenh_mua";
+            }
+
+            if (gia < giaSan || gia > giaTran) {
                 model.addAttribute("error", "Giá mua không được thấp hơn giá sàn hoặc lớn hơn giá trần!");
                 return "ndt/dat_lenh_mua";
             }
+
             giaDat = gia;
             double tongTien = giaDat * soLuong;
             if (soTien < tongTien) {
                 model.addAttribute("error", "Số dư không đủ để đặt lệnh mua!");
                 return "ndt/dat_lenh_mua";
             }
-        } else {
-            // Với ATO hoặc ATC
-        	Double giaTranObj = lichSuGia.getGiaTran();
-        	double maxGia = (giaTranObj != null) ? giaTranObj : 0.0;
+
+        } else if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
+            Double giaTran = lichSuGia.getGiaTran();
+            double maxGia = (giaTran != null) ? giaTran : 0.0;
 
             double tongTien = maxGia * soLuong;
             if (soTien < tongTien) {
                 model.addAttribute("error", "Số dư không đủ để đặt lệnh " + loaiLenh + " theo giá trần!");
                 return "ndt/dat_lenh_mua";
             }
-            giaDat = 0; // để hệ thống xử lý giá khớp sau
+
+            giaDat = 0; // Hệ thống sẽ tự khớp sau
+        } else {
+            model.addAttribute("error", "Loại lệnh không hợp lệ!");
+            return "ndt/dat_lenh_mua";
         }
 
        LenhDat lenh = LenhDat.builder()

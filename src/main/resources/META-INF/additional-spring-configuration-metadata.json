@@ -1,0 +1,32 @@
+{"properties": [
+  {
+    "name": "trading-time.ato-start",
+    "type": "java.lang.String",
+    "description": "A description for 'trading-time.ato-start'"
+  },
+  {
+    "name": "trading-time.ato-end",
+    "type": "java.lang.String",
+    "description": "A description for 'trading-time.ato-end'"
+  },
+  {
+    "name": "trading-time.lo-end",
+    "type": "java.lang.String",
+    "description": "A description for 'trading-time.lo-end'"
+  },
+  {
+    "name": "trading-time.atc-end",
+    "type": "java.lang.String",
+    "description": "A description for 'trading-time.atc-end'"
+  },
+  {
+    "name": "trading-time.cron-ato-check",
+    "type": "java.lang.String",
+    "description": "A description for 'trading-time.cron-ato-check'"
+  },
+  {
+    "name": "trading-time.cron-atc-check",
+    "type": "java.lang.String",
+    "description": "A description for 'trading-time.cron-atc-check'"
+  }
+]}
