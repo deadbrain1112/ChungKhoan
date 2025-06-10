@@ -28,6 +28,9 @@ public class KhopLenhProcessorService {
     @Autowired private TaiKhoanNganHangService taiKhoanNganHangService;
     @Autowired private SoHuuService soHuuService;
     @Autowired private LichSuGiaService lichSuGiaService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
 
     public enum Phase {
         ATO, LO, ATC
@@ -107,7 +110,6 @@ public class KhopLenhProcessorService {
         loMua.sort(Comparator.comparing(LenhDat::getGia).reversed().thenComparing(LenhDat::getNgayGD));
         loBan.sort(Comparator.comparing(LenhDat::getGia).thenComparing(LenhDat::getNgayGD));
 
-        System.out.println("Tổng số lệnh lọc được cho " + maCP + ": " + all.size());
 
         khopDanhSach(maCP, loMua, loBan);
     }
@@ -161,6 +163,7 @@ public class KhopLenhProcessorService {
         int slKhop = Math.min(mua.getSoLuong(), ban.getSoLuong());
         double giaKhop = ban.getGia();
         BigDecimal tien = BigDecimal.valueOf(slKhop * giaKhop);
+        double giaTC = lichSuGiaService.getGiaThamChieuMoiNhat(maCP);
 
         String maNguoiMua = mua.getTaiKhoanNganHang().getMaTK();
         String maNguoiBan = ban.getTaiKhoanNganHang().getMaTK();
@@ -194,11 +197,25 @@ public class KhopLenhProcessorService {
 
         capNhatTrangThai(mua, slKhop);
         capNhatTrangThai(ban, slKhop);
+
+
+
+        messagingTemplate.convertAndSend("/topic/stock-board",createOrderMessage(maCP,giaKhop,slKhop,giaTC));
+
     }
 
     private void capNhatTrangThai(LenhDat lenh, int slKhop) {
         lenh.setSoLuong(lenh.getSoLuong() - slKhop);
         lenh.setTrangThai(lenh.getSoLuong() == 0 ? "Hết" : "Một phần");
         lenhDatRepo.save(lenh);
+    }
+
+    private Object createOrderMessage(String maCPInput, double giaKhop, int soLuongKhop, double giaThamChieu) {
+        return new Object() {
+            public String maCP = maCPInput;
+            public double giakhop = giaKhop;
+            public int soLuong = soLuongKhop;
+            public double delta = giaKhop - giaThamChieu;
+        };
     }
 }

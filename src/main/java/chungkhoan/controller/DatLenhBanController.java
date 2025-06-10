@@ -181,7 +181,6 @@ public class DatLenhBanController {
 
         messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, gia, soLuong, "B"));
         model.addAttribute("success", "Đặt lệnh bán thành công, chờ khớp lệnh!");
-
         model.addAttribute("tatCaCoPhieu", coPhieuService.findByMaCPIn(soHuuService.getMaCPByNDT(nhaDauTu.getMaNDT())));
 
         return "redirect:/nhadautu/dat-lenh-ban";

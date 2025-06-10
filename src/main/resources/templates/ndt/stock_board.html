@@ -5,239 +5,285 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng giá cổ phiếu</title>
     <link rel="stylesheet" th:href="@{/css/stock_board.css}">
-
+    <style>
+        .green { color: green; }
+        .red { color: red; }
+        .yellow { color: yellow; }
+        .flash {
+            animation: flash 0.5s ease-in-out 2;
+        }
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
 </head>
 <body>
 <h2>BẢNG GIÁ CỔ PHIẾU TRỰC TUYẾN</h2>
 
-	<form method="get" th:action="@{/stock-board}">
-	    <label for="filter">Lọc danh sách:</label>
-	    <select name="filter" id="filter" onchange="this.form.submit()">
-	        <option value="tatca" th:selected="${filter == 'tatca'}">Tất cả</option>
-	        <option value="sohuu" th:selected="${filter == 'sohuu'}">Đã sở hữu</option>
-	    </select>
-	</form>
+<form method="get" th:action="@{/stock-board}">
+    <label for="filter">Lọc danh sách:</label>
+    <select name="filter" id="filter" onchange="this.form.submit()">
+        <option value="tatca" th:selected="${filter == 'tatca'}">Tất cả</option>
+        <option value="sohuu" th:selected="${filter == 'sohuu'}">Đã sở hữu</option>
+    </select>
+</form>
 
-    <table>
-        <thead>
-            <tr>
-                <th rowspan="2">Mã CK</th>
-                <th rowspan="2">T.C</th>
-                <th rowspan="2">Trần</th>
-                <th rowspan="2">Sàn</th>
-                <th colspan="6">Bên mua</th>
-                <th colspan="3">Khớp lệnh</th>
-                <th colspan="6">Bên bán</th>
-                <th rowspan="2">Tổng KL</th>
-            </tr>
-            <tr>
-                <th>Giá 3</th><th>KL 3</th>
-                <th>Giá 2</th><th>KL 2</th>
-                <th>Giá 1</th><th>KL 1</th>
-                <th>Giá</th><th>KL</th><th>+/-</th>
-                <th>Giá 1</th><th>KL 1</th>
-                <th>Giá 2</th><th>KL 2</th>
-                <th>Giá 3</th><th>KL 3</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="cp : ${dsCP}">
-                <td th:text="${cp.maCP}"></td>
+<table>
+    <thead>
+    <tr>
+        <th rowspan="2">Mã CK</th>
+        <th rowspan="2">T.C</th>
+        <th rowspan="2">Trần</th>
+        <th rowspan="2">Sàn</th>
+        <th colspan="6">Bên mua</th>
+        <th colspan="3">Khớp lệnh</th>
+        <th colspan="6">Bên bán</th>
+        <th rowspan="2">Tổng KL</th>
+    </tr>
+    <tr>
+        <th>Giá 3</th><th>KL 3</th>
+        <th>Giá 2</th><th>KL 2</th>
+        <th>Giá 1</th><th>KL 1</th>
+        <th>Giá</th><th>KL</th><th>+/-</th>
+        <th>Giá 1</th><th>KL 1</th>
+        <th>Giá 2</th><th>KL 2</th>
+        <th>Giá 3</th><th>KL 3</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="cp : ${dsCP}">
+        <td th:text="${cp.maCP}"></td>
 
-                <!-- Tham chiếu / Trần / Sàn -->
-                <td class="gia-tham-chieu" th:text="${#numbers.formatDecimal(giaTCMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
-                <td class="gia-tran" th:text="${#numbers.formatDecimal(giaTranMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
-                <td class="gia-san" th:text="${#numbers.formatDecimal(giaSanMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
+        <!-- Tham chiếu / Trần / Sàn -->
+        <td class="gia-tham-chieu" th:text="${#numbers.formatDecimal(giaTCMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
+        <td class="gia-tran" th:text="${#numbers.formatDecimal(giaTranMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
+        <td class="gia-san" th:text="${#numbers.formatDecimal(giaSanMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
 
-                <!-- Bên mua -->
-                <td th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-                <td th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-                <td th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-                <td th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-                <td th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-                <td th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+        <!-- Bên mua -->
+        <td th:id="'mua-gia3-' + ${cp.maCP}"
+            th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+        <td th:id="'mua-kl3-' + ${cp.maCP}"
+            th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
-                <!-- Giá khớp -->
-                <td th:text="${lenhKhopMap[cp.maCP]?.giaKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop, 0, 'POINT', 0, 'POINT') : '-'}"
-                    th:classappend="${colorMap[cp.maCP]} + ' flash'">
-                </td>
+        <td th:id="'mua-gia2-' + ${cp.maCP}"
+            th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+        <td th:id="'mua-kl2-' + ${cp.maCP}"
+            th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
-                <!-- Khối lượng khớp -->
-                <td th:text="${lenhKhopMap[cp.maCP]?.soLuongKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].soLuongKhop, 0, 'COMMA', 0, 'COMMA') : '-'}">
-                </td>
+        <td th:id="'mua-gia1-' + ${cp.maCP}"
+            th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+        <td th:id="'mua-kl1-' + ${cp.maCP}"
+            th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
-                <!-- +/- -->
-                <td th:text="${deltaMap[cp.maCP] != null ? #numbers.formatDecimal(deltaMap[cp.maCP], 0, 'POINT', 0, 'POINT') : '-'}"
-                    th:classappend="${colorMap[cp.maCP]} + ' flash'">
-                </td>
+        <!-- Giá khớp -->
+        <td th:id="'giaKhop-' + ${cp.maCP}"
+            th:text="${lenhKhopMap[cp.maCP]?.giaKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop, 0, 'POINT', 0, 'POINT') : '-'}"
+            th:classappend="${colorMap[cp.maCP]} + ' flash'"></td>
 
-                <!-- Bên bán -->
-                <td th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-                <td th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-                <td th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-                <td th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-                <td th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-                <td th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+        <!-- Khối lượng khớp -->
+        <td th:id="'klKhop-'+ ${cp.maCP}"
+            th:text="${lenhKhopMap[cp.maCP]?.soLuongKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].soLuongKhop, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
-                <!-- Tổng khối lượng -->
-                <td class="tong-kl" th:text="${#numbers.formatDecimal(tongKhopMap[cp.maCP], 0, 'COMMA', 0, 'COMMA')}"></td>
-            </tr>
-        </tbody>
-    </table>
+        <!-- +/- -->
+        <td th:id="'delta-' + ${cp.maCP}"
+            th:text="${deltaMap[cp.maCP] != null ? #numbers.formatDecimal(deltaMap[cp.maCP], 0, 'POINT', 0, 'POINT') : '-'}"
+            th:classappend="${colorMap[cp.maCP]} + ' flash'"></td>
 
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+        <!-- Bên bán -->
+        <td th:id="'ban-gia1-' + ${cp.maCP}"
+            th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+        <td th:id="'ban-kl1-' + ${cp.maCP}"
+            th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
-    <script>
-        const orderBook = {};
+        <td th:id="'ban-gia2-' + ${cp.maCP}"
+            th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+        <td th:id="'ban-kl2-' + ${cp.maCP}"
+            th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
-        const socket = new SockJS('/ws-stock');
-        const stompClient = Stomp.over(socket);
+        <td th:id="'ban-gia3-' + ${cp.maCP}"
+            th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+        <td th:id="'ban-kl3-' + ${cp.maCP}"
+            th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
 
-        stompClient.connect({}, function () {
-            console.log('WebSocket connected');
+        <!-- Tổng khối lượng -->
+        <td class="tong-kl" th:text="${#numbers.formatDecimal(tongKhopMap[cp.maCP], 0, 'COMMA', 0, 'COMMA')}"></td>
+    </tr>
+    </tbody>
+</table>
 
-            stompClient.subscribe('/topic/stock-board', function (message) {
-                try {
-                    const order = JSON.parse(message.body);
-                    console.log('Received:', order);
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
-                    // Kiểm tra dữ liệu hợp lệ chung
-                    if (!order || !order.maCP) {
-                        console.error('Invalid order:', order);
-                        return;
-                    }
+<script>
+    let socket = new SockJS('/ws-stock');
+    let stompClient = Stomp.over(socket);
 
-                    const maCP = order.maCP.trim();
+    stompClient.connect({}, function () {
+        console.log('WebSocket connected');
 
-                    // Nếu có loaiGD thì xử lý mua/bán
-                    if (order.loaiGD && order.gia != null && order.soLuong != null) {
-                        const gia = parseFloat(order.gia).toFixed(2);
-                        const soLuong = parseInt(order.soLuong);
-                        const loaiGD = order.loaiGD;
+        stompClient.subscribe('/topic/stock-board', function (message) {
+            try {
+                const order = JSON.parse(message.body);
+                console.log('Received:', order);
 
-                        if (!orderBook[maCP]) {
-                            orderBook[maCP] = { buy: [], sell: [] };
-                        }
-
-                        if (loaiGD === 'M') {
-                            const existing = orderBook[maCP].buy.find(o => o.gia === parseFloat(gia));
-                            if (existing) {
-                                existing.soLuong += soLuong;
-                            } else {
-                                orderBook[maCP].buy.push({ gia: parseFloat(gia), soLuong });
-                            }
-                            orderBook[maCP].buy.sort((a, b) => b.gia - a.gia);
-                            orderBook[maCP].buy = orderBook[maCP].buy.slice(0, 3);
-                            updateOrderSide(maCP, 'buy');
-
-                        } else if (loaiGD === 'B') {
-                            const existing = orderBook[maCP].sell.find(o => o.gia === parseFloat(gia));
-                            if (existing) {
-                                existing.soLuong += soLuong;
-                            } else {
-                                orderBook[maCP].sell.push({ gia: parseFloat(gia), soLuong });
-                            }
-                            orderBook[maCP].sell.sort((a, b) => a.gia - b.gia);
-                            orderBook[maCP].sell = orderBook[maCP].sell.slice(0, 3);
-                            updateOrderSide(maCP, 'sell');
-                        }
-                    }
-
-                    // Nếu có thông tin khớp lệnh thì cập nhật bảng giá
-                    if (order.giaKhop != null || order.soLuongKhop != null) {
-                        updateStockBoard(order);
-                    }
-
-                } catch (e) {
-                    console.error('Error parsing WebSocket message:', e);
+                if (!order || !order.maCP) {
+                    console.error('Invalid order:', order);
+                    return;
                 }
-            });
 
+                const maCP = order.maCP.trim();
 
-        }, function (error) {
-            console.error('WebSocket connection failed:', error);
+                if (order.loaiGD && order.gia != null && order.soLuong != null) {
+                    const gia = parseFloat(order.gia).toFixed(2);
+                    const soLuong = parseInt(order.soLuong);
+                    const loaiGD = order.loaiGD;
+
+                    if (!orderBook[maCP]) {
+                        orderBook[maCP] = { buy: [], sell: [] };
+                    }
+
+                    if (loaiGD === 'M') {
+                        const existing = orderBook[maCP].buy.find(o => o.gia === parseFloat(gia));
+                        if (existing) {
+                            existing.soLuong += soLuong;
+                        } else {
+                            orderBook[maCP].buy.push({ gia: parseFloat(gia), soLuong });
+                        }
+                        orderBook[maCP].buy.sort((a, b) => b.gia - a.gia);
+                        orderBook[maCP].buy = orderBook[maCP].buy.slice(0, 3);
+                        updateOrderSide(maCP, 'buy');
+                        // Xóa lệnh mua vừa thực hiện
+                        orderBook[maCP].buy = orderBook[maCP].buy.filter(o => o.soLuong > soLuong || o.gia !== parseFloat(gia));
+                    } else if (loaiGD === 'B') {
+                        const existing = orderBook[maCP].sell.find(o => o.gia === parseFloat(gia));
+                        if (existing) {
+                            existing.soLuong += soLuong;
+                        } else {
+                            orderBook[maCP].sell.push({ gia: parseFloat(gia), soLuong });
+                        }
+                        orderBook[maCP].sell.sort((a, b) => a.gia - b.gia);
+                        orderBook[maCP].sell = orderBook[maCP].sell.slice(0, 3);
+                        updateOrderSide(maCP, 'sell');
+                        // Xóa lệnh bán vừa thực hiện
+                        orderBook[maCP].sell = orderBook[maCP].sell.filter(o => o.soLuong > soLuong || o.gia !== parseFloat(gia));
+                    }
+                }
+
+                if (order.giakhop != null || order.soLuong != null || order.delta != null) {
+                    capNhatBangGia(order);
+                }
+            } catch (e) {
+                console.error('Error parsing WebSocket message:', e);
+            }
         });
+    }, function (error) {
+        console.error('WebSocket connection failed:', error);
+    });
 
-        function updateOrderSide(maCP, side) {
-            const sideOrders = orderBook[maCP]?.[side] || [];
-            for (let i = 1; i <= 3; i++) {
-                const priceElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-gia${i}-${maCP}`);
-                const quantityElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-kl${i}-${maCP}`);
-                if (priceElem && quantityElem) {
-                    if (sideOrders[i - 1]) {
-                        priceElem.textContent = sideOrders[i - 1].gia.toFixed(2);
-                        quantityElem.textContent = sideOrders[i - 1].soLuong.toLocaleString();
-                    } else {
-                        priceElem.textContent = '-';
-                        quantityElem.textContent = '-';
-                    }
-                }
-            }
-        }
+    let orderBook = {};
 
-        function updateStockBoard(order) {
-            if (!order || typeof order !== 'object' || !order.maCP) {
-                console.error('Invalid order for stock board update:', order);
-                return;
-            }
-
-            const maCP = order.maCP.trim();
-
-            const giaKhop = isValidNumber(order.giaKhop) ? parseFloat(order.giaKhop).toFixed(0) : '-';
-            const soLuongKhop = isValidNumber(order.soLuongKhop) ? parseInt(order.soLuongKhop).toLocaleString() : '-';
-            const giaThamChieu = isValidNumber(order.giaThamChieu) ? parseFloat(order.giaThamChieu).toFixed(0) : '-';
-            const giaTran = isValidNumber(order.giaTran) ? parseFloat(order.giaTran).toFixed(0) : '-';
-            const giaSan = isValidNumber(order.giaSan) ? parseFloat(order.giaSan).toFixed(0) : '-';
-            const chenhLech = (isValidNumber(order.giaKhop) && isValidNumber(order.giaThamChieu))
-                ? (order.giaKhop - order.giaThamChieu).toFixed(0) : '-';
-
-            const giaKhopElem = document.getElementById(`gia-${maCP}`);
-            const soLuongKhopElem = document.getElementById(`kl-${maCP}`);
-
-            if (giaKhopElem) {
-                giaKhopElem.textContent = giaKhop;
-                giaKhopElem.className = 'gia-khop';
-
-                if (order.giaKhop == order.giaTran) {
-                    giaKhopElem.classList.add('gia-tran');
-                } else if (order.giaKhop == order.giaSan) {
-                    giaKhopElem.classList.add('gia-san');
-                } else if (order.giaKhop > order.giaThamChieu) {
-                    giaKhopElem.classList.add('gia-tang');
-                } else if (order.giaKhop < order.giaThamChieu) {
-                    giaKhopElem.classList.add('gia-giam');
+    function updateOrderSide(maCP, side) {
+        const sideOrders = orderBook[maCP]?.[side] || [];
+        for (let i = 1; i <= 3; i++) {
+            const priceElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-gia${i}-${maCP}`);
+            const quantityElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-kl${i}-${maCP}`);
+            if (priceElem && quantityElem) {
+                if (sideOrders[i - 1]) {
+                    priceElem.textContent = sideOrders[i - 1].gia.toFixed(2);
+                    quantityElem.textContent = sideOrders[i - 1].soLuong.toLocaleString();
+                    const color = side === 'buy' ? 'green' : 'red';
+                    priceElem.className = `${color} flash`;
+                    quantityElem.className = `${color} flash`;
+                    setTimeout(() => {
+                        if (priceElem.classList.contains('flash')) priceElem.className = color;
+                        if (quantityElem.classList.contains('flash')) quantityElem.className = color;
+                    }, 1000);
                 } else {
-                    giaKhopElem.classList.add('gia-tham-chieu');
+                    priceElem.textContent = '-';
+                    quantityElem.textContent = '-';
+                    priceElem.className = '';
+                    quantityElem.className = '';
                 }
             }
+        }
+    }
 
-            if (soLuongKhopElem) {
-                soLuongKhopElem.textContent = soLuongKhop;
+    function capNhatBangGia(data) {
+        const { maCP, giakhop, soLuong, delta } = data;
+        console.log(`Updating maCP: ${maCP}`, { giakhop, soLuong, delta });
+
+        let giaKhopElem = document.getElementById(`giaKhop-${maCP}`);
+        let klKhopElem = document.getElementById(`klKhop-${maCP}`);
+        let deltaElem = document.getElementById(`delta-${maCP}`);
+
+        if (!giaKhopElem || !klKhopElem || !deltaElem) {
+            console.log(`Creating new row for maCP: ${maCP}`);
+            const tbody = document.querySelector('tbody');
+            if (tbody) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                        <td>${maCP}</td>
+                        <td id="giaKhop-${maCP}"></td>
+                        <td id="klKhop-${maCP}"></td>
+                        <td id="delta-${maCP}"></td>
+                    `;
+                tbody.appendChild(row);
+                giaKhopElem = document.getElementById(`giaKhop-${maCP}`);
+                klKhopElem = document.getElementById(`klKhop-${maCP}`);
+                deltaElem = document.getElementById(`delta-${maCP}`);
             }
+        }
 
-            const row = Array.from(document.querySelectorAll('tr')).find(tr =>
-                tr.querySelector('td')?.textContent.trim() === maCP
-            );
-
-            if (row) {
-                const giaThamChieuElem = row.querySelector('.gia-tham-chieu');
-                const giaTranElem = row.querySelector('.gia-tran');
-                const giaSanElem = row.querySelector('.gia-san');
-                const chenhLechElem = row.querySelector('td:last-child');
-
-                if (giaThamChieuElem) giaThamChieuElem.textContent = giaThamChieu;
-                if (giaTranElem) giaTranElem.textContent = giaTran;
-                if (giaSanElem) giaSanElem.textContent = giaSan;
-                if (chenhLechElem) chenhLechElem.textContent = chenhLech;
+        if (giaKhopElem) {
+            if (giakhop != null) {
+                giaKhopElem.textContent = giakhop.toFixed(0);
             } else {
-                console.warn(`Không tìm thấy hàng chứa mã cổ phiếu ${maCP}`);
+                giaKhopElem.textContent = '-';
             }
         }
 
-        function isValidNumber(val) {
-            return val !== null && val !== undefined && !isNaN(val);
+        if (klKhopElem) {
+            if (soLuong != null) {
+                klKhopElem.textContent = soLuong.toLocaleString();
+            } else {
+                klKhopElem.textContent = '-';
+            }
         }
-    </script>
+
+        if (deltaElem) {
+            if (delta != null) {
+                deltaElem.textContent = delta.toFixed(0);
+            } else {
+                deltaElem.textContent = '-';
+            }
+        }
+
+        if (deltaElem && delta != null) {
+            const color = delta > 0 ? 'green' : (delta < 0 ? 'red' : 'yellow');
+            giaKhopElem.className = `${color} flash`;
+            klKhopElem.className = `${color} flash`;
+            deltaElem.className = `${color} flash`;
+
+            setTimeout(() => {
+                if (giaKhopElem && giaKhopElem.classList.contains('flash')) {
+                    giaKhopElem.className = color;
+                }
+                if (klKhopElem && klKhopElem.classList.contains('flash')) {
+                    klKhopElem.className = color;
+                }
+                if (deltaElem && deltaElem.classList.contains('flash')) {
+                    deltaElem.className = color;
+                }
+            }, 1000);
+        }
+
+        console.log(`Updated DOM for maCP: ${maCP}`, {
+            giaKhop: giaKhopElem ? giaKhopElem.textContent : 'Not found',
+            klKhop: klKhopElem ? klKhopElem.textContent : 'Not found',
+            delta: deltaElem ? deltaElem.textContent : 'Not found'
+        });
+    }
+</script>
 </body>
 </html>
