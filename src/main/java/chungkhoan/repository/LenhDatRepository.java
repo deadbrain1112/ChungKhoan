@@ -1,5 +1,6 @@
 package chungkhoan.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -66,4 +67,21 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
             nativeQuery = true
     )
     List<LenhDat> findKhoppableNative(@Param("maCP") String maCP, @Param("trangThai") List<String> trangThai);
+    
+    @Query(value = "SELECT ld.* " +
+            "FROM lenhdat ld " +
+            "JOIN taikhoan_nganhang tknh ON ld.MaTK = tknh.MaTK " +
+            "JOIN ndt nd ON tknh.MaNDT = nd.MaNDT " +
+            "WHERE nd.MaNDT = :maNDT " +
+            "AND ld.MaCP = :maCP " +
+            "AND ld.NgayGD BETWEEN :startDate AND :endDate " +
+            "AND (:trangThai IS NULL OR :trangThai = '' OR ld.TrangThai = :trangThai) " +
+            "ORDER BY ld.NgayGD DESC",
+    nativeQuery = true)
+	List<LenhDat> findByMaNDTAndMaCPAndNgayGDAndTrangThai(
+	     @Param("maNDT") String maNDT,
+	     @Param("maCP") String maCP,
+	     @Param("startDate") LocalDateTime startDate,
+	     @Param("endDate") LocalDateTime endDate,
+	     @Param("trangThai") String trangThai);
 }

@@ -48,13 +48,27 @@ public class DatLenhBanController {
 
     @GetMapping("/nhadautu/dat-lenh-ban")
     public String getView(@RequestParam(value = "maCP", required = false) String maCP,
+    					  @RequestParam(value = "nganHang", required = false) String nganHang,
                           Model model,
                           HttpSession session) {
         NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
         if (nhaDauTu == null) return "nhanvien/login";
 
         List<TaiKhoanNganHang> danhSachTaiKhoan = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
-        TaiKhoanNganHang taiKhoan = danhSachTaiKhoan.stream().findFirst().orElse(null);
+        TaiKhoanNganHang taiKhoan = null;
+
+        if (nganHang != null && !nganHang.isBlank()) {
+            for (TaiKhoanNganHang tk : danhSachTaiKhoan) {
+                if (tk.getNganHang().getMaNH().equals(nganHang)) {
+                    taiKhoan = tk;
+                    break;
+                }
+            }
+        }
+
+        if (taiKhoan == null && !danhSachTaiKhoan.isEmpty()) {
+            taiKhoan = danhSachTaiKhoan.get(0);
+        }
 
         double soTien = (taiKhoan != null && taiKhoan.getSoTien() != null) ? taiKhoan.getSoTien().doubleValue() : 0;
         String formattedSoTien = formatGia(soTien);
@@ -95,7 +109,20 @@ public class DatLenhBanController {
         if (nhaDauTu == null) return "nhanvien/login";
 
         List<TaiKhoanNganHang> danhSachTaiKhoan = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
-        TaiKhoanNganHang taiKhoan = danhSachTaiKhoan.stream().findFirst().orElse(null);
+        TaiKhoanNganHang taiKhoan = null;
+
+        if (nganHang != null && !nganHang.isBlank()) {
+            for (TaiKhoanNganHang tk : danhSachTaiKhoan) {
+                if (tk.getNganHang().getMaNH().equals(nganHang)) {
+                    taiKhoan = tk;
+                    break;
+                }
+            }
+        }
+
+        if (taiKhoan == null && !danhSachTaiKhoan.isEmpty()) {
+            taiKhoan = danhSachTaiKhoan.get(0);
+        }
 
         model.addAttribute("nhaDauTu", nhaDauTu);
         model.addAttribute("danhSachTaiKhoan", danhSachTaiKhoan);
@@ -151,11 +178,7 @@ public class DatLenhBanController {
                 return "ndt/dat_lenh_ban";
             }
             giaDat = gia;
-<<<<<<< HEAD
-        } 
-=======
         }
->>>>>>> Tien
         else if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
             giaDat = 0.0; // Hệ thống sẽ xử lý sau khi khớp
         }

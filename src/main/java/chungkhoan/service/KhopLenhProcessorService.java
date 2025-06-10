@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import chungkhoan.entity.LichSuGia;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -32,9 +33,6 @@ public class KhopLenhProcessorService {
         ATO, LO, ATC
     }
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
     @Transactional
     public void khopLenh(String maCP, String phaseStr) {
         Phase phase = Phase.valueOf(phaseStr);
@@ -50,19 +48,20 @@ public class KhopLenhProcessorService {
                 .sorted(Comparator.comparing(LenhDat::getGia).thenComparing(LenhDat::getNgayGD))
                 .collect(Collectors.toList());
 
+
         List<LenhDat> atoMua = all.stream()
         	    .filter(l -> "M".equals(l.getLoaiGD()) && "ATO".equalsIgnoreCase(l.getLoaiLenh().trim()))
         	    .collect(Collectors.toList());
 
-        List<LenhDat> atoBan = all.stream()
+        	List<LenhDat> atoBan = all.stream()
         	    .filter(l -> "B".equals(l.getLoaiGD()) && "ATO".equalsIgnoreCase(l.getLoaiLenh().trim()))
         	    .collect(Collectors.toList());
 
-        List<LenhDat> atcMua = all.stream()
+        	List<LenhDat> atcMua = all.stream()
         		    .filter(l -> "M".equals(l.getLoaiGD()) && "ATC".equalsIgnoreCase(l.getLoaiLenh().trim()))
         		    .collect(Collectors.toList());
 
-        List<LenhDat> atcBan = all.stream()
+        		List<LenhDat> atcBan = all.stream()
         		    .filter(l -> "B".equals(l.getLoaiGD()) && "ATC".equalsIgnoreCase(l.getLoaiLenh().trim()))
         		    .collect(Collectors.toList());
 
@@ -143,6 +142,9 @@ public class KhopLenhProcessorService {
         for (LenhDat mua : muaList) {
             while (mua.getSoLuong() > 0 && banIndex < banList.size()) {
                 LenhDat ban = banList.get(banIndex);
+                
+                int oldMua = mua.getSoLuong();
+                int oldBan = ban.getSoLuong();
 
                 if (ban.getSoLuong() <= 0) {
                     banIndex++;
@@ -152,6 +154,11 @@ public class KhopLenhProcessorService {
                 if (mua.getGia() < ban.getGia()) break;
 
                 xuLyGiaoDich(maCP, mua, ban);
+                
+                if (mua.getSoLuong() == oldMua && ban.getSoLuong() == oldBan) {
+                    System.out.println("‼️ Giao dịch không thay đổi số lượng, tránh lặp vô hạn: " + mua.getMaGD() + " - " + ban.getMaGD());
+                    break;
+                }
 
                 if (ban.getSoLuong() <= 0) banIndex++;
             }

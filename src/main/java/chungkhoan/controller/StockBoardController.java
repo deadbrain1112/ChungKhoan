@@ -50,6 +50,7 @@ public class StockBoardController {
         for (CoPhieu cp : dsCP) {
             String maCP = cp.getMaCP();
 
+
             // Tham chiếu, trần, sàn
             Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCP);
             double giaTC = giaMap.get("tc");

@@ -72,6 +72,4 @@ public class NhaDauTu {
     public int hashCode() {
         return maNDT != null ? maNDT.hashCode() : 0;
     }
-
-
 }

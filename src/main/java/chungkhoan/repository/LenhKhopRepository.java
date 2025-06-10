@@ -31,4 +31,9 @@ public interface LenhKhopRepository extends JpaRepository<LenhKhop, Long> {
             @Param("endOfDay") LocalDateTime endOfDay
     );
 
+    @Query(value = "SELECT SUM(SoLuongKhop) FROM LenhKhop WHERE MaGD = :maGD", nativeQuery = true)
+    Integer tongSoLuongKhop(@Param("maGD") Long maGD);
+
+    @Query(value = "SELECT * FROM LenhKhop WHERE MaGD = :maGD ORDER BY NgayGioKhop DESC", nativeQuery = true)
+    List<LenhKhop> findAllByMaGDOrderByNgayGioKhopDesc(@Param("maGD") Long maGD);
 }

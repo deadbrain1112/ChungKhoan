@@ -13,53 +13,106 @@
     <main class="sao-ke-container">
         <h2>Sao Kê Giao Dịch Chứng Khoán</h2>
         
-        <form id="filterForm" method="post" th:action="@{/nhadautu/sao-ke-gdck}">
-		    <label for="trangThai">Lọc theo trạng thái:</label>
-		    <select name="trangThai" id="trangThai">
-		        <option value="">Tất cả</option>
-		        <option value="Chờ" th:selected="${selectedTrangThai == 'Chờ'}">Chờ</option>
-		        <option value="Hết" th:selected="${selectedTrangThai == 'Hết'}">Hết</option>
-		        <option value="Hủy" th:selected="${selectedTrangThai == 'Hủy'}">Hủy</option>
-		        <option value="Một phần" th:selected="${selectedTrangThai == 'Một phần'}">Một phần</option>
-		    </select>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <!-- Lọc theo trạng thái -->
+        <h3>Sao kê tất cả lệnh giao dịch</h3>
+        <form id="filterForm" method="get" th:action="@{/nhadautu/sao-ke-gdck}">
+            <label for="trangThai">Lọc theo trạng thái:</label>
+            <select name="trangThai" id="trangThai">
+                <option value="">Tất cả</option>
+                <option value="Chờ" th:selected="${selectedTrangThai == 'Chờ'}">Chờ</option>
+                <option value="Hết" th:selected="${selectedTrangThai == 'Hết'}">Hết</option>
+                <option value="Hủy" th:selected="${selectedTrangThai == 'Hủy'}">Hủy</option>
+                <option value="Một phần" th:selected="${selectedTrangThai == 'Một phần'}">Một phần</option>
+            </select>
+        </form>
+
+        <!-- Sao kê lệnh theo mã cổ phiếu trong khoảng thời gian -->
+        <h3>Sao kê lệnh giao dịch theo mã cổ phiếu</h3>
+		<form method="post" th:action="@{/nhadautu/lich-su-lenh}" class="filter-section ma-cp-filter">
+		    <!-- First row: Stock code and status select -->
+		    <div>
+		        <div>
+		            <label for="maCP">Mã Cổ Phiếu:</label>
+		            <input type="text" name="maCP" id="maCP" required th:value="${inputMaCP}"/>
+		        </div>
+		        <label for="tuNgay">Từ Ngày:</label>
+		        <input type="date" name="tuNgay" id="tuNgay" required th:value="${inputTuNgay}"/>
+		    </div>
+		    
+		    <!-- Second row: Date inputs -->
+		    <div>
+		        <div>
+			        <div>
+			            <label for="trangThai">Lọc theo trạng thái:</label>
+			            <select name="trangThai" id="trangThai">
+			                <option value="">Tất cả</option>
+			                <option value="Chờ" th:selected="${selectedTrangThai == 'Chờ'}">Chờ</option>
+			                <option value="Hết" th:selected="${selectedTrangThai == 'Hết'}">Hết</option>
+			                <option value="Hủy" th:selected="${selectedTrangThai == 'Hủy'}">Hủy</option>
+			                <option value="Một phần" th:selected="${selectedTrangThai == 'Một phần'}">Một phần</option>
+			            </select>
+			        </div>
+		        </div>
+		        <div>
+		            <label for="denNgay">Đến Ngày:</label>
+		            <input type="date" name="denNgay" id="denNgay" required th:value="${inputDenNgay}"/>
+		        </div>
+		    </div>
+		    
+		    <!-- Third row: Submit button -->
+		    <div>
+		        <button type="submit">Xem Sao Kê</button>
+		    </div>
 		</form>
 
-        <div th:if="${lenhDatList != null and #lists.isEmpty(lenhDatList)}">
-            <p>Không tìm thấy giao dịch nào cho nhà đầu tư.</p>
-        </div>
+        <!-- Sao kê giao dịch tiền -->
+        <h3>Sao kê giao dịch tiền</h3>
+        <form method="post" th:action="@{/nhadautu/sao-ke-tien}" class="filter-section">
+            <label>Từ Ngày:</label>
+            <input type="date" name="tuNgay" id="tuNgayTien" required />
+            <label>Đến Ngày:</label>
+            <input type="date" name="denNgay" id="denNgayTien" required />
+            <button type="submit">Xem Sao Kê</button>
+        </form>
 
-        <div th:if="${lenhDatList != null and !#lists.isEmpty(lenhDatList)}">
-            <table>
+        <!-- Bảng sao kê giao dịch chứng khoán cá nhân (nếu có) -->
+        <div class="table-wrapper" th:if="${lenhDatList != null and !#lists.isEmpty(lenhDatList)}">
+            <table class="sao-key-table">
                 <thead>
                     <tr>
                         <th>Mã Lệnh</th>
+                        <th>Loại GD</th>
                         <th>Loại Lệnh</th>
-                        <th>Mã Cổ Phiếu</th>
-                        <th>Giá</th>
-                        <th>Khối Lượng</th>
-                        <th>Ngày</th>
-                        <th>Giờ</th>
-                        <th>Trạng Thái</th>
-                        <th>Hành Động</th>
+                        <th>Mã CP</th>
+                        <th>Giá Đặt</th>
+                        <th>Khối Lượng Đặt</th>
+                        <th>SL Khớp</th>
+                        <th>Giá Khớp</th>
+                        <th>Giờ Khớp</th>
+                        <th>Giờ Đặt</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
                     </tr>
                 </thead>
-                <tbody>
-				    <tr th:each="lenh : ${lenhDatList}">
-				        <td th:text="${lenh.maGD}"></td>
-				        <td th:text="${lenh.loaiLenh}"></td>
-				        <td th:text="${lenh.coPhieu.maCP}"></td>
-				        <td th:text="${giaFormattedMap[lenh.maGD]}"></td>
-				        <td th:text="${lenh.soLuong}"></td>
-				        <td th:text="${#temporals.format(lenh.ngayGD, 'dd/MM/yyyy')}"></td>
-				        <td th:text="${#temporals.format(lenh.ngayGD, 'HH:mm:ss')}"></td>
-				        <td th:text="${lenh.trangThai}"></td>
-				        <td>
-				            <button th:if="${lenh.trangThai == 'Chờ'}"
-       						th:onclick="|xacNhanHuy(${lenh.maGD})|">Hủy</button>
-				            <button th:if="${lenh.trangThai == 'Chờ'}" th:onclick="|window.location.href='/nhadautu/sua-lenh?maGD=' + [[${lenh.maGD}]]|">Sửa</button>
-				        </td>
-				    </tr>
-				</tbody>
+                <tr th:each="lenh : ${lenhDatList}">
+                    <td th:text="${lenh.maGD}"></td>
+                    <td th:text="${lenh.loaiGD == 'M' ? 'Mua' : 'Bán'}"></td>
+                    <td th:text="${lenh.loaiLenh}"></td>
+                    <td th:text="${lenh.coPhieu.maCP}"></td>
+                    <td th:text="${giaFormattedMap[lenh.maGD]}"></td>
+                    <td th:text="${lenh.soLuong}"></td>
+                    <td th:text="${mapSoLuongKhop[lenh.maGD]}"></td>
+                    <td th:text="${mapGiaKhop[lenh.maGD]}"></td>
+                    <td th:text="${mapNgayKhop[lenh.maGD] != null ? #temporals.format(mapNgayKhop[lenh.maGD], 'dd/MM/yyyy HH:mm:ss') : '—'}"></td>
+                    <td th:text="${#temporals.format(lenh.ngayGD, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                    <td th:text="${lenh.trangThai}"></td>
+                    <td>
+                        <button class="btn-sua" th:if="${lenh.trangThai == 'Chờ'}" th:onclick="|window.location.href='/nhadautu/sua-lenh?maGD=' + [[${lenh.maGD}]]|">Sửa</button>
+                        <button class="btn-huy" th:if="${lenh.trangThai == 'Chờ'}" th:onclick="|xacNhanHuy(${lenh.maGD})|">Hủy</button>
+                    </td>
+                </tr>
             </table>
         </div>
     </main>
@@ -81,11 +134,11 @@
             });
         }
     }
-    
+
     document.getElementById("trangThai").addEventListener("change", function () {
         document.getElementById("filterForm").submit();
     });
-    
+
     document.addEventListener("DOMContentLoaded", function () {
         const openButton = document.getElementById("openPasswordPopup");
         if (openButton) {
@@ -100,7 +153,6 @@
         }
     });
 
-    // Đổi mk
     window.openPopup = function () {
         const popup = document.getElementById("changePasswordPopup");
         if (popup) {
