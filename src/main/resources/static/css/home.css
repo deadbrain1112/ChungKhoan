@@ -1,3 +1,4 @@
+/* ====== Layout cơ bản ====== */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -7,14 +8,14 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 2000px;
     margin: 0 auto;
     background-color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
     overflow: hidden;
 }
 
+/* ====== Header ====== */
 header {
     display: flex;
     justify-content: space-between;
@@ -38,6 +39,7 @@ header a {
     font-weight: bold;
 }
 
+/* ====== Navigation ====== */
 .nav-buttons {
     display: flex;
     justify-content: center;
@@ -67,6 +69,7 @@ header a {
     color: #003b73;
 }
 
+/* ====== Main content ====== */
 main {
     padding: 20px;
 }
@@ -95,6 +98,7 @@ main {
     font-weight: bold;
 }
 
+/* ====== Table ====== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -112,6 +116,7 @@ table th {
     color: white;
 }
 
+/* ====== Dropdown select ====== */
 form select[name="maTK"] {
     padding: 10px 15px;
     font-size: 16px;
@@ -134,6 +139,7 @@ form select[name="maTK"]:focus {
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
 }
 
+/* ====== Popup đổi mật khẩu ====== */
 .popup-overlay {
     position: fixed;
     top: 0;

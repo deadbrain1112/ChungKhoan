@@ -144,6 +144,9 @@ public class KhopLenhProcessorService {
         for (LenhDat mua : muaList) {
             while (mua.getSoLuong() > 0 && banIndex < banList.size()) {
                 LenhDat ban = banList.get(banIndex);
+                
+                int oldMua = mua.getSoLuong();
+                int oldBan = ban.getSoLuong();
 
                 if (ban.getSoLuong() <= 0) {
                     banIndex++;
@@ -153,6 +156,11 @@ public class KhopLenhProcessorService {
                 if (mua.getGia() < ban.getGia()) break;
 
                 xuLyGiaoDich(maCP, mua, ban);
+                
+                if (mua.getSoLuong() == oldMua && ban.getSoLuong() == oldBan) {
+                    System.out.println("‼️ Giao dịch không thay đổi số lượng, tránh lặp vô hạn: " + mua.getMaGD() + " - " + ban.getMaGD());
+                    break;
+                }
 
                 if (ban.getSoLuong() <= 0) banIndex++;
             }

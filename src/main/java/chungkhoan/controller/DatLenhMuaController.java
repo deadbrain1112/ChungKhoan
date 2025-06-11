@@ -1,6 +1,5 @@
 package chungkhoan.controller;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,13 +44,27 @@ public class DatLenhMuaController {
 
     @GetMapping("/nhadautu/dat-lenh-mua")
     public String getView(@RequestParam(value = "maCP", required = false) String maCP,
+    					  @RequestParam(value = "nganHang", required = false) String nganHang,
                           Model model,
                           HttpSession session) {
         NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
         if (nhaDauTu == null) return "nhanvien/login";
 
         List<TaiKhoanNganHang> danhSachTaiKhoan = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
-        TaiKhoanNganHang taiKhoan = danhSachTaiKhoan.stream().findFirst().orElse(null);
+        TaiKhoanNganHang taiKhoan = null;
+
+        if (nganHang != null && !nganHang.isBlank()) {
+            for (TaiKhoanNganHang tk : danhSachTaiKhoan) {
+                if (tk.getNganHang().getMaNH().equals(nganHang)) {
+                    taiKhoan = tk;
+                    break;
+                }
+            }
+        }
+
+        if (taiKhoan == null && !danhSachTaiKhoan.isEmpty()) {
+            taiKhoan = danhSachTaiKhoan.get(0);
+        }
 
         double soTien = (taiKhoan != null && taiKhoan.getSoTien() != null) ? taiKhoan.getSoTien().doubleValue() : 0;
         String formattedSoTien = new DecimalFormat("#,###").format(soTien) + " VND";
@@ -92,7 +105,20 @@ public class DatLenhMuaController {
         if (nhaDauTu == null) return "nhanvien/login";
 
         List<TaiKhoanNganHang> danhSachTaiKhoan = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
-        TaiKhoanNganHang taiKhoan = danhSachTaiKhoan.stream().findFirst().orElse(null);
+        TaiKhoanNganHang taiKhoan = null;
+
+        if (nganHang != null && !nganHang.isBlank()) {
+            for (TaiKhoanNganHang tk : danhSachTaiKhoan) {
+                if (tk.getNganHang().getMaNH().equals(nganHang)) {
+                    taiKhoan = tk;
+                    break;
+                }
+            }
+        }
+
+        if (taiKhoan == null && !danhSachTaiKhoan.isEmpty()) {
+            taiKhoan = danhSachTaiKhoan.get(0);
+        }
 
         model.addAttribute("nhaDauTu", nhaDauTu);
         model.addAttribute("danhSachTaiKhoan", danhSachTaiKhoan);

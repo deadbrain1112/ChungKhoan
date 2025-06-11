@@ -1,7 +1,6 @@
 .sao-ke .sao-ke-container {
-    max-width: 900px;
+    max-width: 1100px;
     margin: auto;
-    
 }
 
 .sao-ke h2 {
@@ -9,19 +8,31 @@
     margin-bottom: 20px;
 }
 
-.sao-ke table {
-    width: 102%;
-    border-collapse: collapse;
+.table-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto; 
+    margin-bottom: 30px;
 }
+
+.sao-ke-table {
+    border-collapse: collapse;
+    margin: 0 auto; 
+    border: 1px solid #ddd;
+}
+
 
 .sao-ke thead {
     background-color: #f0f0f0;
 }
 
-.sao-ke th, td {
+.sao-ke th,
+.sao-ke td {
     padding: 10px;
     border: 1px solid #ddd;
     text-align: center;
+    font-size: 14px;
 }
 
 .sao-ke p {
@@ -29,22 +40,109 @@
     text-align: center;
 }
 
-.sao-ke #filterForm {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
+/* General form styles */
+.sao-ke form {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: space-between;
+   align-items: center;
+   gap: 15px;
+   margin-bottom: 25px;
+   border: 1px solid #ccc;
+   padding: 15px;
+   border-radius: 8px;
+   background-color: #fafafa;
 }
 
-.sao-ke #filterForm label {
-    font-weight: bold;
+/* Label styles */
+.sao-ke form label {
+   font-weight: bold;
+   margin-right: 5px;
 }
 
-.sao-ke #filterForm select {
-    padding: 6px 10px;
-    font-size: 14px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+/* Input and select styles */
+.sao-ke form select,
+.sao-ke form input[type="text"],
+.sao-ke form input[type="date"] {
+   padding: 10px; /* Increased padding for better touch targets */
+   font-size: 14px;
+   border-radius: 4px;
+   border: 1px solid #ccc;
+   box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Shadow for depth */
+   transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+}
+
+.sao-ke form select {
+	width: 140px;
+	margin-bottom: 5px;
+}
+
+.sao-ke form input[type="text"] {
+	margin-bottom: 5px;
+}
+
+
+#tuNgay {
+	margin-left: 32px;
+}
+
+#denNgay {
+	margin-left: 70px;
+}
+
+
+/* Input focus styles */
+.sao-ke form select:focus,
+.sao-ke form input[type="text"]:focus,
+.sao-ke form input[type="date"]:focus {
+   border-color: #007bff; /* Change border color on focus */
+   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Light blue glow */
+}
+
+/* Button styles */
+.sao-ke form button {
+   padding: 10px 16px; /* Consistent padding */
+   font-size: 14px;
+   background-color: #007bff;
+   color: white;
+   border: none;
+   border-radius: 4px;
+   cursor: pointer;
+   transition: background-color 0.3s;
+}
+
+.sao-ke form button:hover {
+   background-color: #0056b3;
+}
+
+.sao-ke .btn-huy,
+.sao-ke .btn-sua {
+    padding: 6px 20px;
+    font-size: 13px;
+    border: none;
+    border-radius: 20px; /* Bo tròn nút */
+    cursor: pointer;
+    margin: 2px 5px; /* Khoảng cách ngang giữa nút */
+    transition: background-color 0.3s;
+}
+
+/* Nút Hủy - đỏ */
+.sao-ke .btn-huy {
+    background-color: #dc3545;
+    color: white;
+}
+
+.sao-ke .btn-huy:hover {
+    background-color: #b52a37;
+}
+
+/* Nút Sửa - xanh */
+.sao-ke .btn-sua {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.sao-ke .btn-sua:hover {
+    background-color: #117a8b;
 }
 

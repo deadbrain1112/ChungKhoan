@@ -45,12 +45,9 @@
     <nav>
         <div class="nav-buttons">
             <a th:href="@{/nhadautu/home}" class="nav-button active">Tra Cứu Số Dư</a>
-            <form th:action="@{/nhadautu/sao-ke-gdck}" method="post" class="nav-button">
-                <button type="submit" style="all: unset; cursor: pointer;">Sao Kê GDCK</button>
-            </form>
+            <a th:href="@{/nhadautu/sao-ke-gdck}" class="nav-button">Sao Kê GDCK</a>
             <a th:href="@{/nhadautu/dat-lenh-mua}" class="nav-button">Đặt Lệnh Mua</a>
             <a th:href="@{/nhadautu/dat-lenh-ban}" class="nav-button">Đặt Lệnh Bán</a>
-            <a th:href="@{/nhadautu/ung-tien}" class="nav-button">Ứng Tiền</a>
             <a th:href="@{/stock-board}" class="nav-button">Bảng Giao Dịch Chứng Khoán</a>
         </div>
     </nav>
