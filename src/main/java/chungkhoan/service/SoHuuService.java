@@ -46,6 +46,10 @@ public class SoHuuService {
             return true;
         }).orElse(false);
     }
+    
+    public void xoaSoHuu(String maNDT, String maCP) {
+        soHuuRepository.deleteByNhaDauTu_MaNDTAndCoPhieu_MaCP(maNDT, maCP);
+    }
 
     public void tangSoHuu(String maNDT, String maCP, int soLuong) {
         SoHuu soHuu = soHuuRepository.findByMaNDTAndMaCP(maNDT, maCP)

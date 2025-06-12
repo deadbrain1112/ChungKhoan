@@ -8,6 +8,7 @@ import chungkhoan.repository.TaiKhoanNganHangRepository;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,4 +157,15 @@ public class TaiKhoanNganHangService {
         return exists;
     }
 
+    public List<Map<String, String>> getMaTKVaTenNH(String maNDT) {
+        List<Object[]> rawList = taiKhoanNganHangRepository.findMaTKVaTenNHByMaNDT(maNDT);
+        List<Map<String, String>> result = new ArrayList<>();
+        for (Object[] row : rawList) {
+            Map<String, String> item = new HashMap<>();
+            item.put("maTK", row[0].toString());
+            item.put("tenNH", row[1].toString());
+            result.add(item);
+        }
+        return result;
+    }
 }

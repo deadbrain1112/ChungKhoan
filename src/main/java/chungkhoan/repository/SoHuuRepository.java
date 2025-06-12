@@ -20,4 +20,6 @@ public interface SoHuuRepository extends JpaRepository<SoHuu, SoHuuKey> {
     List<String> findMaCPByMaNDT(@Param("maNDT") String maNDT);
     
     Optional<SoHuu> findByMaNDTAndMaCP(String maNDT, String maCP);
+    
+    void deleteByNhaDauTu_MaNDTAndCoPhieu_MaCP(String maNDT, String maCP);
 }

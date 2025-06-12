@@ -4,6 +4,7 @@ import chungkhoan.entity.*;
 import chungkhoan.repository.*;
 import chungkhoan.service.LichSuGiaService;
 import chungkhoan.util.TradingTimeUtil;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,7 +28,16 @@ public class StockBoardController {
     private final TradingTimeUtil tradingTimeUtil;
 
     @GetMapping
-    public String getBangGia(Model model) {
+    public String getBangGia(HttpSession session, Model model) {
+    	NhaDauTu ndt = (NhaDauTu) session.getAttribute("nhaDauTu");
+
+        if (ndt != null) {
+            System.out.println("✅ Có session NhaDauTu: " + ndt.getMaNDT());
+            model.addAttribute("nhaDauTu", ndt); // nếu cần render ra giao diện
+        } else {
+            System.out.println("❌ Không tìm thấy session NhaDauTu");
+        }
+        
         List<CoPhieu> dsCP = coPhieuRepo.findAll();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
@@ -49,7 +59,6 @@ public class StockBoardController {
 
         for (CoPhieu cp : dsCP) {
             String maCP = cp.getMaCP();
-
 
             // Tham chiếu, trần, sàn
             Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCP);

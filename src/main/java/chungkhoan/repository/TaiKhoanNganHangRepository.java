@@ -18,6 +18,18 @@ public interface TaiKhoanNganHangRepository extends JpaRepository<TaiKhoanNganHa
     // Tìm danh sách tài khoản ngân hàng theo maNDT
     @Query("SELECT t FROM TaiKhoanNganHang t WHERE t.nhaDauTu.maNDT = :maNDT")
     List<TaiKhoanNganHang> findByNhaDauTuMaNDT(@Param("maNDT") String maNDT);
+    
+    // Tìm danh sách mã tài khoản ngân hàng theo maNDT
+    @Query("SELECT t.maTK FROM TaiKhoanNganHang t WHERE t.nhaDauTu.maNDT = :maNDT")
+    List<String> findMaTKByMaNDT(@Param("maNDT") String maNDT);
+    
+    @Query(value = """
+    	    SELECT t.maTK, nh.tenNH
+    	    FROM taikhoan_nganhang t
+    	    JOIN nganhang nh ON t.maNH = nh.maNH
+    	    WHERE t.maNDT = :maNDT
+    	    """, nativeQuery = true)
+    	List<Object[]> findMaTKVaTenNHByMaNDT(@Param("maNDT") String maNDT);
 
     // Xóa tất cả tài khoản ngân hàng theo maNDT
     @Modifying

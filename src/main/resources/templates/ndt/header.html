@@ -46,6 +46,7 @@
         <div class="nav-buttons">
             <a th:href="@{/nhadautu/home}" class="nav-button active">Tra Cứu Số Dư</a>
             <a th:href="@{/nhadautu/sao-ke-gdck}" class="nav-button">Sao Kê GDCK</a>
+            <a th:href="@{/nhadautu/sao-ke-tien}" class="nav-button">Sao Kê Tiền</a>
             <a th:href="@{/nhadautu/dat-lenh-mua}" class="nav-button">Đặt Lệnh Mua</a>
             <a th:href="@{/nhadautu/dat-lenh-ban}" class="nav-button">Đặt Lệnh Bán</a>
             <a th:href="@{/stock-board}" class="nav-button">Bảng Giao Dịch Chứng Khoán</a>
@@ -53,40 +54,6 @@
     </nav>
 </div>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const openButton = document.getElementById("openPasswordPopup");
-    if (openButton) {
-        console.log("Open button found");
-        openButton.addEventListener("click", function (e) {
-            e.preventDefault();
-            console.log("Open button clicked");
-            openPopup();
-        });
-    } else {
-        console.error("Element #openPasswordPopup not found");
-    }
-});
-
-window.openPopup = function () {
-    const popup = document.getElementById("changePasswordPopup");
-    if (popup) {
-        console.log("Opening popup");
-        popup.style.display = "flex";
-    } else {
-        console.error("Element #changePasswordPopup not found");
-    }
-}
-
-window.closePopup = function () {
-    const popup = document.getElementById("changePasswordPopup");
-    if (popup) {
-        console.log("Closing popup");
-        popup.style.display = "none";
-    } else {
-        console.error("Element #changePasswordPopup not found");
-    }
-}
-</script>
+<script src="/js/popup.js"></script>
 </body>
 </html>
