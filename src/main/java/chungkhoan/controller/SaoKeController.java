@@ -25,6 +25,8 @@ import chungkhoan.entity.LenhKhop;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.repository.LenhKhopRepository;
 import chungkhoan.service.LenhDatService;
+import chungkhoan.service.SaoKeService;
+import chungkhoan.service.TaiKhoanNganHangService;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -35,6 +37,12 @@ public class SaoKeController {
     
     @Autowired
     private LenhKhopRepository lenhKhopRepository;
+    
+    @Autowired
+    private SaoKeService saoKeService;
+    
+    @Autowired
+    private TaiKhoanNganHangService taiKhoanNganHangService;
 
     @GetMapping("/nhadautu/sao-ke-gdck")
     public String hienThiLenhDatTheoNDT(@RequestParam(required = false) String trangThai,
@@ -185,5 +193,64 @@ public class SaoKeController {
         model.addAttribute("nhaDauTu", nhaDauTu);
         return "ndt/sao_ke_gdck";
     }
+    
+    
+    // Sao kê tiền
+    @GetMapping("/nhadautu/sao-ke-tien")
+    public String saoKeTienTheoNgay(@RequestParam(required = false) String tuNgay,
+                                    @RequestParam(required = false) String denNgay,
+                                    @RequestParam(required = false) String maTK,
+                                    Model model,
+                                    HttpSession session) {
+        NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
+        if (nhaDauTu == null || nhaDauTu.getMaNDT().isBlank()) {
+            model.addAttribute("error", "Không xác định được tài khoản nhà đầu tư.");
+            return "nhanvien/login";
+        }
 
+        LocalDateTime fromDate = null;
+        LocalDateTime toDate = null;
+
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            if (tuNgay != null && !tuNgay.isBlank()) {
+                fromDate = LocalDate.parse(tuNgay, formatter).atStartOfDay();
+            }
+
+            if (denNgay != null && !denNgay.isBlank()) {
+                toDate = LocalDate.parse(denNgay, formatter).atTime(23, 59, 59);
+            }
+
+            if (fromDate != null && toDate != null && fromDate.isAfter(toDate)) {
+                model.addAttribute("error", "Ngày bắt đầu không được sau ngày kết thúc.");
+                return "ndt/sao_ke_tien";
+            }
+
+            // Gọi SP: nếu fromDate hoặc toDate = null thì SP xử lý toàn bộ
+            List<Object[]> transactionList = saoKeService.getSaoKeAllTaiKhoan(
+                    nhaDauTu.getMaNDT(),
+                    null, // lọc tất cả mã CP
+                    fromDate,
+                    toDate
+            );
+            
+            if (transactionList.isEmpty()) {
+            	model.addAttribute("error", "Không tìm thấy giao dịch nào trong khoảng thời gian này.");
+            }
+            
+            List<Map<String, String>> danhSachTaiKhoan = taiKhoanNganHangService.getMaTKVaTenNH(nhaDauTu.getMaNDT());
+            model.addAttribute("danhSachTaiKhoan", danhSachTaiKhoan);
+            model.addAttribute("inputMaTK", maTK);
+
+            model.addAttribute("transactionList", transactionList);
+            model.addAttribute("inputTuNgay", tuNgay);
+            model.addAttribute("inputDenNgay", denNgay);
+        } catch (DateTimeParseException e) {
+            model.addAttribute("error", "Định dạng ngày không hợp lệ.");
+        }
+
+        model.addAttribute("nhaDauTu", nhaDauTu);
+        return "ndt/sao_ke_tien";
+    }
 }

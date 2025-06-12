@@ -1,17 +1,22 @@
 package chungkhoan.controller;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import chungkhoan.entity.CoPhieu;
 import chungkhoan.entity.LenhDat;
@@ -225,6 +230,42 @@ public class DatLenhMuaController {
 
     private String formatGia(Double gia) {
         return gia != null ? new DecimalFormat("#,###").format(gia) + " VND" : "Chưa cập nhật";
+    }
+    
+    @GetMapping("/nhadautu/so-du")
+    @ResponseBody
+    public String laySoDuTheoMaNH(@RequestParam("nganHang") String maNH, HttpSession session) {
+        NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
+        if (nhaDauTu == null) return "0";
+
+        List<TaiKhoanNganHang> danhSach = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
+        for (TaiKhoanNganHang tk : danhSach) {
+            if (tk.getNganHang().getMaNH().equals(maNH)) {
+                BigDecimal soTien = tk.getSoTien() != null ? tk.getSoTien() : BigDecimal.ZERO;
+                return new DecimalFormat("#,###").format(soTien);
+            }
+        }
+
+        return "0";
+    }
+    
+    @GetMapping("/nhadautu/gia-co-phieu")
+    @ResponseBody
+    public ResponseEntity<?> layGiaCoPhieu(@RequestParam("maCP") String maCP) {
+        LichSuGia gia = lichSuGiaService.layGiaMoiNhat(maCP.trim());
+
+        if (gia == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        DecimalFormat df = new DecimalFormat("#,###");
+        Map<String, String> result = new HashMap<>();
+        result.put("maCP", gia.getMaCP());
+        result.put("giaTC", df.format(gia.getGiaTC()) + " VND");
+        result.put("giaTran", df.format(gia.getGiaTran()) + " VND");
+        result.put("giaSan", df.format(gia.getGiaSan()) + " VND");
+
+        return ResponseEntity.ok(result);
     }
 }
 

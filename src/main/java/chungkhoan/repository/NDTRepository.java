@@ -34,7 +34,4 @@ public interface NDTRepository extends JpaRepository<NhaDauTu, String> {
     )
     """, nativeQuery = true)
     List<NhaDauTu> findAllNhaDauTuChuaCoTaiKhoan();
-
-
-
 }

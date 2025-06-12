@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sao Kê Giao Dịch</title>
+    <link rel="stylesheet" th:href="@{/css/sao_ke_gdck.css}">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body class="sao-ke">
+<div class="container">
+	<div th:replace="~{ndt/header :: menu(taiKhoan)}"></div>
+
+    <main class="sao-ke-container">
+        <h2>Sao Kê Giao Dịch Chứng Khoán</h2>
+        
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <!-- Sao kê giao dịch tiền -->
+        <h3>Sao kê giao dịch tiền</h3>
+        <form method="get" th:action="@{/nhadautu/sao-ke-tien}" class="filter-section">
+	        <select name="maTK">
+			    <option value="">-- Tất cả --</option>
+			    <option th:each="tk : ${danhSachTaiKhoan}"
+			            th:value="${tk['maTK']}"
+			            th:text="${tk['maTK']} + ' - ' + ${tk['tenNH']}"
+			            th:selected="${inputMaTK != null and inputMaTK == tk['maTK']}">
+			    </option>
+			</select>
+        
+            <label>Từ Ngày:</label>
+            <input type="date" name="tuNgay" id="tuNgayTien" th:value="${inputTuNgay}" required />
+            <label>Đến Ngày:</label>
+            <input type="date" name="denNgay" id="denNgayTien" th:value="${inputDenNgay}" required />
+            <button type="submit">Xem Sao Kê</button>
+        </form>
+        
+        <!-- Bảng sao kê giao dịch phát sinh tiền -->
+		<div class="table-wrapper" th:if="${transactionList != null and !#lists.isEmpty(transactionList)}">
+		    <table class="sao-ke-table">
+		        <thead>
+		            <tr>
+		                <th>Tài khoản ngân hàng</th>
+		                <th>Tên ngân hàng</th>
+		                <th>Số dư đầu kỳ</th>
+		                <th>Số tiền phát sinh</th>
+		                <th>Ngày giờ khớp</th>
+		                <th>Mã CP</th>
+		                <th>Lý do</th>
+		                <th>Số dư cuối kỳ</th>
+		            </tr>
+		        </thead>
+		        <tbody>
+		            <tr th:each="row : ${transactionList}">
+					    <td th:text="${row[1]}"></td> <!-- MaTK -->
+					    <td th:text="${row[2]}"></td> <!-- TenNH -->
+					    <td th:text="${#numbers.formatDecimal(T(java.lang.Double).valueOf(row[3].toString()), 0, 0)}"></td> <!-- SoDuDauKy -->
+					    <td th:text="${#numbers.formatDecimal(row[4], 0, 0)}"></td> <!-- SoTienPhatSinh -->
+					    <td th:text="${#dates.format(row[5], 'dd/MM/yyyy HH:mm')}"></td> <!-- NgayGioKhop -->
+					    <td th:text="${row[6]}"></td> <!-- MaCP -->
+					    <td th:text="${row[7] == 'M' ? 'Mua cổ phiếu' : 'Bán cổ phiếu'}"></td> <!-- LoaiGiaoDich -->
+					    <td th:text="${#numbers.formatDecimal(row[8], 0, 0)}"></td> <!-- SoDuCuoiKy -->
+					</tr>
+		        </tbody>
+		    </table>
+		</div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const openButton = document.getElementById("openPasswordPopup");
+        if (openButton) {
+            console.log("Open button found");
+            openButton.addEventListener("click", function (e) {
+                e.preventDefault();
+                console.log("Open button clicked");
+                openPopup();
+            });
+        } else {
+            console.error("Element #openPasswordPopup not found");
+        }
+    });
+
+    window.openPopup = function () {
+        const popup = document.getElementById("changePasswordPopup");
+        if (popup) {
+            console.log("Opening popup");
+            popup.style.display = "flex";
+        } else {
+            console.error("Element #changePasswordPopup not found");
+        }
+    }
+
+    window.closePopup = function () {
+        const popup = document.getElementById("changePasswordPopup");
+        if (popup) {
+            console.log("Closing popup");
+            popup.style.display = "none";
+        } else {
+            console.error("Element #changePasswordPopup not found");
+        }
+    }
+</script>
+</body>
+</html>

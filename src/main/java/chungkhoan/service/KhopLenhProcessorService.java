@@ -180,6 +180,10 @@ public class KhopLenhProcessorService {
             taiKhoanNganHangService.congTien(maNguoiMua, tien);
             return;
         }
+        
+        if (soHuuService.getSoLuong(maNDTBan, maCP) == 0) {
+            soHuuService.xoaSoHuu(maNDTBan, maCP);
+        }
 
         taiKhoanNganHangService.congTien(maNguoiBan, tien);
         soHuuService.tangSoHuu(maNDTMua, maCP, slKhop);
