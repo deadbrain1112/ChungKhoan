@@ -8,15 +8,37 @@
 
 </head>
 <body>
-<h2>BẢNG GIÁ CỔ PHIẾU TRỰC TUYẾN</h2>
+	<header class="top-header">
+	    <div class="logo">STOCK TRADER</div>
+	
+	    <div class="auth-buttons">
+	        <a th:if="${session.nhaDauTu == null}" th:href="@{/login}" class="btn-login">Đăng nhập</a>
+	        <a th:if="${session.nhaDauTu == null}" th:href="@{/register}" class="btn-register">Đăng ký</a>
+	        <div th:if="${session.nhaDauTu != null}" class="account-dropdown">
+	            <a th:href="@{/nhadautu/home}" th:text="${session.nhaDauTu.hoTen}" class="account-link">Tài khoản</a>
+	            <a th:href="@{/logout}" class="btn-logout">Đăng xuất</a>
+	        </div>
+	    </div>
+	</header>
 
-	<form method="get" th:action="@{/stock-board}">
-	    <label for="filter">Lọc danh sách:</label>
-	    <select name="filter" id="filter" onchange="this.form.submit()">
-	        <option value="tatca" th:selected="${filter == 'tatca'}">Tất cả</option>
-	        <option value="sohuu" th:selected="${filter == 'sohuu'}">Đã sở hữu</option>
-	    </select>
-	</form>
+	<h2>BẢNG GIÁ CỔ PHIẾU TRỰC TUYẾN</h2>
+	
+	<div class="toolbar">
+	    <form class="search-form" method="get" th:action="@{/stock-board}">
+	        <label class="search-icon">🔍</label>
+	        <input type="text" name="maCP" placeholder="Tìm kiếm CP"  autocomplete="off"/>
+	    </form>
+	
+		<div th:if="${session.nhaDauTu != null}">
+		    <form class="filter-form" method="get" th:action="@{/stock-board}">
+		        <label for="filter">Lọc danh sách:</label>
+		        <select name="filter" id="filter" onchange="this.form.submit()">
+		            <option value="tatca" th:selected="${filter == 'tatca'}">Tất cả</option>
+		            <option value="sohuu" th:selected="${filter == 'sohuu'}">Đã sở hữu</option>
+		        </select>
+		    </form>
+		</div>
+	</div>
 
     <table>
         <thead>
@@ -238,6 +260,36 @@
         function isValidNumber(val) {
             return val !== null && val !== undefined && !isNaN(val);
         }
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.querySelector('input[name="maCP"]');
+            const tableBody = document.querySelector('table tbody');
+
+            if (!input || !tableBody) return;
+
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // không reload trang
+                    const value = input.value.trim().toUpperCase();
+
+                    const rows = Array.from(tableBody.querySelectorAll('tr'));
+                    const matchingRow = rows.find(row => row.cells[0]?.textContent.trim().toUpperCase() === value);
+
+                    if (matchingRow) {
+                        // Đưa dòng tìm thấy lên đầu
+                        tableBody.insertBefore(matchingRow, tableBody.firstChild);
+
+                        // Highlight dòng trong 3s
+                        matchingRow.classList.add('highlighted-row');
+
+                        setTimeout(() => {
+                            matchingRow.classList.remove('highlighted-row');
+                        }, 3000);
+                    }
+                }
+            });
+        });
+
     </script>
 </body>
 </html>

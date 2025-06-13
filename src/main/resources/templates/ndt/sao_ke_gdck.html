@@ -67,16 +67,6 @@
 		    </div>
 		</form>
 
-        <!-- Sao kê giao dịch tiền -->
-        <h3>Sao kê giao dịch tiền</h3>
-        <form method="post" th:action="@{/nhadautu/sao-ke-tien}" class="filter-section">
-            <label>Từ Ngày:</label>
-            <input type="date" name="tuNgay" id="tuNgayTien" required />
-            <label>Đến Ngày:</label>
-            <input type="date" name="denNgay" id="denNgayTien" required />
-            <button type="submit">Xem Sao Kê</button>
-        </form>
-
         <!-- Bảng sao kê giao dịch chứng khoán cá nhân -->
         <div class="table-wrapper" th:if="${lenhDatList != null and !#lists.isEmpty(lenhDatList)}">
             <table class="sao-ke-table">
