@@ -210,8 +210,15 @@ public class DatLenhMuaController {
                .build();
 
         lenhDatService.save(lenh);
-
-        messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, gia, soLuong, "M"));
+        
+        if ("LO".equalsIgnoreCase(loaiLenh)) {
+        	messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, gia, soLuong, "M"));
+        }
+        
+        if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
+        	messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, giaDat, soLuong, "M"));
+        }
+        
         model.addAttribute("success", "Đặt lệnh mua thành công!");
 
         model.addAttribute("tatCaCoPhieu", coPhieuService.getAllCoPhieu());

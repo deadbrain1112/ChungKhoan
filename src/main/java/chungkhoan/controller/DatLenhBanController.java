@@ -178,9 +178,11 @@ public class DatLenhBanController {
                 return "ndt/dat_lenh_ban";
             }
             giaDat = gia;
+            messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, gia, soLuong, "B"));
         }
         else if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
             giaDat = 0.0; // Hệ thống sẽ xử lý sau khi khớp
+            messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, giaDat, soLuong, "B"));
         }
         else {
             model.addAttribute("error", "Loại lệnh không hợp lệ!");
@@ -206,7 +208,7 @@ public class DatLenhBanController {
 
         lenhDatService.save(lenh);
 
-        messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, gia, soLuong, "B"));
+       
         model.addAttribute("success", "Đặt lệnh bán thành công, chờ khớp lệnh!");
 
         model.addAttribute("tatCaCoPhieu", coPhieuService.findByMaCPIn(soHuuService.getMaCPByNDT(nhaDauTu.getMaNDT())));

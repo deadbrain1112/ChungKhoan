@@ -19,14 +19,17 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import chungkhoan.entity.LenhDat;
 import chungkhoan.entity.LenhKhop;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.repository.LenhKhopRepository;
+import chungkhoan.util.TradingTimeUtil.Phase;
 import chungkhoan.service.LenhDatService;
 import chungkhoan.service.SaoKeService;
 import chungkhoan.service.TaiKhoanNganHangService;
+import chungkhoan.util.TradingTimeUtil;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -43,6 +46,10 @@ public class SaoKeController {
     
     @Autowired
     private TaiKhoanNganHangService taiKhoanNganHangService;
+    
+    @Autowired
+    private TradingTimeUtil tradingTimeUtil;
+
 
     @GetMapping("/nhadautu/sao-ke-gdck")
     public String hienThiLenhDatTheoNDT(@RequestParam(required = false) String trangThai,
@@ -66,6 +73,8 @@ public class SaoKeController {
         Map<Long, Integer> mapSoLuongKhop = new HashMap<>();
         Map<Long, String> mapGiaKhop = new HashMap<>();
         Map<Long, LocalDateTime> mapNgayKhop = new HashMap<>();
+        Map<Long, String> mapFormattedSoLuongDat = new HashMap<>();
+        Map<Long, String> mapFormattedSoLuongKhop = new HashMap<>();
 
         for (LenhDat lenh : danhSach) {
             Long maGD = lenh.getMaGD();
@@ -85,6 +94,9 @@ public class SaoKeController {
                 mapGiaKhop.put(maGD, "—");
                 mapNgayKhop.put(maGD, null);
             }
+            
+            mapFormattedSoLuongDat.put(maGD, formatSo(lenh.getSoLuong()));
+            mapFormattedSoLuongKhop.put(maGD, formatSo(mapSoLuongKhop.get(maGD)));
         }
 
         model.addAttribute("lenhDatList", danhSach);
@@ -92,6 +104,8 @@ public class SaoKeController {
         model.addAttribute("mapSoLuongKhop", mapSoLuongKhop);
         model.addAttribute("mapGiaKhop", mapGiaKhop);
         model.addAttribute("mapNgayKhop", mapNgayKhop);
+        model.addAttribute("mapFormattedSoLuongDat", mapFormattedSoLuongDat);
+        model.addAttribute("mapFormattedSoLuongKhop", mapFormattedSoLuongKhop);
         model.addAttribute("nhaDauTu", nhaDauTu);
         model.addAttribute("selectedTrangThai", trangThai);
         return "ndt/sao_ke_gdck";
@@ -115,6 +129,10 @@ public class SaoKeController {
 
     private String formatGia(Double gia) {
         return gia != null ? new DecimalFormat("#,###").format(gia) + " VND" : "Chưa cập nhật";
+    }
+    
+    private String formatSo(Number value) {
+        return value != null ? new DecimalFormat("#,###").format(value) : "—";
     }
     
     // Sao kê giao dịch theo mã CP
@@ -194,6 +212,53 @@ public class SaoKeController {
         return "ndt/sao_ke_gdck";
     }
     
+    @PostMapping("/nhadautu/sua-lenh")
+    public String suaLenhGiaoDich(@RequestParam Long maGD,
+                                  @RequestParam Double giaDat,
+                                  @RequestParam Integer soLuong,
+                                  HttpSession session,
+                                  RedirectAttributes redirectAttributes) {
+        Optional<LenhDat> optionalLenh = lenhDatService.findById(maGD);
+
+        if (optionalLenh.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy lệnh cần sửa.");
+            return "redirect:/nhadautu/sao-ke-gdck";
+        }
+
+        LenhDat lenh = optionalLenh.get();
+
+        if (!"Chờ".equalsIgnoreCase(lenh.getTrangThai())) {
+            redirectAttributes.addFlashAttribute("error", "Chỉ được sửa lệnh ở trạng thái 'Chờ'.");
+            return "redirect:/nhadautu/sao-ke-gdck";
+        }
+
+        // Kiểm tra phase hiện tại
+        Phase currentPhase = tradingTimeUtil.getCurrentPhase(LocalDateTime.now());
+        String loaiLenh = lenh.getLoaiLenh(); // VD: LO, ATC, ATO...
+
+        // Chỉ cho phép sửa lệnh nếu đang ở phase NGHI
+        // HOẶC nếu là LO/ATC thì cho phép sửa TRƯỚC khi vào phase tương ứng
+        boolean allow = false;
+
+        if (currentPhase == Phase.NGHI) {
+            allow = true;
+        }
+
+        if (!allow) {
+            redirectAttributes.addFlashAttribute("error", "Chỉ được sửa khi đang nghỉ hoặc chưa vào phiên khớp của lệnh.");
+            return "redirect:/nhadautu/sao-ke-gdck";
+        }
+
+        // Cập nhật lệnh
+        lenh.setGia(giaDat);
+        lenh.setSoLuong(soLuong);
+        lenh.setNgayGD(LocalDateTime.now());
+
+        lenhDatService.save(lenh);
+
+        redirectAttributes.addFlashAttribute("success", "Sửa lệnh thành công.");
+        return "redirect:/nhadautu/sao-ke-gdck";
+    }
     
     // Sao kê tiền
     @GetMapping("/nhadautu/sao-ke-tien")

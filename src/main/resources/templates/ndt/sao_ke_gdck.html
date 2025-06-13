@@ -31,7 +31,6 @@
         <!-- Sao kê lệnh theo mã cổ phiếu trong khoảng thời gian -->
         <h3>Sao kê lệnh giao dịch theo mã cổ phiếu</h3>
 		<form method="post" th:action="@{/nhadautu/lich-su-lenh}" class="filter-section ma-cp-filter">
-		    <!-- First row: Stock code and status select -->
 		    <div>
 		        <div>
 		            <label for="maCP">Mã Cổ Phiếu:</label>
@@ -41,7 +40,6 @@
 		        <input type="date" name="tuNgay" id="tuNgay" required th:value="${inputTuNgay}"/>
 		    </div>
 		    
-		    <!-- Second row: Date inputs -->
 		    <div>
 		        <div>
 			        <div>
@@ -61,7 +59,6 @@
 		        </div>
 		    </div>
 		    
-		    <!-- Third row: Submit button -->
 		    <div>
 		        <button type="submit">Xem Sao Kê</button>
 		    </div>
@@ -92,14 +89,27 @@
                     <td th:text="${lenh.loaiLenh}"></td>
                     <td th:text="${lenh.coPhieu.maCP}"></td>
                     <td th:text="${giaFormattedMap[lenh.maGD]}"></td>
-                    <td th:text="${lenh.soLuong}"></td>
-                    <td th:text="${mapSoLuongKhop[lenh.maGD]}"></td>
+                    <td th:text="${mapFormattedSoLuongDat[lenh.maGD]}"></td>
+					<td th:text="${mapFormattedSoLuongKhop[lenh.maGD]}"></td>
                     <td th:text="${mapGiaKhop[lenh.maGD]}"></td>
                     <td th:text="${mapNgayKhop[lenh.maGD] != null ? #temporals.format(mapNgayKhop[lenh.maGD], 'dd/MM/yyyy HH:mm:ss') : '—'}"></td>
                     <td th:text="${#temporals.format(lenh.ngayGD, 'dd/MM/yyyy HH:mm:ss')}"></td>
                     <td th:text="${lenh.trangThai}"></td>
                     <td>
-                        <button class="btn-sua" th:if="${lenh.trangThai == 'Chờ'}" th:onclick="|window.location.href='/nhadautu/sua-lenh?maGD=' + [[${lenh.maGD}]]|">Sửa</button>
+                        <button class="btn-sua"
+						        th:if="${lenh.trangThai == 'Chờ'}"
+						        th:attr="
+						            data-magid=${lenh.maGD},
+						            data-loaigd=${lenh.loaiGD == 'M' ? 'Mua' : 'Bán'},
+						            data-loailenh=${lenh.loaiLenh},
+						            data-macp=${lenh.coPhieu.maCP},
+						            data-giadat=${giaFormattedMap[lenh.maGD]},
+						            data-soluong=${mapFormattedSoLuongDat[lenh.maGD]}"
+						        onclick="handleOpenSuaPopup(this)">
+						    Sửa
+						</button>
+
+
                         <button class="btn-huy" th:if="${lenh.trangThai == 'Chờ'}" th:onclick="|xacNhanHuy(${lenh.maGD})|">Hủy</button>
                     </td>
                 </tr>
@@ -107,6 +117,47 @@
         </div>
     </main>
 </div>
+
+<!-- Popup Sửa Lệnh -->
+<div id="popupSuaLenh" class="popup-overlay" style="display:none;">
+    <div class="popup-content">
+        <h3>Sửa Lệnh Giao Dịch</h3>
+        <form id="formSuaLenh" method="post" th:action="@{/nhadautu/sua-lenh}">
+            <input type="hidden" id="popupMaGD" name="maGD" />
+
+            <div class="form-group">
+                <label>Mã Lệnh:</label>
+                <span id="popupMaGDText"></span>
+            </div>
+            <div class="form-group">
+                <label>Loại Giao Dịch:</label>
+                <span id="popupLoaiGD"></span>
+            </div>
+            <div class="form-group">
+                <label>Loại Lệnh:</label>
+                <span id="popupLoaiLenh"></span>
+            </div>
+            <div class="form-group">
+                <label>Mã Cổ Phiếu:</label>
+                <span id="popupMaCP"></span>
+            </div>
+            <div class="form-group">
+                <label for="popupGiaDat">Giá Đặt:</label>
+                <input type="text" id="popupGiaDat" name="giaDat" required />
+            </div>
+            <div class="form-group">
+                <label for="popupSoLuong">Khối Lượng:</label>
+                <input type="text" id="popupSoLuong" name="soLuong" required />
+            </div>
+
+            <div class="popup-buttons">
+                <button type="submit">Xác nhận</button>
+                <button type="button" onclick="closeSuaPopup()">Thoát</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <script>
     function xacNhanHuy(maGD) {
@@ -162,6 +213,48 @@
             console.error("Element #changePasswordPopup not found");
         }
     }
+    
+    function handleOpenSuaPopup(button) {
+        const maGD = button.getAttribute("data-magid");
+        const loaiGD = button.getAttribute("data-loaigd");
+        const loaiLenh = button.getAttribute("data-loailenh");
+        const maCP = button.getAttribute("data-macp");
+        const giaDat = button.getAttribute("data-giadat");
+        const soLuong = button.getAttribute("data-soluong");
+
+        openSuaPopup(maGD, loaiGD, loaiLenh, maCP, giaDat, soLuong);
+    }
+
+    function openSuaPopup(maGD, loaiGD, loaiLenh, maCP, giaDat, soLuong) {
+        document.getElementById("popupMaGD").value = maGD;
+        document.getElementById("popupMaGDText").innerText = maGD;
+        document.getElementById("popupLoaiGD").innerText = loaiGD;
+        document.getElementById("popupLoaiLenh").innerText = loaiLenh;
+        document.getElementById("popupMaCP").innerText = maCP;
+
+        // Chuẩn hóa chuỗi giá: xóa VND, dấu phẩy, rồi chuyển thành số
+        const giaRaw = giaDat.replace(" VND", "").replace("₫", "").replace(/,/g, "").trim();
+        const giaFormatted = Number(giaRaw).toLocaleString("vi-VN");
+        document.getElementById("popupGiaDat").value = giaFormatted;
+
+        // Format khối lượng đặt
+        const soLuongFormatted = Number(soLuong).toLocaleString("vi-VN");
+        document.getElementById("popupSoLuong").value = soLuongFormatted;
+
+        document.getElementById("popupSuaLenh").style.display = "flex";
+    }
+
+    function closeSuaPopup() {
+        document.getElementById("popupSuaLenh").style.display = "none";
+    }
+    
+    document.getElementById("formSuaLenh").addEventListener("submit", function (e) {
+        const giaInput = document.getElementById("popupGiaDat");
+        const slInput = document.getElementById("popupSoLuong");
+        
+        giaInput.value = giaInput.value.replace(/\./g, "").replace(/,/g, "").trim(); // clean format
+        slInput.value = slInput.value.replace(/\./g, "").replace(/,/g, "").trim();
+    });
 </script>
 </body>
 </html>
