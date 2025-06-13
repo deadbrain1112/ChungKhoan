@@ -44,7 +44,7 @@ public class KhopLenhService implements ApplicationContextAware {
         huyLenhATXChuaKhop();
     }
 
-    //@Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 3000)
     @Transactional
     public void khopLORealtime() {
         LocalDateTime now = LocalDateTime.now();
@@ -53,7 +53,6 @@ public class KhopLenhService implements ApplicationContextAware {
         if (phase == Phase.LO) {
             List<String> dsMaCP = lenhDatRepo.findAllMaCPDangChoKhop("Chờ");
             for (String maCP : dsMaCP) {
-                System.out.println("[KHOP LO] Mã CP: " + maCP);
                 processorService.khopLenh(maCP, Phase.LO.name());
             }
         }

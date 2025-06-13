@@ -192,7 +192,7 @@ public class DatLenhMuaController {
                 return "ndt/dat_lenh_mua";
             }
 
-            giaDat = 0; // Hệ thống sẽ tự khớp sau
+            giaDat = 0;
         } else {
             model.addAttribute("error", "Loại lệnh không hợp lệ!");
             return "ndt/dat_lenh_mua";

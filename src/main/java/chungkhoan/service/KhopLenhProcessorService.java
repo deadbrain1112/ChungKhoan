@@ -28,6 +28,9 @@ public class KhopLenhProcessorService {
     @Autowired private TaiKhoanNganHangService taiKhoanNganHangService;
     @Autowired private SoHuuService soHuuService;
     @Autowired private LichSuGiaService lichSuGiaService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
 
     public enum Phase {
         ATO, LO, ATC
@@ -107,7 +110,6 @@ public class KhopLenhProcessorService {
         loMua.sort(Comparator.comparing(LenhDat::getGia).reversed().thenComparing(LenhDat::getNgayGD));
         loBan.sort(Comparator.comparing(LenhDat::getGia).thenComparing(LenhDat::getNgayGD));
 
-        System.out.println("Tổng số lệnh lọc được cho " + maCP + ": " + all.size());
 
         khopDanhSach(maCP, loMua, loBan);
     }
@@ -156,7 +158,7 @@ public class KhopLenhProcessorService {
                 xuLyGiaoDich(maCP, mua, ban);
                 
                 if (mua.getSoLuong() == oldMua && ban.getSoLuong() == oldBan) {
-                    System.out.println("‼️ Giao dịch không thay đổi số lượng, tránh lặp vô hạn: " + mua.getMaGD() + " - " + ban.getMaGD());
+                    System.out.println("Giao dịch không thay đổi số lượng, tránh lặp vô hạn: " + mua.getMaGD() + " - " + ban.getMaGD());
                     break;
                 }
 
@@ -169,6 +171,7 @@ public class KhopLenhProcessorService {
         int slKhop = Math.min(mua.getSoLuong(), ban.getSoLuong());
         double giaKhop = ban.getGia();
         BigDecimal tien = BigDecimal.valueOf(slKhop * giaKhop);
+        double giaTC = lichSuGiaService.getGiaThamChieuMoiNhat(maCP);
 
         String maNguoiMua = mua.getTaiKhoanNganHang().getMaTK();
         String maNguoiBan = ban.getTaiKhoanNganHang().getMaTK();
@@ -206,6 +209,13 @@ public class KhopLenhProcessorService {
 
         capNhatTrangThai(mua, slKhop);
         capNhatTrangThai(ban, slKhop);
+
+
+
+        messagingTemplate.convertAndSend("/topic/stock-board",
+                createOrderMessage(maCP, giaKhop, slKhop, giaTC, mua.getGia(), ban.getGia()));
+
+
     }
 
     private void capNhatTrangThai(LenhDat lenh, int slKhop) {
@@ -213,4 +223,24 @@ public class KhopLenhProcessorService {
         lenh.setTrangThai(lenh.getSoLuong() == 0 ? "Hết" : "Một phần");
         lenhDatRepo.save(lenh);
     }
+
+    private Object createOrderMessage(
+            String maCPinput,
+            double giakhop,
+            int soLuongkhop,
+            double giaThamChieu,
+            double giamua,
+            double giaban
+    ) {
+        return new Object() {
+            public String type = "match";
+            public String maCP = maCPinput;
+            public double giaKhop = giakhop;
+            public int soLuongKhop = soLuongkhop;
+            public double delta = giaKhop - giaThamChieu;
+            public double giaMua = giamua;
+            public double giaBan = giaban;
+        };
+    }
+
 }

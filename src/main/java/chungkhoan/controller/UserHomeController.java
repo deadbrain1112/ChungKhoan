@@ -50,8 +50,7 @@ public class UserHomeController {
         if (nhaDauTu == null) return "nhanvien/login";
 
         List<TaiKhoanNganHang> danhSachTaiKhoan = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
-        
-        // Nếu không truyền maTK thì lấy tài khoản đầu tiên
+
         TaiKhoanNganHang taiKhoan = danhSachTaiKhoan.stream()
             .filter(tk -> maTK == null || tk.getMaTK().equals(maTK))
             .findFirst()
@@ -115,5 +114,6 @@ public class UserHomeController {
 
         return "redirect:/nhadautu/home";
     }
+
 
 }

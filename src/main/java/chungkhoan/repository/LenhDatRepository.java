@@ -84,4 +84,6 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
 	     @Param("startDate") LocalDateTime startDate,
 	     @Param("endDate") LocalDateTime endDate,
 	     @Param("trangThai") String trangThai);
+
+
 }
