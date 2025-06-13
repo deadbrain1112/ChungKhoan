@@ -34,6 +34,7 @@ public class LoginController {
 		}
 		return "nhanvien/login";
 	}
+	
 	@PostMapping("/login")
 	public String login(@RequestParam("username") String username,
 						@RequestParam("password") String password,
@@ -71,7 +72,7 @@ public class LoginController {
 				var nhaDauTu = ndtService.getNhaDauTuByUsername(maLienKet);
 				if (nhaDauTu == null) return "redirect:/login?error=no_ndt_found";
 				session.setAttribute("nhaDauTu", nhaDauTu);
-				return "redirect:/nhadautu/home";
+				return "redirect:/stock-board";
 			}
 			case "khong_ro_role" -> {
 				session.invalidate();

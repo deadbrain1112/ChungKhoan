@@ -95,4 +95,137 @@ tbody tr:hover {
    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: #1e1e2f;
+    color: white;
+    font-family: Arial, sans-serif;
+}
 
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1e1e2f;
+    padding: 12px 24px;
+    border-bottom: 1px solid #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.top-header .logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+.auth-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.auth-buttons a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    background-color: #2d2d44;
+    font-size: 14px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.auth-buttons a:hover {
+    background-color: #3c3c5c;
+    transform: translateY(-1px);
+}
+
+.account-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.account-link {
+    background-color: #2d2d44;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.account-link:hover {
+    background-color: #3c3c5c;
+}
+
+
+/* Gộp hàng ngang */
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 16px 24px;
+    gap: 20px;
+}
+
+.search-form {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 300px;
+    background-color: #1f1f2f;
+    border-radius: 6px;
+    padding-left: 28px;
+    transition: background-color 0.2s ease;
+}
+
+.search-form:hover {
+    background-color: #252537; /* màu nền đậm hơn khi hover */
+}
+
+/* Input trong search */
+.search-form input {
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: transparent; /* để dùng màu từ .search-form */
+    color: white;
+    font-size: 14px;
+    outline: none;
+}
+
+/* Đảm bảo khi hover vào input không bị trắng */
+.search-form input:hover,
+.search-form input:focus {
+    background-color: transparent;
+    color: white;
+}
+
+/* Icon kính lúp */
+.search-form .search-icon {
+    position: absolute;
+    left: 10px;
+    font-size: 16px;
+    color: #888;
+}
+
+.highlighted-row {
+    animation: highlightFade 3s ease-out forwards;
+    background-color: #3a506b !important; /* hoặc màu bạn chọn */
+}
+
+@keyframes highlightFade {
+    0% {
+        background-color: #3a506b;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
