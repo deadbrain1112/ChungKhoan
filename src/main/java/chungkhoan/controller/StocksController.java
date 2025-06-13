@@ -32,7 +32,7 @@ public class StocksController {
         // Lấy danh sách cổ phiếu chính từ cơ sở dữ liệu
         Page<CoPhieu> stockPage = coPhieuService.getPaginated(0, Integer.MAX_VALUE); // Lấy tất cả để kết hợp
 
-        // Lấy danh sách cổ phiếu tạm từ session
+
         @SuppressWarnings("unchecked")
         List<CoPhieu> tempList = (List<CoPhieu>) session.getAttribute("temporaryStocks");
         if (tempList == null) {

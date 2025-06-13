@@ -145,10 +145,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
 <script>
     let socket = new SockJS('/ws-stock');
     let stompClient = Stomp.over(socket);
+
+    let orderBook = {};
 
     stompClient.connect({}, function () {
         console.log('WebSocket connected');
@@ -156,85 +157,74 @@
         stompClient.subscribe('/topic/stock-board', function (message) {
             try {
                 const order = JSON.parse(message.body);
-                console.log('Received:', order);
-
-                if (!order || !order.maCP) {
-                    console.error('Invalid order:', order);
-                    return;
-                }
+                if (!order || !order.maCP) return;
 
                 const maCP = order.maCP.trim();
+                const isMatch = order.type === 'match';
 
-                if (order.loaiGD && order.gia != null && order.soLuong != null) {
-                    const gia = parseFloat(order.gia).toFixed(2);
+                if (!orderBook[maCP]) {
+                    orderBook[maCP] = { buy: [], sell: [] };
+                }
+
+                // ===== ĐẶT LỆNH MỚI =====
+                if (!isMatch && order.loaiGD && order.gia != null && order.soLuong != null) {
+                    const gia = parseFloat(order.gia);
                     const soLuong = parseInt(order.soLuong);
-                    const loaiGD = order.loaiGD;
+                    const side = order.loaiGD === 'M' ? 'buy' : 'sell';
 
-                    if (!orderBook[maCP]) {
-                        orderBook[maCP] = { buy: [], sell: [] };
+                    const existing = orderBook[maCP][side].find(o => o.gia === gia);
+                    if (existing) {
+                        existing.soLuong += soLuong;
+                    } else {
+                        orderBook[maCP][side].push({ gia, soLuong });
                     }
 
-                    if (loaiGD === 'M') {
-                        const existing = orderBook[maCP].buy.find(o => o.gia === parseFloat(gia));
-                        if (existing) {
-                            existing.soLuong += soLuong;
-                        } else {
-                            orderBook[maCP].buy.push({ gia: parseFloat(gia), soLuong });
-                        }
-                        orderBook[maCP].buy.sort((a, b) => b.gia - a.gia);
-                        orderBook[maCP].buy = orderBook[maCP].buy.slice(0, 3);
-                        updateOrderSide(maCP, 'buy');
-                        // Xóa lệnh mua vừa thực hiện
-                        orderBook[maCP].buy = orderBook[maCP].buy.filter(o => o.soLuong > soLuong || o.gia !== parseFloat(gia));
-                    } else if (loaiGD === 'B') {
-                        const existing = orderBook[maCP].sell.find(o => o.gia === parseFloat(gia));
-                        if (existing) {
-                            existing.soLuong += soLuong;
-                        } else {
-                            orderBook[maCP].sell.push({ gia: parseFloat(gia), soLuong });
-                        }
-                        orderBook[maCP].sell.sort((a, b) => a.gia - b.gia);
-                        orderBook[maCP].sell = orderBook[maCP].sell.slice(0, 3);
-                        updateOrderSide(maCP, 'sell');
-                        // Xóa lệnh bán vừa thực hiện
-                        orderBook[maCP].sell = orderBook[maCP].sell.filter(o => o.soLuong > soLuong || o.gia !== parseFloat(gia));
-                    }
+                    orderBook[maCP][side].sort((a, b) => side === 'buy' ? b.gia - a.gia : a.gia - b.gia);
+                    orderBook[maCP][side] = orderBook[maCP][side].slice(0, 3);
+                    updateOrderSide(maCP, side);
                 }
 
-                if (order.giakhop != null || order.soLuong != null || order.delta != null) {
-                    capNhatBangGia(order);
+                // ===== KHỚP LỆNH =====
+                if (isMatch && order.giaKhop != null && order.soLuongKhop != null) {
+                    capNhatBangGia({
+                        maCP,
+                        giakhop: order.giaKhop,
+                        soLuong: order.soLuongKhop,
+                        delta: order.delta
+                    });
+
+                    const soLuongKhop = parseInt(order.soLuongKhop);
+                    const giaMua = parseFloat(order.giaMua);
+                    const giaBan = parseFloat(order.giaBan);
+
+                    if (!isNaN(giaMua)) capNhatSoLuong(maCP, 'buy', giaMua, soLuongKhop);
+                    if (!isNaN(giaBan)) capNhatSoLuong(maCP, 'sell', giaBan, soLuongKhop);
                 }
+
             } catch (e) {
-                console.error('Error parsing WebSocket message:', e);
+                console.error('WebSocket error:', e);
             }
         });
-    }, function (error) {
-        console.error('WebSocket connection failed:', error);
     });
 
-    let orderBook = {};
-
     function updateOrderSide(maCP, side) {
-        const sideOrders = orderBook[maCP]?.[side] || [];
+        const sideOrders = orderBook[maCP][side] || [];
         for (let i = 1; i <= 3; i++) {
             const priceElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-gia${i}-${maCP}`);
             const quantityElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-kl${i}-${maCP}`);
             if (priceElem && quantityElem) {
-                if (sideOrders[i - 1]) {
-                    priceElem.textContent = sideOrders[i - 1].gia.toFixed(2);
-                    quantityElem.textContent = sideOrders[i - 1].soLuong.toLocaleString();
+                const order = sideOrders[i - 1];
+                if (order) {
+                    priceElem.textContent = order.gia.toFixed(2);
+                    quantityElem.textContent = order.soLuong.toLocaleString();
                     const color = side === 'buy' ? 'green' : 'red';
-                    priceElem.className = `${color} flash`;
-                    quantityElem.className = `${color} flash`;
+                    priceElem.className = quantityElem.className = `${color} flash`;
                     setTimeout(() => {
-                        if (priceElem.classList.contains('flash')) priceElem.className = color;
-                        if (quantityElem.classList.contains('flash')) quantityElem.className = color;
+                        priceElem.className = quantityElem.className = color;
                     }, 1000);
                 } else {
-                    priceElem.textContent = '-';
-                    quantityElem.textContent = '-';
-                    priceElem.className = '';
-                    quantityElem.className = '';
+                    priceElem.textContent = quantityElem.textContent = '-';
+                    priceElem.className = quantityElem.className = '';
                 }
             }
         }
@@ -242,78 +232,37 @@
 
     function capNhatBangGia(data) {
         const { maCP, giakhop, soLuong, delta } = data;
-        console.log(`Updating maCP: ${maCP}`, { giakhop, soLuong, delta });
 
         let giaKhopElem = document.getElementById(`giaKhop-${maCP}`);
         let klKhopElem = document.getElementById(`klKhop-${maCP}`);
         let deltaElem = document.getElementById(`delta-${maCP}`);
 
-        if (!giaKhopElem || !klKhopElem || !deltaElem) {
-            console.log(`Creating new row for maCP: ${maCP}`);
-            const tbody = document.querySelector('tbody');
-            if (tbody) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                        <td>${maCP}</td>
-                        <td id="giaKhop-${maCP}"></td>
-                        <td id="klKhop-${maCP}"></td>
-                        <td id="delta-${maCP}"></td>
-                    `;
-                tbody.appendChild(row);
-                giaKhopElem = document.getElementById(`giaKhop-${maCP}`);
-                klKhopElem = document.getElementById(`klKhop-${maCP}`);
-                deltaElem = document.getElementById(`delta-${maCP}`);
-            }
+        if (!giaKhopElem || !klKhopElem || !deltaElem) return;
+
+        giaKhopElem.textContent = giakhop?.toFixed(0) ?? '-';
+        klKhopElem.textContent = soLuong?.toLocaleString() ?? '-';
+        deltaElem.textContent = delta?.toFixed(0) ?? '-';
+
+        const color = delta > 0 ? 'green' : delta < 0 ? 'red' : 'yellow';
+        giaKhopElem.className = klKhopElem.className = deltaElem.className = `${color} flash`;
+        setTimeout(() => {
+            giaKhopElem.className = klKhopElem.className = deltaElem.className = color;
+        }, 1000);
+    }
+
+    function capNhatSoLuong(maCP, side, giaCanTru, soLuongTru) {
+        const list = orderBook[maCP]?.[side];
+        if (!list) return;
+
+        const index = list.findIndex(o => o.gia === giaCanTru);
+        if (index === -1) return;
+
+        list[index].soLuong -= soLuongTru;
+        if (list[index].soLuong <= 0) {
+            list.splice(index, 1);
         }
 
-        if (giaKhopElem) {
-            if (giakhop != null) {
-                giaKhopElem.textContent = giakhop.toFixed(0);
-            } else {
-                giaKhopElem.textContent = '-';
-            }
-        }
-
-        if (klKhopElem) {
-            if (soLuong != null) {
-                klKhopElem.textContent = soLuong.toLocaleString();
-            } else {
-                klKhopElem.textContent = '-';
-            }
-        }
-
-        if (deltaElem) {
-            if (delta != null) {
-                deltaElem.textContent = delta.toFixed(0);
-            } else {
-                deltaElem.textContent = '-';
-            }
-        }
-
-        if (deltaElem && delta != null) {
-            const color = delta > 0 ? 'green' : (delta < 0 ? 'red' : 'yellow');
-            giaKhopElem.className = `${color} flash`;
-            klKhopElem.className = `${color} flash`;
-            deltaElem.className = `${color} flash`;
-
-            setTimeout(() => {
-                if (giaKhopElem && giaKhopElem.classList.contains('flash')) {
-                    giaKhopElem.className = color;
-                }
-                if (klKhopElem && klKhopElem.classList.contains('flash')) {
-                    klKhopElem.className = color;
-                }
-                if (deltaElem && deltaElem.classList.contains('flash')) {
-                    deltaElem.className = color;
-                }
-            }, 1000);
-        }
-
-        console.log(`Updated DOM for maCP: ${maCP}`, {
-            giaKhop: giaKhopElem ? giaKhopElem.textContent : 'Not found',
-            klKhop: klKhopElem ? klKhopElem.textContent : 'Not found',
-            delta: deltaElem ? deltaElem.textContent : 'Not found'
-        });
+        updateOrderSide(maCP, side);
     }
         document.addEventListener('DOMContentLoaded', function () {
             const input = document.querySelector('input[name="maCP"]');

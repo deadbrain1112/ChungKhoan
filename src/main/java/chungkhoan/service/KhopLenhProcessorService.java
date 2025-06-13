@@ -158,7 +158,7 @@ public class KhopLenhProcessorService {
                 xuLyGiaoDich(maCP, mua, ban);
                 
                 if (mua.getSoLuong() == oldMua && ban.getSoLuong() == oldBan) {
-                    System.out.println("‼️ Giao dịch không thay đổi số lượng, tránh lặp vô hạn: " + mua.getMaGD() + " - " + ban.getMaGD());
+                    System.out.println("Giao dịch không thay đổi số lượng, tránh lặp vô hạn: " + mua.getMaGD() + " - " + ban.getMaGD());
                     break;
                 }
 
@@ -212,7 +212,9 @@ public class KhopLenhProcessorService {
 
 
 
-        messagingTemplate.convertAndSend("/topic/stock-board",createOrderMessage(maCP,giaKhop,slKhop,giaTC));
+        messagingTemplate.convertAndSend("/topic/stock-board",
+                createOrderMessage(maCP, giaKhop, slKhop, giaTC, mua.getGia(), ban.getGia()));
+
 
     }
 
@@ -222,12 +224,23 @@ public class KhopLenhProcessorService {
         lenhDatRepo.save(lenh);
     }
 
-    private Object createOrderMessage(String maCPInput, double giaKhop, int soLuongKhop, double giaThamChieu) {
+    private Object createOrderMessage(
+            String maCPinput,
+            double giakhop,
+            int soLuongkhop,
+            double giaThamChieu,
+            double giamua,
+            double giaban
+    ) {
         return new Object() {
-            public String maCP = maCPInput;
-            public double giakhop = giaKhop;
-            public int soLuong = soLuongKhop;
+            public String type = "match";
+            public String maCP = maCPinput;
+            public double giaKhop = giakhop;
+            public int soLuongKhop = soLuongkhop;
             public double delta = giaKhop - giaThamChieu;
+            public double giaMua = giamua;
+            public double giaBan = giaban;
         };
     }
+
 }

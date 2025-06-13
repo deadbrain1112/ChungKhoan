@@ -3,6 +3,7 @@ package chungkhoan.controller;
 import chungkhoan.entity.*;
 import chungkhoan.repository.*;
 import chungkhoan.service.LichSuGiaService;
+import chungkhoan.service.SoHuuService;
 import chungkhoan.util.TradingTimeUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,23 +24,21 @@ import java.util.stream.Collectors;
 public class StockBoardController {
 
     private final CoPhieuRepository coPhieuRepo;
+    private final SoHuuService soHuuService;
     private final LenhDatRepository lenhDatRepo;
     private final LenhKhopRepository lenhKhopRepo;
     private final LichSuGiaService lichSuGiaService;
     private final TradingTimeUtil tradingTimeUtil;
 
     @GetMapping
-    public String getBangGia(HttpSession session, Model model) {
-    	NhaDauTu ndt = (NhaDauTu) session.getAttribute("nhaDauTu");
-
-        if (ndt != null) {
-            System.out.println("✅ Có session NhaDauTu: " + ndt.getMaNDT());
-            model.addAttribute("nhaDauTu", ndt); // nếu cần render ra giao diện
+    public String getBangGia(@RequestParam(name = "filter", defaultValue = "tatca") String filter,
+                             Model model, HttpSession session) {
+    	NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
+        List<CoPhieu> dsCP;
+        if (nhaDauTu != null) {
+            model.addAttribute("nhaDauTu", nhaDauTu);
         } else {
-            System.out.println("❌ Không tìm thấy session NhaDauTu");
         }
-        
-        List<CoPhieu> dsCP = coPhieuRepo.findAll();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
@@ -54,9 +54,17 @@ public class StockBoardController {
         Map<String, Double> deltaMap = new HashMap<>();
 
         TradingTimeUtil.Phase phase = tradingTimeUtil.getCurrentPhase(now);
-        System.out.println("[BANG GIA] Phiên hiện tại: " + phase);
         model.addAttribute("phase", phase.name());
 
+        model.addAttribute("nhaDauTu", nhaDauTu);
+        if ("sohuu".equals(filter) && nhaDauTu != null) {
+            List<SoHuu> danhSachSoHuu = soHuuService.getSoHuuByNDT(nhaDauTu.getMaNDT());
+            dsCP = danhSachSoHuu.stream()
+                    .map(SoHuu::getCoPhieu)
+                    .collect(Collectors.toList());
+        } else {
+            dsCP = coPhieuRepo.findAll();
+        }
         for (CoPhieu cp : dsCP) {
             String maCP = cp.getMaCP();
 
@@ -111,6 +119,9 @@ public class StockBoardController {
             tongKLMoiMap.put(maCP, tongKL);
         }
 
+
+
+        model.addAttribute("filter", filter);
         model.addAttribute("colorMap", colorMap);
         model.addAttribute("deltaMap", deltaMap);
         model.addAttribute("dsCP", dsCP);
