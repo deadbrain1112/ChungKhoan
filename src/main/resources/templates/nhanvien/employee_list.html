@@ -131,9 +131,9 @@
     <!-- Form Sửa -->
     <div id="edit-form" class="subform-container" style="display:none;">
         <h3>Sửa nhân viên</h3>
-        <form th:action="@{/employees/edit-temp}" method="post">
-            <input type="hidden" name="maNV" id="maNV" />
-            <label>Mã nhân viên: <input type="text" name="maNV" readonly /></label><br/>
+        <form th:action="@{/employees/edit-temp}" method="post" id="editForm">
+            <input type="hidden" name="maNV" id="editMaNV" />
+            <label>Mã nhân viên: <span id="editMaNVDisplay"></span></label><br/>
             <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
             <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
             <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
@@ -174,18 +174,24 @@
     }
 
     function showEditForm(data) {
-        const form = document.querySelector('#edit-form form');
-        form.maNV.value = data.maNV;
-        form.hoTen.value = data.hoTen;
-        form.ngaySinh.value = data.ngaySinh;
-        form.diaChi.value = data.diaChi;
-        form.phone.value = data.phone;
-        form.cmnd.value = data.cmnd;
-        form.email.value = data.email;
-        const genderInputs = form.querySelectorAll('input[name="gioiTinh"]');
-        genderInputs.forEach(input => {
-            input.checked = (input.value === data.gioiTinh);
-        });
+        const form = document.querySelector('#editForm');
+        form.querySelector('#editMaNV').value = data.maNV || '';
+        form.querySelector('#editMaNVDisplay').textContent = data.maNV || 'Không có';
+        form.querySelector('input[name="hoTen"]').value = data.hoTen || '';
+        form.querySelector('input[name="ngaySinh"]').value = data.ngaySinh || '';
+        form.querySelector('input[name="diaChi"]').value = data.diaChi || '';
+        form.querySelector('input[name="phone"]').value = data.phone || '';
+        form.querySelector('input[name="cmnd"]').value = data.cmnd || '';
+        form.querySelector('input[name="email"]').value = data.email || '';
+        const gioiTinhValue = data.gioiTinh?.trim().toLowerCase();
+        const gioiTinhNam = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nam"]');
+        const gioiTinhNu = form.querySelector('input[type="radio"][name="gioiTinh"][value="Nữ"]');
+
+        if (gioiTinhValue === 'nam' && gioiTinhNam) {
+            gioiTinhNam.checked = true;
+        } else if (gioiTinhValue === 'nữ' && gioiTinhNu) {
+            gioiTinhNu.checked = true;
+        }
         document.getElementById('edit-form').style.display = 'block';
         document.getElementById('add-form').style.display = 'none';
         disableToolbarButtons();
@@ -226,7 +232,7 @@
         });
 
         // Kiểm tra ngày sinh trong form sửa
-        document.querySelector('#edit-form form').addEventListener('submit', function(e) {
+        document.querySelector('#editForm').addEventListener('submit', function(e) {
             const ngaySinhInput = document.querySelector('#edit-form input[name="ngaySinh"]').value;
             const ngaySinh = new Date(ngaySinhInput);
             const today = new Date();

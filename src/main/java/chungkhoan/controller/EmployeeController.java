@@ -1,5 +1,6 @@
 package chungkhoan.controller;
 
+import chungkhoan.dto.NhanVienTemp;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -32,27 +33,35 @@ public class EmployeeController {
 							   @RequestParam(defaultValue = "5") int size,
 							   Model model,
 							   HttpSession session) {
-		// Lấy danh sách nhân viên chính từ cơ sở dữ liệu
-		Page<NhanVien> employeePage = nhanVienService.getPaginated(0, Integer.MAX_VALUE);
 
-		// Lấy danh sách nhân viên tạm từ session
+		List<NhanVien> fromDb = nhanVienService.getPaginated(0, Integer.MAX_VALUE).getContent();
+
 		@SuppressWarnings("unchecked")
-		List<NhanVien> tempList = (List<NhanVien>) session.getAttribute("temporaryEmployees");
+		List<NhanVienTemp> tempList = (List<NhanVienTemp>) session.getAttribute("temporaryEmployees");
 		if (tempList == null) {
 			tempList = new ArrayList<>();
 		}
 
-		// Kết hợp danh sách: danh sách chính trước, danh sách tạm sau
-		List<NhanVien> allEmployees = new ArrayList<>();
-		allEmployees.addAll(employeePage.getContent());
-		allEmployees.addAll(tempList);
+		List<NhanVienTemp> finalTempList = tempList;
+		List<NhanVien> filteredDb = fromDb.stream()
+				.filter(nv -> finalTempList.stream().noneMatch(t -> t.getMaNV().equals(nv.getMaNV())))
+				.toList();
 
-		// Tính toán phân trang cho danh sách kết hợp
+		// Chuyển đổi danh sách tạm chưa bị xóa sang entity
+		List<NhanVien> tempEntities = tempList.stream()
+				.filter(t -> !t.isDaXoa())
+				.map(NhanVienTemp::toNhanVienEntity)
+				.toList();
+
+		List<NhanVien> allEmployees = new ArrayList<>();
+		allEmployees.addAll(filteredDb);
+		allEmployees.addAll(tempEntities);
+
+		// Tính toán phân trang
 		int totalItems = allEmployees.size();
 		int start = page * size;
 		int end = Math.min(start + size, totalItems);
 
-		// Đảm bảo start và end hợp lệ
 		if (start >= totalItems && totalItems > 0) {
 			page = (totalItems - 1) / size;
 			start = page * size;
@@ -62,60 +71,63 @@ public class EmployeeController {
 			end = 0;
 		}
 
-		List<NhanVien> allEmployeesPageContent = (start < end) ? allEmployees.subList(start, end) : new ArrayList<>();
+		List<NhanVien> pageContent = (start < end) ? allEmployees.subList(start, end) : new ArrayList<>();
 
-		// Tạo đối tượng Page cho danh sách kết hợp
-		Page<NhanVien> allEmployeesPage = new PageImpl<>(allEmployeesPageContent, PageRequest.of(page, size), totalItems);
+		Page<NhanVien> allEmployeesPage = new PageImpl<>(pageContent, PageRequest.of(page, size), totalItems);
 
-		// Thêm vào model
+		// Gửi dữ liệu ra view
 		model.addAttribute("employees", allEmployeesPage);
 		model.addAttribute("temporaryEmployees", tempList);
+		model.addAttribute("canUndo", !nhanVienService.isUndoStackEmpty());
+
 		if (allEmployeesPage.isEmpty()) {
 			model.addAttribute("message", "Không có dữ liệu nhân viên.");
 			model.addAttribute("messageType", "danger");
 		}
 
-		// Kiểm tra nếu có thể hoàn tác
-		model.addAttribute("canUndo", !nhanVienService.isUndoStackEmpty());
-
-		// Thêm logging để kiểm tra
+		// Debug
 		System.out.println("TempList size: " + tempList.size());
 		System.out.println("AllEmployees size: " + allEmployees.size());
-		System.out.println("Page content size: " + allEmployeesPageContent.size());
+		System.out.println("Page content size: " + pageContent.size());
 
 		return "nhanvien/employee_list";
 	}
 
 	@PostMapping("/employees/add-temp")
-	public String addTempEmployee(@ModelAttribute NhanVien employee,
+	public String addTempEmployee(@ModelAttribute NhanVienTemp employee,
 								  @RequestParam(defaultValue = "0") int page,
 								  @RequestParam(defaultValue = "5") int size,
 								  HttpSession session,
 								  RedirectAttributes redirectAttributes) {
 		// Kiểm tra ngày sinh
 		LocalDate ngaySinh = employee.getNgaySinh();
-		LocalDate currentDate = LocalDate.now();
-		if (ngaySinh == null || ngaySinh.isAfter(currentDate) || ngaySinh.getYear() < 1900) {
+		if (ngaySinh == null || ngaySinh.isAfter(LocalDate.now()) || ngaySinh.getYear() < 1900) {
 			redirectAttributes.addFlashAttribute("message", "Ngày sinh không hợp lệ!");
 			redirectAttributes.addFlashAttribute("messageType", "danger");
 			return "redirect:/employees?page=" + page + "&size=" + size;
 		}
 
 		@SuppressWarnings("unchecked")
-		List<NhanVien> tempList = (List<NhanVien>) session.getAttribute("temporaryEmployees");
-		if (tempList == null) {
-			tempList = new ArrayList<>();
-		}
+		List<NhanVienTemp> tempList = (List<NhanVienTemp>) session.getAttribute("temporaryEmployees");
+		if (tempList == null) tempList = new ArrayList<>();
 
-		// Kiểm tra trùng MaNV
-		if (nhanVienService.existsById(employee.getMaNV()) || tempList.stream().anyMatch(emp -> emp.getMaNV().equals(employee.getMaNV()))) {
+		// Kiểm tra trùng mã nhân viên
+		boolean maNVTrung = nhanVienService.existsById(employee.getMaNV()) ||
+				tempList.stream()
+						.filter(temp -> !temp.isDaXoa())
+						.anyMatch(temp -> temp.getMaNV().equals(employee.getMaNV()));
+		if (maNVTrung) {
 			redirectAttributes.addFlashAttribute("message", "Mã nhân viên " + employee.getMaNV() + " đã tồn tại!");
 			redirectAttributes.addFlashAttribute("messageType", "error");
 			return "redirect:/employees?page=" + page + "&size=" + size;
 		}
 
 		// Kiểm tra trùng CMND
-		if (nhanVienService.existsByCmnd(employee.getCmnd()) || tempList.stream().anyMatch(emp -> emp.getCmnd().equals(employee.getCmnd()))) {
+		boolean cmndTrung = nhanVienService.existsByCmnd(employee.getCmnd()) ||
+				tempList.stream()
+						.filter(temp -> !temp.isDaXoa())
+						.anyMatch(temp -> temp.getCmnd().equals(employee.getCmnd()));
+		if (cmndTrung) {
 			redirectAttributes.addFlashAttribute("message", "CMND " + employee.getCmnd() + " đã tồn tại!");
 			redirectAttributes.addFlashAttribute("messageType", "error");
 			return "redirect:/employees?page=" + page + "&size=" + size;
@@ -127,15 +139,11 @@ public class EmployeeController {
 		redirectAttributes.addFlashAttribute("message", "Đã thêm tạm nhân viên " + employee.getMaNV());
 		redirectAttributes.addFlashAttribute("messageType", "success");
 
-		// Thêm logging để kiểm tra
-		System.out.println("Added employee to tempList: " + employee.getMaNV());
-		System.out.println("TempList after adding: " + tempList);
-
 		return "redirect:/employees?page=" + page + "&size=" + size;
 	}
 
 	@PostMapping("/employees/edit-temp")
-	public String editTempEmployee(@ModelAttribute NhanVien employee,
+	public String editTempEmployee(@ModelAttribute NhanVienTemp employee,
 								   HttpSession session,
 								   RedirectAttributes redirectAttributes) {
 		// Kiểm tra ngày sinh
@@ -148,21 +156,20 @@ public class EmployeeController {
 		}
 
 		@SuppressWarnings("unchecked")
-		List<NhanVien> tempList = (List<NhanVien>) session.getAttribute("temporaryEmployees");
+		List<NhanVienTemp> tempList = (List<NhanVienTemp>) session.getAttribute("temporaryEmployees");
 		if (tempList == null) {
 			tempList = new ArrayList<>();
 		}
 
-		// Kiểm tra trùng CMND (ngoại trừ chính nhân viên đang sửa)
-		NhanVien existingEmployee = nhanVienService.findById(employee.getMaNV()).orElse(null);
-		if (existingEmployee != null && !existingEmployee.getCmnd().equals(employee.getCmnd())) {
-			if (nhanVienService.existsByCmnd(employee.getCmnd()) || tempList.stream()
-					.filter(emp -> !emp.getMaNV().equals(employee.getMaNV()))
-					.anyMatch(emp -> emp.getCmnd().equals(employee.getCmnd()))) {
-				redirectAttributes.addFlashAttribute("message", "CMND " + employee.getCmnd() + " đã tồn tại!");
-				redirectAttributes.addFlashAttribute("messageType", "error");
-				return "redirect:/employees";
-			}
+		Optional<NhanVien> existing = nhanVienService.findById(employee.getMaNV());
+		boolean cmndChanged = existing.isPresent() && !existing.get().getCmnd().equals(employee.getCmnd());
+
+		if (cmndChanged || tempList.stream()
+				.filter(emp -> !emp.getMaNV().equals(employee.getMaNV()))
+				.anyMatch(emp -> emp.getCmnd().equals(employee.getCmnd()))) {
+			redirectAttributes.addFlashAttribute("message", "CMND " + employee.getCmnd() + " đã tồn tại!");
+			redirectAttributes.addFlashAttribute("messageType", "error");
+			return "redirect:/employees";
 		}
 
 		// Cập nhật hoặc thêm vào danh sách tạm
@@ -177,6 +184,7 @@ public class EmployeeController {
 		if (!replaced) {
 			tempList.add(employee);
 		}
+
 		session.setAttribute("temporaryEmployees", tempList);
 		redirectAttributes.addFlashAttribute("message", "Đã cập nhật tạm nhân viên " + employee.getMaNV());
 		redirectAttributes.addFlashAttribute("messageType", "success");
@@ -187,29 +195,30 @@ public class EmployeeController {
 	@PostMapping("/employees/save-all")
 	public String saveAllEmployees(HttpSession session, RedirectAttributes redirectAttributes) {
 		@SuppressWarnings("unchecked")
-		List<NhanVien> tempList = (List<NhanVien>) session.getAttribute("temporaryEmployees");
+		List<NhanVienTemp> tempList = (List<NhanVienTemp>) session.getAttribute("temporaryEmployees");
+
 		if (tempList != null && !tempList.isEmpty()) {
 			try {
-				for (NhanVien employee : tempList) {
-					Optional<NhanVien> existing = nhanVienService.findById(employee.getMaNV());
-					if (existing.isPresent()) {
-						nhanVienService.capNhatNhanVien(employee.getMaNV(), employee);
+				for (NhanVienTemp temp : tempList) {
+					if (temp.isDaXoa()) {
+						// Xóa nhân viên nếu được đánh dấu xóa
+						nhanVienService.xoaNhanVien(temp.getMaNV());
 					} else {
-						nhanVienService.themNhanVienBangSP(employee);
+						Optional<NhanVien> existing = nhanVienService.findById(temp.getMaNV());
+						if (existing.isPresent()) {
+							// Cập nhật nếu đã tồn tại
+							nhanVienService.capNhatNhanVien(temp.getMaNV(), temp.toNhanVienEntity());
+						} else {
+							// Thêm mới nếu chưa có
+							nhanVienService.themNhanVienBangSP(temp.toNhanVienEntity());
+						}
 					}
 				}
 				session.removeAttribute("temporaryEmployees");
 				redirectAttributes.addFlashAttribute("message", "Đã ghi vào cơ sở dữ liệu!");
 				redirectAttributes.addFlashAttribute("messageType", "success");
 			} catch (Exception e) {
-				String errorMessage = e.getMessage();
-				if (errorMessage.contains("Mã nhân viên đã tồn tại")) {
-					redirectAttributes.addFlashAttribute("message", "Lỗi: Mã nhân viên đã tồn tại!");
-				} else if (errorMessage.contains("CMND đã tồn tại")) {
-					redirectAttributes.addFlashAttribute("message", "Lỗi: CMND đã tồn tại!");
-				} else {
-					redirectAttributes.addFlashAttribute("message", "Lỗi khi lưu nhân viên: " + errorMessage);
-				}
+				redirectAttributes.addFlashAttribute("message", "Lỗi khi lưu nhân viên: " + e.getMessage());
 				redirectAttributes.addFlashAttribute("messageType", "error");
 			}
 		} else {
@@ -220,34 +229,58 @@ public class EmployeeController {
 	}
 
 	@PostMapping("/employees/delete")
-	public String deleteEmployee(@RequestParam String maNV, RedirectAttributes redirectAttributes) {
-		try {
-			nhanVienService.xoaNhanVien(maNV);
-			redirectAttributes.addFlashAttribute("message", "Đã xóa nhân viên " + maNV);
-			redirectAttributes.addFlashAttribute("messageType", "success");
-		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("message", "Xóa thất bại");
-			redirectAttributes.addFlashAttribute("messageType", "error");
+	public String markEmployeeDeleted(@RequestParam String maNV, HttpSession session, RedirectAttributes redirectAttributes) {
+		@SuppressWarnings("unchecked")
+		List<NhanVienTemp> tempList = (List<NhanVienTemp>) session.getAttribute("temporaryEmployees");
+		if (tempList == null) tempList = new ArrayList<>();
+
+		Optional<NhanVienTemp> temp = tempList.stream().filter(t -> t.getMaNV().equals(maNV)).findFirst();
+		if (temp.isPresent()) {
+			temp.get().setDaXoa(true);
+		} else {
+			Optional<NhanVien> nv = nhanVienService.findById(maNV);
+			List<NhanVienTemp> finalTempList = tempList;
+			nv.ifPresent(n -> {
+				NhanVienTemp t = new NhanVienTemp(n);
+				t.setDaXoa(true);
+				finalTempList.add(t);
+			});
 		}
+
+		session.setAttribute("temporaryEmployees", tempList);
+		redirectAttributes.addFlashAttribute("message", "Đã đánh dấu xóa nhân viên " + maNV);
+		redirectAttributes.addFlashAttribute("messageType", "info");
+
 		return "redirect:/employees";
 	}
 
 	@PostMapping("/employees/remove-temp")
 	public String removeTempEmployee(@RequestParam String maNV, HttpSession session, RedirectAttributes redirectAttributes) {
 		@SuppressWarnings("unchecked")
-		List<NhanVien> tempList = (List<NhanVien>) session.getAttribute("temporaryEmployees");
+		List<NhanVienTemp> tempList = (List<NhanVienTemp>) session.getAttribute("temporaryEmployees");
 		if (tempList != null) {
-			tempList.removeIf(emp -> emp.getMaNV().equals(maNV));
+			boolean found = false;
+			for (NhanVienTemp emp : tempList) {
+				if (emp.getMaNV().equals(maNV)) {
+					emp.setDaXoa(true);
+					found = true;
+					break;
+				}
+			}
 			session.setAttribute("temporaryEmployees", tempList);
-			redirectAttributes.addFlashAttribute("message", "Đã xóa nhân viên tạm có mã " + maNV);
-			redirectAttributes.addFlashAttribute("messageType", "success");
+			if (found) {
+				redirectAttributes.addFlashAttribute("message", "Đã đánh dấu xóa nhân viên tạm có mã " + maNV);
+				redirectAttributes.addFlashAttribute("messageType", "success");
+			} else {
+				redirectAttributes.addFlashAttribute("message", "Không tìm thấy nhân viên tạm có mã " + maNV);
+				redirectAttributes.addFlashAttribute("messageType", "warning");
+			}
 		} else {
-			redirectAttributes.addFlashAttribute("message", "Không tìm thấy nhân viên tạm nào để xóa.");
+			redirectAttributes.addFlashAttribute("message", "Không có danh sách nhân viên tạm.");
 			redirectAttributes.addFlashAttribute("messageType", "error");
 		}
 		return "redirect:/employees";
 	}
-
 	@GetMapping("/employees/reload")
 	public String reloadEmployees(HttpSession session) {
 		session.removeAttribute("temporaryEmployees");
@@ -261,24 +294,31 @@ public class EmployeeController {
 
 		// Lấy danh sách tạm từ session
 		@SuppressWarnings("unchecked")
-		List<NhanVien> tempList = (List<NhanVien>) session.getAttribute("temporaryEmployees");
+		List<NhanVienTemp> tempList = (List<NhanVienTemp>) session.getAttribute("temporaryEmployees");
 		if (tempList == null) {
 			tempList = new ArrayList<>();
 		}
 
-		// Kết hợp kết quả tìm kiếm với danh sách tạm
-		List<NhanVien> allEmployees = new ArrayList<>(searchResults);
-		allEmployees.addAll(tempList);
+		// Thêm các nhân viên tạm không bị đánh dấu xóa và có chứa từ khóa
+		for (NhanVienTemp temp : tempList) {
+			if (!temp.isDaXoa()) {
+				boolean match = temp.getMaNV().toLowerCase().contains(query.toLowerCase())
+						|| temp.getHoTen().toLowerCase().contains(query.toLowerCase())
+						|| temp.getCmnd().toLowerCase().contains(query.toLowerCase());
+				if (match) {
+					searchResults.add(temp.toNhanVienEntity());
+				}
+			}
+		}
 
-		// Tạo trang dữ liệu
-		Page<NhanVien> employeePage = new PageImpl<>(allEmployees, PageRequest.of(0, Integer.MAX_VALUE), allEmployees.size());
+		// Gói lại kết quả tìm kiếm vào Page
+		Page<NhanVien> employeePage = new PageImpl<>(searchResults, PageRequest.of(0, Integer.MAX_VALUE), searchResults.size());
 
-		// Thêm vào model
 		model.addAttribute("employees", employeePage);
 		model.addAttribute("temporaryEmployees", tempList);
 		model.addAttribute("canUndo", !nhanVienService.isUndoStackEmpty());
 
-		if (allEmployees.isEmpty()) {
+		if (searchResults.isEmpty()) {
 			model.addAttribute("message", "Không tìm thấy nhân viên nào.");
 			model.addAttribute("messageType", "danger");
 		}

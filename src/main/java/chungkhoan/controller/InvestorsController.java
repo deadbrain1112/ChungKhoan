@@ -448,7 +448,7 @@ public class InvestorsController {
 	@PostMapping("/investors/clear-undo")
 	public String clearUndo() {
 		nhaDauTuService.clearUndoStack();
-		return "redirect:/nhanvien/investors";
+		return "redirect:/nhanvien/layout";
 	}
 
 	@PostMapping("/investors/search")
@@ -500,4 +500,5 @@ public class InvestorsController {
 
 		return "nhanvien/investor_list";
 	}
+
 }
