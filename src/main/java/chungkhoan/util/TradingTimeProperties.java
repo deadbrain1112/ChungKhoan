@@ -17,5 +17,3 @@ public class TradingTimeProperties {
     private LocalTime loEnd;
     private LocalTime atcEnd;
 }
-
-

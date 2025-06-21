@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
@@ -49,7 +50,7 @@ public class DatLenhMuaController {
 
     @GetMapping("/nhadautu/dat-lenh-mua")
     public String getView(@RequestParam(value = "maCP", required = false) String maCP,
-    					  @RequestParam(value = "nganHang", required = false) String nganHang,
+                          @RequestParam(value = "nganHang", required = false) String nganHang,
                           Model model,
                           HttpSession session) {
         NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
@@ -80,57 +81,54 @@ public class DatLenhMuaController {
         model.addAttribute("formattedSoTien", formattedSoTien);
 
         if (maCP != null && !maCP.isBlank()) {
-            LichSuGia gia = lichSuGiaService.layGiaMoiNhat(maCP.trim());
-            if (gia != null) {
-            	model.addAttribute("lichSuGia", gia);
-                model.addAttribute("giaThamChieu", formatGia(gia.getGiaTC()));
-                model.addAttribute("giaTran", formatGia(gia.getGiaTran()));
-                model.addAttribute("giaSan", formatGia(gia.getGiaSan()));
-            } else {
-                model.addAttribute("khongTimThay", true);
-            }
+            Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCP.trim());
+            model.addAttribute("giaThamChieu", formatGia(giaMap.get("tc")));
+            model.addAttribute("giaTran", formatGia(giaMap.get("tran")));
+            model.addAttribute("giaSan", formatGia(giaMap.get("san")));
         }
-        
+
         model.addAttribute("tatCaCoPhieu", coPhieuService.getAllCoPhieu());
-        
         return "ndt/dat_lenh_mua";
     }
 
     @PostMapping("/nhadautu/dat-lenh-mua")
-    public String datLenhMua(@RequestParam String maCP,
+    public String datLenhMua(@RequestParam(required = false) String maCP,
                              @RequestParam String nganHang,
                              @RequestParam String loaiLenh,
-                             @RequestParam Integer soLuong,
+                             @RequestParam(required = false) Integer soLuong,
                              @RequestParam(required = false) Double gia,
-                             @RequestParam String matKhau,
+                             @RequestParam(required = false) String matKhau,
                              Model model,
                              HttpSession session) {
 
         NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
         if (nhaDauTu == null) return "nhanvien/login";
 
+        if (maCP == null || maCP.isBlank()) {
+            model.addAttribute("error", "Mã cổ phiếu không được để trống!");
+            return prepareView(model, nhaDauTu, nganHang);
+        }
+
+        if (soLuong != null && soLuong % 100 != 0) {
+            model.addAttribute("error", "Số lượng phải là bội số của 100!");
+            return prepareView(model, nhaDauTu, nganHang);
+        }
+
+        if (gia != null && gia % 100 != 0) {
+            model.addAttribute("error", "Giá phải là bội số của 100!");
+            return prepareView(model, nhaDauTu, nganHang);
+        }
+
         List<TaiKhoanNganHang> danhSachTaiKhoan = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
-        TaiKhoanNganHang taiKhoan = null;
-
-        if (nganHang != null && !nganHang.isBlank()) {
-            for (TaiKhoanNganHang tk : danhSachTaiKhoan) {
-                if (tk.getNganHang().getMaNH().equals(nganHang)) {
-                    taiKhoan = tk;
-                    break;
-                }
-            }
-        }
-
-        if (taiKhoan == null && !danhSachTaiKhoan.isEmpty()) {
-            taiKhoan = danhSachTaiKhoan.get(0);
-        }
+        TaiKhoanNganHang taiKhoan = danhSachTaiKhoan.stream()
+            .filter(tk -> tk.getNganHang().getMaNH().equals(nganHang))
+            .findFirst().orElse(danhSachTaiKhoan.isEmpty() ? null : danhSachTaiKhoan.get(0));
 
         model.addAttribute("nhaDauTu", nhaDauTu);
         model.addAttribute("danhSachTaiKhoan", danhSachTaiKhoan);
         model.addAttribute("taiKhoan", taiKhoan);
-
-        double soTien = (taiKhoan != null && taiKhoan.getSoTien() != null) ? taiKhoan.getSoTien().doubleValue() : 0;
-        model.addAttribute("formattedSoTien", new DecimalFormat("#,###").format(soTien) + " VND");
+        model.addAttribute("formattedSoTien", new DecimalFormat("#,###").format(
+            taiKhoan != null && taiKhoan.getSoTien() != null ? taiKhoan.getSoTien() : BigDecimal.ZERO) + " VND");
 
         Optional<CoPhieu> coPhieuOpt = coPhieuService.findById(maCP);
         if (coPhieuOpt.isEmpty()) {
@@ -148,25 +146,15 @@ public class DatLenhMuaController {
             return "ndt/dat_lenh_mua";
         }
 
-        LichSuGia lichSuGia = lichSuGiaService.layGiaMoiNhat(maCP);
-        if (lichSuGia == null) {
-            model.addAttribute("error", "Không có dữ liệu giá sàn cho cổ phiếu này");
-            return "ndt/dat_lenh_mua";
-        }
-
+        Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCP);
+        double giaTran = giaMap.get("tran");
+        double giaSan = giaMap.get("san");
         double giaDat = 0;
+        double soTien = taiKhoan != null && taiKhoan.getSoTien() != null ? taiKhoan.getSoTien().doubleValue() : 0;
 
         if ("LO".equalsIgnoreCase(loaiLenh)) {
             if (gia == null) {
                 model.addAttribute("error", "Thiếu dữ liệu giá mua!");
-                return "ndt/dat_lenh_mua";
-            }
-
-            Double giaTran = lichSuGia.getGiaTran();
-            Double giaSan = lichSuGia.getGiaSan();
-
-            if (giaTran == null || giaSan == null) {
-                model.addAttribute("error", "Thiếu thông tin giá trần hoặc sàn!");
                 return "ndt/dat_lenh_mua";
             }
 
@@ -176,50 +164,45 @@ public class DatLenhMuaController {
             }
 
             giaDat = gia;
-            double tongTien = giaDat * soLuong;
-            if (soTien < tongTien) {
+            if (soTien < giaDat * soLuong) {
                 model.addAttribute("error", "Số dư không đủ để đặt lệnh mua!");
                 return "ndt/dat_lenh_mua";
             }
 
         } else if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
-            Double giaTran = lichSuGia.getGiaTran();
-            double maxGia = (giaTran != null) ? giaTran : 0.0;
-
-            double tongTien = maxGia * soLuong;
-            if (soTien < tongTien) {
+            giaDat = 0;
+            if (soTien < giaTran * soLuong) {
                 model.addAttribute("error", "Số dư không đủ để đặt lệnh " + loaiLenh + " theo giá trần!");
                 return "ndt/dat_lenh_mua";
             }
 
-            giaDat = 0;
         } else {
             model.addAttribute("error", "Loại lệnh không hợp lệ!");
             return "ndt/dat_lenh_mua";
         }
 
-       LenhDat lenh = LenhDat.builder()
-               .coPhieu(coPhieuOpt.get())
-               .taiKhoanNganHang(taiKhoan)
-               .loaiGD("M")
-               .loaiLenh(loaiLenh)
-               .soLuong(soLuong)
-               .gia(giaDat)
-               .trangThai("Chờ")
-               .ngayGD(LocalDateTime.now())
-               .build();
+        LenhDat lenh = LenhDat.builder()
+            .coPhieu(coPhieuOpt.get())
+            .taiKhoanNganHang(taiKhoan)
+            .loaiGD("M")
+            .loaiLenh(loaiLenh)
+            .soLuong(soLuong)
+            .gia(giaDat)
+            .trangThai("Chờ")
+            .ngayGD(LocalDateTime.now())
+            .build();
 
         lenhDatService.save(lenh);
 
-        messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, gia, soLuong, "M"));
-        model.addAttribute("success", "Đặt lệnh mua thành công!");
+        messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, giaDat, soLuong, "M"));
 
+        model.addAttribute("success", "Đặt lệnh mua thành công!");
         model.addAttribute("tatCaCoPhieu", coPhieuService.getAllCoPhieu());
 
         return "redirect:/nhadautu/dat-lenh-mua";
     }
 
-    private Object createOrderMessage (String maCPInput,double giaInput, int soLuongInput, String loaiGDInput){
+    private Object createOrderMessage(String maCPInput, double giaInput, int soLuongInput, String loaiGDInput) {
         return new Object() {
             public String maCP = maCPInput;
             public double gia = giaInput;
@@ -231,41 +214,49 @@ public class DatLenhMuaController {
     private String formatGia(Double gia) {
         return gia != null ? new DecimalFormat("#,###").format(gia) + " VND" : "Chưa cập nhật";
     }
-    
+
+    private String prepareView(Model model, NhaDauTu nhaDauTu, String nganHang) {
+        List<TaiKhoanNganHang> danhSach = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
+        model.addAttribute("danhSachTaiKhoan", danhSach);
+        model.addAttribute("taiKhoan", danhSach.stream()
+            .filter(tk -> tk.getNganHang().getMaNH().equals(nganHang))
+            .findFirst().orElse(null));
+        return "ndt/dat_lenh_mua";
+    }
+
     @GetMapping("/nhadautu/so-du")
     @ResponseBody
     public String laySoDuTheoMaNH(@RequestParam("nganHang") String maNH, HttpSession session) {
         NhaDauTu nhaDauTu = (NhaDauTu) session.getAttribute("nhaDauTu");
         if (nhaDauTu == null) return "0";
 
-        List<TaiKhoanNganHang> danhSach = taiKhoanNganHangService.getAllByNDT(nhaDauTu);
-        for (TaiKhoanNganHang tk : danhSach) {
-            if (tk.getNganHang().getMaNH().equals(maNH)) {
-                BigDecimal soTien = tk.getSoTien() != null ? tk.getSoTien() : BigDecimal.ZERO;
-                return new DecimalFormat("#,###").format(soTien);
-            }
-        }
-
-        return "0";
+        return taiKhoanNganHangService.getAllByNDT(nhaDauTu).stream()
+            .filter(tk -> tk.getNganHang().getMaNH().equals(maNH))
+            .map(tk -> new DecimalFormat("#,###").format(tk.getSoTien()))
+            .findFirst().orElse("0");
     }
-    
+
     @GetMapping("/nhadautu/gia-co-phieu")
     @ResponseBody
     public ResponseEntity<?> layGiaCoPhieu(@RequestParam("maCP") String maCP) {
-        LichSuGia gia = lichSuGiaService.layGiaMoiNhat(maCP.trim());
+        Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCP.trim());
 
-        if (gia == null) {
-            return ResponseEntity.notFound().build();
-        }
+        if (giaMap == null || giaMap.isEmpty()
+                || (giaMap.getOrDefault("tc", 0.0) == 0.0
+                    && giaMap.getOrDefault("tran", 0.0) == 0.0
+                    && giaMap.getOrDefault("san", 0.0) == 0.0)) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Không tìm thấy cổ phiếu!");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            }
 
         DecimalFormat df = new DecimalFormat("#,###");
         Map<String, String> result = new HashMap<>();
-        result.put("maCP", gia.getMaCP());
-        result.put("giaTC", df.format(gia.getGiaTC()) + " VND");
-        result.put("giaTran", df.format(gia.getGiaTran()) + " VND");
-        result.put("giaSan", df.format(gia.getGiaSan()) + " VND");
+        result.put("maCP", maCP.trim());
+        result.put("giaTC", df.format(giaMap.getOrDefault("tc", 0.0)) + " VND");
+        result.put("giaTran", df.format(giaMap.getOrDefault("tran", 0.0)) + " VND");
+        result.put("giaSan", df.format(giaMap.getOrDefault("san", 0.0)) + " VND");
 
         return ResponseEntity.ok(result);
     }
 }
-

@@ -2,8 +2,6 @@ package chungkhoan.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,9 +26,7 @@ public class KhopLenhProcessorService {
     @Autowired private TaiKhoanNganHangService taiKhoanNganHangService;
     @Autowired private SoHuuService soHuuService;
     @Autowired private LichSuGiaService lichSuGiaService;
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
+    @Autowired private SimpMessagingTemplate messagingTemplate;
 
     public enum Phase {
         ATO, LO, ATC
@@ -51,65 +47,42 @@ public class KhopLenhProcessorService {
                 .sorted(Comparator.comparing(LenhDat::getGia).thenComparing(LenhDat::getNgayGD))
                 .collect(Collectors.toList());
 
-
         List<LenhDat> atoMua = all.stream()
-        	    .filter(l -> "M".equals(l.getLoaiGD()) && "ATO".equalsIgnoreCase(l.getLoaiLenh().trim()))
-        	    .collect(Collectors.toList());
+                .filter(l -> "M".equals(l.getLoaiGD()) && "ATO".equalsIgnoreCase(l.getLoaiLenh().trim()))
+                .collect(Collectors.toList());
 
-        	List<LenhDat> atoBan = all.stream()
-        	    .filter(l -> "B".equals(l.getLoaiGD()) && "ATO".equalsIgnoreCase(l.getLoaiLenh().trim()))
-        	    .collect(Collectors.toList());
+        List<LenhDat> atoBan = all.stream()
+                .filter(l -> "B".equals(l.getLoaiGD()) && "ATO".equalsIgnoreCase(l.getLoaiLenh().trim()))
+                .collect(Collectors.toList());
 
-        	List<LenhDat> atcMua = all.stream()
-        		    .filter(l -> "M".equals(l.getLoaiGD()) && "ATC".equalsIgnoreCase(l.getLoaiLenh().trim()))
-        		    .collect(Collectors.toList());
+        List<LenhDat> atcMua = all.stream()
+                .filter(l -> "M".equals(l.getLoaiGD()) && "ATC".equalsIgnoreCase(l.getLoaiLenh().trim()))
+                .collect(Collectors.toList());
 
-        		List<LenhDat> atcBan = all.stream()
-        		    .filter(l -> "B".equals(l.getLoaiGD()) && "ATC".equalsIgnoreCase(l.getLoaiLenh().trim()))
-        		    .collect(Collectors.toList());
+        List<LenhDat> atcBan = all.stream()
+                .filter(l -> "B".equals(l.getLoaiGD()) && "ATC".equalsIgnoreCase(l.getLoaiLenh().trim()))
+                .collect(Collectors.toList());
 
+        if (phase == Phase.ATO && !atoMua.isEmpty() && !atoBan.isEmpty()) {
+            double giaThamChieu = lichSuGiaService.layGiaMoiNhat(maCP).getGiaTC();
+            double giaKhop = tinhGiaKhopATX(atoMua, atoBan, loMua, loBan, giaThamChieu);
+            atoMua.forEach(l -> l.setGia(giaKhop));
+            atoBan.forEach(l -> l.setGia(giaKhop));
+            loMua.addAll(atoMua);
+            loBan.addAll(atoBan);
+        }
 
-        		if (phase == Phase.ATO) {
-        		    if (!atoMua.isEmpty() && !atoBan.isEmpty()) {
-        		        double giaThamChieu = lichSuGiaService.layGiaMoiNhat(maCP).getGiaTC();
-        		        double giaKhop = tinhGiaKhopATX(atoMua, atoBan, loMua, loBan, giaThamChieu);
-
-        		        atoMua.forEach(l -> l.setGia(giaKhop));
-        		        atoBan.forEach(l -> l.setGia(giaKhop));
-
-        		        atoMua.forEach(lenhDatRepo::save);
-        		        atoBan.forEach(lenhDatRepo::save);
-
-        		        loMua.addAll(atoMua);
-        		        loBan.addAll(atoBan);
-
-        		    } else {
-        		        System.out.println("Không đủ 2 phía ATO, bỏ qua tính giá.");
-        		    }
-        		}
-
-        		if (phase == Phase.ATC) {
-        		    if (!atcMua.isEmpty() && !atcBan.isEmpty()) {
-        		        double giaThamChieu = lichSuGiaService.layGiaMoiNhat(maCP).getGiaTC();
-        		        double giaKhop = tinhGiaKhopATX(atcMua, atcBan, loMua, loBan, giaThamChieu);
-
-        		        atcMua.forEach(l -> l.setGia(giaKhop));
-        		        atcBan.forEach(l -> l.setGia(giaKhop));
-
-        		        atcMua.forEach(lenhDatRepo::save);
-        		        atcBan.forEach(lenhDatRepo::save);
-
-        		        loMua.addAll(atcMua);
-        		        loBan.addAll(atcBan);
-
-        		    } else {
-        		        System.out.println("Không đủ 2 phía ATC, bỏ qua tính giá.");
-        		    }
-        		}
+        if (phase == Phase.ATC && !atcMua.isEmpty() && !atcBan.isEmpty()) {
+            double giaThamChieu = lichSuGiaService.layGiaMoiNhat(maCP).getGiaTC();
+            double giaKhop = tinhGiaKhopATX(atcMua, atcBan, loMua, loBan, giaThamChieu);
+            atcMua.forEach(l -> l.setGia(giaKhop));
+            atcBan.forEach(l -> l.setGia(giaKhop));
+            loMua.addAll(atcMua);
+            loBan.addAll(atcBan);
+        }
 
         loMua.sort(Comparator.comparing(LenhDat::getGia).reversed().thenComparing(LenhDat::getNgayGD));
         loBan.sort(Comparator.comparing(LenhDat::getGia).thenComparing(LenhDat::getNgayGD));
-
 
         khopDanhSach(maCP, loMua, loBan);
     }
@@ -142,27 +115,35 @@ public class KhopLenhProcessorService {
     private void khopDanhSach(String maCP, List<LenhDat> muaList, List<LenhDat> banList) {
         int banIndex = 0;
         for (LenhDat mua : muaList) {
-            while (mua.getSoLuong() > 0 && banIndex < banList.size()) {
-                LenhDat ban = banList.get(banIndex);
-                
-                int oldMua = mua.getSoLuong();
-                int oldBan = ban.getSoLuong();
+            int daKhopMua = lenhKhopRepo.sumSoLuongKhopByLenhDatId(mua.getMaGD());
+            if (mua.getSoLuong() - daKhopMua <= 0) continue;
 
-                if (ban.getSoLuong() <= 0) {
+            while (banIndex < banList.size()) {
+                LenhDat ban = banList.get(banIndex);
+
+                int daKhopBan = lenhKhopRepo.sumSoLuongKhopByLenhDatId(ban.getMaGD());
+                if (ban.getSoLuong() - daKhopBan <= 0) {
                     banIndex++;
+                    continue;
+                }
+
+                // Không khớp nếu cùng mã NĐT
+                String maNDTMua = mua.getTaiKhoanNganHang().getNhaDauTu().getMaNDT();
+                String maNDTBan = ban.getTaiKhoanNganHang().getNhaDauTu().getMaNDT();
+                if (maNDTMua.equals(maNDTBan)) {
+                    banIndex++; // bỏ qua lệnh bán hiện tại
                     continue;
                 }
 
                 if (mua.getGia() < ban.getGia()) break;
 
                 xuLyGiaoDich(maCP, mua, ban);
-                
-                if (mua.getSoLuong() == oldMua && ban.getSoLuong() == oldBan) {
-                    System.out.println("Giao dịch không thay đổi số lượng, tránh lặp vô hạn: " + mua.getMaGD() + " - " + ban.getMaGD());
-                    break;
-                }
 
-                if (ban.getSoLuong() <= 0) banIndex++;
+                int conLaiBan = ban.getSoLuong() - lenhKhopRepo.sumSoLuongKhopByLenhDatId(ban.getMaGD());
+                if (conLaiBan <= 0) banIndex++;
+
+                int conLaiMua = mua.getSoLuong() - lenhKhopRepo.sumSoLuongKhopByLenhDatId(mua.getMaGD());
+                if (conLaiMua <= 0) break;
             }
         }
     }
@@ -183,7 +164,7 @@ public class KhopLenhProcessorService {
             taiKhoanNganHangService.congTien(maNguoiMua, tien);
             return;
         }
-        
+
         if (soHuuService.getSoLuong(maNDTBan, maCP) == 0) {
             soHuuService.xoaSoHuu(maNDTBan, maCP);
         }
@@ -210,28 +191,24 @@ public class KhopLenhProcessorService {
         capNhatTrangThai(mua, slKhop);
         capNhatTrangThai(ban, slKhop);
 
-
-
         messagingTemplate.convertAndSend("/topic/stock-board",
                 createOrderMessage(maCP, giaKhop, slKhop, giaTC, mua.getGia(), ban.getGia()));
-
-
     }
 
     private void capNhatTrangThai(LenhDat lenh, int slKhop) {
-        lenh.setSoLuong(lenh.getSoLuong() - slKhop);
-        lenh.setTrangThai(lenh.getSoLuong() == 0 ? "Hết" : "Một phần");
-        lenhDatRepo.save(lenh);
+        int daKhop = lenhKhopRepo.sumSoLuongKhopByLenhDatId(lenh.getMaGD());
+        int soLuongGoc = lenh.getSoLuong(); // giữ nguyên giá trị gốc
+        int soLuongConLai = soLuongGoc - daKhop;
+
+        String trangThaiMoi = (soLuongConLai <= 0) ? "Hết" : "Một phần";
+        if (!trangThaiMoi.equalsIgnoreCase(lenh.getTrangThai())) {
+            lenh.setTrangThai(trangThaiMoi);
+            lenhDatRepo.save(lenh); // chỉ lưu khi có thay đổi trạng thái
+        }
     }
 
-    private Object createOrderMessage(
-            String maCPinput,
-            double giakhop,
-            int soLuongkhop,
-            double giaThamChieu,
-            double giamua,
-            double giaban
-    ) {
+    private Object createOrderMessage(String maCPinput, double giakhop, int soLuongkhop,
+                                      double giaThamChieu, double giamua, double giaban) {
         return new Object() {
             public String type = "match";
             public String maCP = maCPinput;
@@ -242,5 +219,4 @@ public class KhopLenhProcessorService {
             public double giaBan = giaban;
         };
     }
-
 }

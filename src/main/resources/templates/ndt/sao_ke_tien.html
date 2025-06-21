@@ -53,12 +53,12 @@
 		            <tr th:each="row : ${transactionList}">
 					    <td th:text="${row[1]}"></td> <!-- MaTK -->
 					    <td th:text="${row[2]}"></td> <!-- TenNH -->
-					    <td th:text="${#numbers.formatDecimal(T(java.lang.Double).valueOf(row[3].toString()), 0, 0)}"></td> <!-- SoDuDauKy -->
-					    <td th:text="${#numbers.formatDecimal(row[4], 0, 0)}"></td> <!-- SoTienPhatSinh -->
+					    <td th:text="${#numbers.formatDecimal(row[3], 0, 'POINT', 0, 'POINT')}"></td> <!-- SoDuDauKy -->
+					    <td th:text="${#numbers.formatDecimal(row[4], 0, 'POINT', 0, 'POINT')}"></td><!-- SoTienPhatSinh -->
 					    <td th:text="${#dates.format(row[5], 'dd/MM/yyyy HH:mm')}"></td> <!-- NgayGioKhop -->
 					    <td th:text="${row[6]}"></td> <!-- MaCP -->
 					    <td th:text="${row[7] == 'M' ? 'Mua cổ phiếu' : 'Bán cổ phiếu'}"></td> <!-- LoaiGiaoDich -->
-					    <td th:text="${#numbers.formatDecimal(row[8], 0, 0)}"></td> <!-- SoDuCuoiKy -->
+					    <td th:text="${#numbers.formatDecimal(row[8], 0, 'POINT', 0, 'POINT')}"></td> <!-- SoDuCuoiKy -->
 					</tr>
 		        </tbody>
 		    </table>

@@ -31,7 +31,6 @@
         <!-- Sao kê lệnh theo mã cổ phiếu trong khoảng thời gian -->
         <h3>Sao kê lệnh giao dịch theo mã cổ phiếu</h3>
 		<form method="post" th:action="@{/nhadautu/lich-su-lenh}" class="filter-section ma-cp-filter">
-		    <!-- First row: Stock code and status select -->
 		    <div>
 		        <div>
 		            <label for="maCP">Mã Cổ Phiếu:</label>
@@ -41,12 +40,11 @@
 		        <input type="date" name="tuNgay" id="tuNgay" required th:value="${inputTuNgay}"/>
 		    </div>
 		    
-		    <!-- Second row: Date inputs -->
 		    <div>
 		        <div>
 			        <div>
 			            <label for="trangThai">Lọc theo trạng thái:</label>
-			            <select name="trangThai" id="trangThai">
+			            <select name="trangThai" id="trangThai2">
 			                <option value="">Tất cả</option>
 			                <option value="Chờ" th:selected="${selectedTrangThai == 'Chờ'}">Chờ</option>
 			                <option value="Hết" th:selected="${selectedTrangThai == 'Hết'}">Hết</option>
@@ -61,7 +59,6 @@
 		        </div>
 		    </div>
 		    
-		    <!-- Third row: Submit button -->
 		    <div>
 		        <button type="submit">Xem Sao Kê</button>
 		    </div>
@@ -92,14 +89,26 @@
                     <td th:text="${lenh.loaiLenh}"></td>
                     <td th:text="${lenh.coPhieu.maCP}"></td>
                     <td th:text="${giaFormattedMap[lenh.maGD]}"></td>
-                    <td th:text="${lenh.soLuong}"></td>
-                    <td th:text="${mapSoLuongKhop[lenh.maGD]}"></td>
+                    <td th:text="${mapFormattedSoLuongDat[lenh.maGD]}"></td>
+					<td th:text="${mapFormattedSoLuongKhop[lenh.maGD]}"></td>
                     <td th:text="${mapGiaKhop[lenh.maGD]}"></td>
                     <td th:text="${mapNgayKhop[lenh.maGD] != null ? #temporals.format(mapNgayKhop[lenh.maGD], 'dd/MM/yyyy HH:mm:ss') : '—'}"></td>
                     <td th:text="${#temporals.format(lenh.ngayGD, 'dd/MM/yyyy HH:mm:ss')}"></td>
                     <td th:text="${lenh.trangThai}"></td>
                     <td>
-                        <button class="btn-sua" th:if="${lenh.trangThai == 'Chờ'}" th:onclick="|window.location.href='/nhadautu/sua-lenh?maGD=' + [[${lenh.maGD}]]|">Sửa</button>
+                        <button class="btn-sua"
+						        th:if="${lenh.trangThai == 'Chờ'}"
+						        th:attr="
+						            data-magid=${lenh.maGD},
+						            data-loaigd=${lenh.loaiGD == 'M' ? 'Mua' : 'Bán'},
+						            data-loailenh=${lenh.loaiLenh},
+						            data-macp=${lenh.coPhieu.maCP},
+						            data-giadat=${giaFormattedMap[lenh.maGD]},
+						            data-soluong=${mapFormattedSoLuongDat[lenh.maGD]}"
+						        onclick="handleOpenSuaPopup(this)">
+						    Sửa
+						</button>
+
                         <button class="btn-huy" th:if="${lenh.trangThai == 'Chờ'}" th:onclick="|xacNhanHuy(${lenh.maGD})|">Hủy</button>
                     </td>
                 </tr>
@@ -107,6 +116,51 @@
         </div>
     </main>
 </div>
+
+<!-- Popup Sửa Lệnh -->
+<div id="popupSuaLenh" class="sua-lenh-popup-overlay" style="display:none;"
+     th:attr="style=${openPopup} ? 'display:flex;' : 'display:none;'">
+    <div class="sua-lenh-popup-content">
+        <h3>Sửa Lệnh Giao Dịch</h3>
+        
+        <div th:if="${popupError}" class="alert alert-danger" th:text="${popupError}"></div>
+        
+        <form id="formSuaLenh" method="post" th:action="@{/nhadautu/sua-lenh}">
+            <input type="hidden" id="popupMaGD" name="maGD" />
+
+            <div class="form-group">
+                <label>Mã Lệnh:</label>
+                <span id="popupMaGDText"></span>
+            </div>
+            <div class="form-group">
+                <label>Loại Giao Dịch:</label>
+                <span id="popupLoaiGD"></span>
+            </div>
+            <div class="form-group">
+                <label>Loại Lệnh:</label>
+                <span id="popupLoaiLenh"></span>
+            </div>
+            <div class="form-group">
+                <label>Mã Cổ Phiếu:</label>
+                <span id="popupMaCP"></span>
+            </div>
+            <div class="form-group">
+                <label for="popupGiaDat">Giá Đặt:</label>
+                <input type="text" id="popupGiaDat" name="giaDat" th:value="${popupGiaDat}"/>
+            </div>
+            <div class="form-group">
+                <label for="popupSoLuong">Khối Lượng:</label>
+                <input type="text" id="popupSoLuong" name="soLuong" th:value="${popupSoLuong}" />
+            </div>
+
+            <div class="popup-buttons">
+                <button type="submit">Xác nhận</button>
+                <button type="button" onclick="closeSuaPopup()">Thoát</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <script>
     function xacNhanHuy(maGD) {
@@ -128,40 +182,72 @@
     document.getElementById("trangThai").addEventListener("change", function () {
         document.getElementById("filterForm").submit();
     });
+    
+    function handleOpenSuaPopup(button) {
+        const maGD = button.getAttribute("data-magid");
+        const loaiGD = button.getAttribute("data-loaigd");
+        const loaiLenh = button.getAttribute("data-loailenh");
+        const maCP = button.getAttribute("data-macp");
+        const giaDat = button.getAttribute("data-giadat");
+        const soLuong = button.getAttribute("data-soluong");
 
-    document.addEventListener("DOMContentLoaded", function () {
-        const openButton = document.getElementById("openPasswordPopup");
-        if (openButton) {
-            console.log("Open button found");
-            openButton.addEventListener("click", function (e) {
-                e.preventDefault();
-                console.log("Open button clicked");
-                openPopup();
-            });
-        } else {
-            console.error("Element #openPasswordPopup not found");
-        }
+        openSuaPopup(maGD, loaiGD, loaiLenh, maCP, giaDat, soLuong);
+    }
+
+    function openSuaPopup(maGD, loaiGD, loaiLenh, maCP, giaDat, soLuong) {
+        document.getElementById("popupMaGD").value = maGD;
+        document.getElementById("popupMaGDText").innerText = maGD;
+        document.getElementById("popupLoaiGD").innerText = loaiGD;
+        document.getElementById("popupLoaiLenh").innerText = loaiLenh;
+        document.getElementById("popupMaCP").innerText = maCP;
+
+        const giaRaw = (giaDat + "").replace(/[^0-9.]/g, ""); // chỉ giữ số và dấu chấm
+        const soLuongRaw = (soLuong + "").replace(/[^0-9]/g, ""); // chỉ giữ số nguyên
+
+        const giaFormatted = giaRaw.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        const soLuongFormatted = soLuongRaw.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        document.getElementById("popupGiaDat").value = giaFormatted;
+        document.getElementById("popupSoLuong").value = soLuongFormatted;
+
+        document.getElementById("popupSuaLenh").style.display = "flex";
+    }
+
+    function closeSuaPopup() {
+        document.getElementById("popupSuaLenh").style.display = "none";
+    }
+    
+    document.getElementById("formSuaLenh").addEventListener("submit", function (e) {
+        const giaInput = document.getElementById("popupGiaDat");
+        const slInput = document.getElementById("popupSoLuong");
+        
+        giaInput.value = giaInput.value.replace(/\./g, "").replace(/,/g, "").trim(); // clean format
+        slInput.value = slInput.value.replace(/\./g, "").replace(/,/g, "").trim();
     });
+    
+ 	// Tự động format #,### khi nhập input
+    function addInputFormatter(id) {
+        const input = document.getElementById(id);
+        input.addEventListener("input", function () {
+            // Lưu vị trí con trỏ trước khi xử lý
+            const cursorPos = input.selectionStart;
+            const raw = input.value.replace(/\D/g, ""); // chỉ giữ lại số
 
-    window.openPopup = function () {
-        const popup = document.getElementById("changePasswordPopup");
-        if (popup) {
-            console.log("Opening popup");
-            popup.style.display = "flex";
-        } else {
-            console.error("Element #changePasswordPopup not found");
-        }
+            if (raw.length === 0) {
+                input.value = "";
+                return;
+            }
+
+            const formatted = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+            const delta = formatted.length - input.value.length;
+            input.value = formatted;
+            input.setSelectionRange(cursorPos + delta, cursorPos + delta);
+        });
     }
 
-    window.closePopup = function () {
-        const popup = document.getElementById("changePasswordPopup");
-        if (popup) {
-            console.log("Closing popup");
-            popup.style.display = "none";
-        } else {
-            console.error("Element #changePasswordPopup not found");
-        }
-    }
+addInputFormatter("popupGiaDat");
+addInputFormatter("popupSoLuong");
 </script>
 </body>
 </html>

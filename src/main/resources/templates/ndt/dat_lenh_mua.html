@@ -14,11 +14,18 @@
         <form id="datLenhForm" th:action="@{/nhadautu/dat-lenh-mua}" method="post">
             <table class="buy-table">
                 <tbody>
-                    <tr th:if="${error}">
-                        <td colspan="2"><strong th:text="${error}"></strong></td>
+                    <!-- Hiển thị thông báo lỗi -->
+                    <tr th:if="${error != null}">
+                        <td colspan="2" style="color: red;">
+                            <strong th:text="${error}"></strong>
+                        </td>
                     </tr>
-                    <tr th:if="${success}">
-                        <td colspan="2"><strong th:text="${success}"></strong></td>
+
+                    <!-- Hiển thị thông báo thành công -->
+                    <tr th:if="${success != null}">
+                        <td colspan="2" style="color: green;">
+                            <strong th:text="${success}"></strong>
+                        </td>
                     </tr>
 
                     <tr>
@@ -69,12 +76,12 @@
 
                     <tr>
                         <th>Số lượng</th>
-                        <td><input type="text" name="soLuong" id="soLuong" /></td>
+                        <td><input type="text" name="soLuong" id="soLuong" autocomplete="off"/></td>
                     </tr>
 
                     <tr>
                         <th>Giá</th>
-                        <td><input type="text" name="gia" id="gia" step="0.01" required /></td>
+                        <td><input type="text" name="gia" id="gia" autocomplete="off"/></td>
                     </tr>
 
                     <tr>
