@@ -72,7 +72,7 @@ public class StockBoardController {
         for (CoPhieu cp : dsCP) {
             String maCP = cp.getMaCP();
 
-            // Tham chiếu, trần, sàn
+            // --- Giá tham chiếu, trần, sàn ---
             Map<String, Double> giaMap = lichSuGiaService.getLichSuGia(maCP, phase);
             double giaTC = giaMap.get("tc");
             double giaTran = giaMap.get("tran");
@@ -82,71 +82,54 @@ public class StockBoardController {
             giaTranMap.put(maCP, giaTran);
             giaSanMap.put(maCP, giaSan);
 
-            // 🟩 Giao dịch NGHỈ: lấy từ snapshot service (không truy vấn DB)
+            // --- Lấy lệnh đặt từ DB (luôn lấy realtime, kể cả phase NGHỈ) ---
+            List<String> statuses = Arrays.asList("Chờ", "Một phần");
+
+            List<LenhDat> lenhMua = lenhDatRepo
+                    .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", statuses).stream()
+                    .filter(ld -> !ld.getNgayGD().toLocalDate().isBefore(homNay))
+                    .collect(Collectors.toList());
+            benMuaMap.put(maCP, tongHopTheoGia(lenhMua, true));
+
+            List<LenhDat> lenhBan = lenhDatRepo
+                    .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(maCP, "B", statuses).stream()
+                    .filter(ld -> !ld.getNgayGD().toLocalDate().isBefore(homNay))
+                    .collect(Collectors.toList());
+            benBanMap.put(maCP, tongHopTheoGia(lenhBan, false));
+
+            // --- Lệnh khớp và màu sắc ---
+            LenhKhop khopCuoi;
             if (phase == TradingTimeUtil.Phase.NGHI) {
-                List<Object[]> topMuaSnapshot = khopLenhService.getTopMuaSnapshot(maCP);
-                List<Object[]> topBanSnapshot = khopLenhService.getTopBanSnapshot(maCP);
-
-                benMuaMap.put(maCP, convertObjectListToMapList(topMuaSnapshot));
-                benBanMap.put(maCP, convertObjectListToMapList(topBanSnapshot));
-
-                // Lấy lệnh khớp cuối từ DB (đã snapshot)
-                LenhKhop khopCuoi = lenhKhopRepo.findLenhKhopCuoiTrongNgay(maCP, homNay.toString());
-                if (khopCuoi != null) {
-                    lenhKhopMoiNhatMap.put(maCP, khopCuoi);
-                    double giaKhop = khopCuoi.getGiaKhop();
-
-                    String cls = "gia-tham-chieu";
-                    if (giaKhop == giaTran) cls = "gia-tran";
-                    else if (giaKhop == giaSan) cls = "gia-san";
-                    else if (giaKhop > giaTC) cls = "gia-tang";
-                    else if (giaKhop < giaTC) cls = "gia-giam";
-
-                    colorMap.put(maCP, cls);
-                    deltaMap.put(maCP, giaKhop - giaTC);
-                }
-
-                Long tongKL = lenhKhopRepo.sumSoLuongKhopByMaCPAndNgay(maCP, homNay.toString());
-                tongKLMoiMap.put(maCP, tongKL != null ? tongKL : 0L);
+                khopCuoi = lenhKhopRepo.findLenhKhopCuoiTrongNgay(maCP, homNay.toString()); // dùng snapshot nếu có
             } else {
-                // 🛑 Cũ: xử lý realtime
-                List<String> statuses = Arrays.asList("Chờ", "Một phần");
+                khopCuoi = lenhKhopRepo.findLenhKhopCuoiTrongNgay(maCP, homNay.toString());
+            }
 
-                List<LenhDat> lenhMua = lenhDatRepo
-                        .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", statuses).stream()
-                        .filter(ld -> (phase != TradingTimeUtil.Phase.NGHI || tradingTimeUtil.isTrongGioGiaoDich(ld.getNgayGD())) &&
-                              !ld.getNgayGD().toLocalDate().isBefore(LocalDate.now()))
-                        .collect(Collectors.toList());
-                benMuaMap.put(maCP, tongHopTheoGia(lenhMua, true));
+            if (khopCuoi != null) {
+                lenhKhopMoiNhatMap.put(maCP, khopCuoi);
+                double giaKhop = khopCuoi.getGiaKhop();
 
-                List<LenhDat> lenhBan = lenhDatRepo
-                        .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(maCP, "B", statuses).stream()
-                        .filter(ld -> (phase != TradingTimeUtil.Phase.NGHI || tradingTimeUtil.isTrongGioGiaoDich(ld.getNgayGD())) &&
-                              !ld.getNgayGD().toLocalDate().isBefore(LocalDate.now()))
-                        .collect(Collectors.toList());
-                benBanMap.put(maCP, tongHopTheoGia(lenhBan, false));
+                String cls = "gia-tham-chieu";
+                if (giaKhop == giaTran) cls = "gia-tran";
+                else if (giaKhop == giaSan) cls = "gia-san";
+                else if (giaKhop > giaTC) cls = "gia-tang";
+                else if (giaKhop < giaTC) cls = "gia-giam";
 
-                // Giá và khối lượng realtime
-                LenhKhop khopCuoi = lenhKhopRepo.findLenhKhopCuoiTrongNgay(maCP, homNay.toString());
-                if (khopCuoi != null) {
-                    lenhKhopMoiNhatMap.put(maCP, khopCuoi);
-                    double giaKhop = khopCuoi.getGiaKhop();
+                colorMap.put(maCP, cls);
+                deltaMap.put(maCP, giaKhop - giaTC);
+            }
 
-                    String cls = "gia-tham-chieu";
-                    if (giaKhop == giaTran) cls = "gia-tran";
-                    else if (giaKhop == giaSan) cls = "gia-san";
-                    else if (giaKhop > giaTC) cls = "gia-tang";
-                    else if (giaKhop < giaTC) cls = "gia-giam";
-
-                    colorMap.put(maCP, cls);
-                    deltaMap.put(maCP, giaKhop - giaTC);
-                }
-
-                Long tongKL = lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay).stream()
+            // --- Tổng khối lượng ---
+            Long tongKL;
+            if (phase == TradingTimeUtil.Phase.NGHI) {
+                tongKL = lenhKhopRepo.sumSoLuongKhopByMaCPAndNgay(maCP, homNay.toString());
+            } else {
+                tongKL = lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay).stream()
                         .mapToLong(LenhKhop::getSoLuongKhop)
                         .sum();
-                tongKLMoiMap.put(maCP, tongKL);
             }
+
+            tongKLMoiMap.put(maCP, tongKL != null ? tongKL : 0L);
         }
 
         model.addAttribute("filter", filter);

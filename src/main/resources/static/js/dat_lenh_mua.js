@@ -18,6 +18,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const giaTran = document.getElementById("giaTran");
     const giaSan = document.getElementById("giaSan");
 
+    // Lấy danh sách mã CP viết hoa hợp lệ
+    const maCPList = Array.from(document.querySelectorAll("#dsMaCP option")).map(opt => opt.value.trim());
+
     const updateTongTien = () => {
         const loaiLenh = document.querySelector("input[name='loaiLenh']:checked")?.value;
         const soLuongRaw = soLuongInput.value;
@@ -105,13 +108,24 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     });
 
+    // === Kiểm tra mã CP viết hoa hợp lệ trước khi gửi request ===
     maCPInput.addEventListener("input", function () {
         const maCP = this.value.trim();
+		const isValid = maCPList.some(cp => cp === maCP && /^[A-Z]+$/.test(maCP));
+
         if (!maCP) {
             giaHienThi.style.display = "none";
             khongTimThay.style.display = "none";
             return;
         }
+
+        if (!isValid) {
+            giaHienThi.style.display = "none";
+            khongTimThay.style.display = "block";
+            return;
+        }
+
+        // Nếu hợp lệ thì gọi API
         fetch(`/nhadautu/gia-co-phieu?maCP=${encodeURIComponent(maCP)}`)
             .then(response => {
                 if (!response.ok) throw new Error();
