@@ -19,15 +19,6 @@
     </style>
 </head>
 <body>
-<h2>BẢNG GIÁ CỔ PHIẾU TRỰC TUYẾN</h2>
-
-<form method="get" th:action="@{/stock-board}">
-    <label for="filter">Lọc danh sách:</label>
-    <select name="filter" id="filter" onchange="this.form.submit()">
-        <option value="tatca" th:selected="${filter == 'tatca'}">Tất cả</option>
-        <option value="sohuu" th:selected="${filter == 'sohuu'}">Đã sở hữu</option>
-    </select>
-</form>
 	<header class="top-header">
 	    <div class="logo">STOCK TRADER</div>
 

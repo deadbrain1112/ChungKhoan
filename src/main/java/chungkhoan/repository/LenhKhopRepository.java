@@ -36,4 +36,31 @@ public interface LenhKhopRepository extends JpaRepository<LenhKhop, Long> {
 
     @Query(value = "SELECT * FROM LenhKhop WHERE MaGD = :maGD ORDER BY NgayGioKhop DESC", nativeQuery = true)
     List<LenhKhop> findAllByMaGDOrderByNgayGioKhopDesc(@Param("maGD") Long maGD);
+    
+	    // Tổng khối lượng khớp theo mã CP trong ngày (dạng đơn)
+	    @Query(value = """
+	        SELECT SUM(kh.SoLuongKhop)
+	        FROM LenhKhop kh
+	        JOIN LenhDat ld ON kh.MaGD = ld.MaGD
+	        JOIN CoPhieu cp ON ld.MaCP = cp.MaCP
+	        WHERE cp.MaCP = :maCP
+	          AND CONVERT(date, kh.NgayGioKhop) = :ngay
+	    """, nativeQuery = true)
+	    Long sumSoLuongKhopByMaCPAndNgay(@Param("maCP") String maCP, @Param("ngay") String ngay); // yyyy-MM-dd
+
+
+	    //Lệnh khớp cuối cùng trong ngày của một mã CP
+    	@Query(value = """
+    		    SELECT TOP 1 kh.*
+    		    FROM LenhKhop kh
+    		    JOIN LenhDat ld ON kh.MaGD = ld.MaGD
+    		    JOIN CoPhieu cp ON ld.MaCP = cp.MaCP
+    		    WHERE cp.MaCP = :maCP
+    		      AND CONVERT(date, kh.NgayGioKhop) = :ngay
+    		    ORDER BY kh.NgayGioKhop DESC
+    		    """, nativeQuery = true)
+    		LenhKhop findLenhKhopCuoiTrongNgay(@Param("maCP") String maCP, @Param("ngay") String ngay);
+
+    @Query("SELECT COALESCE(SUM(lk.soLuongKhop), 0) FROM LenhKhop lk WHERE lk.lenhDat.maGD = :maGD")
+    int sumSoLuongKhopByLenhDatId(@Param("maGD") Long maGD);
 }

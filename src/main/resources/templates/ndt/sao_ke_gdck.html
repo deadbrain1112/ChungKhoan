@@ -44,7 +44,7 @@
 		        <div>
 			        <div>
 			            <label for="trangThai">Lọc theo trạng thái:</label>
-			            <select name="trangThai" id="trangThai">
+			            <select name="trangThai" id="trangThai2">
 			                <option value="">Tất cả</option>
 			                <option value="Chờ" th:selected="${selectedTrangThai == 'Chờ'}">Chờ</option>
 			                <option value="Hết" th:selected="${selectedTrangThai == 'Hết'}">Hết</option>
@@ -109,7 +109,6 @@
 						    Sửa
 						</button>
 
-
                         <button class="btn-huy" th:if="${lenh.trangThai == 'Chờ'}" th:onclick="|xacNhanHuy(${lenh.maGD})|">Hủy</button>
                     </td>
                 </tr>
@@ -119,9 +118,13 @@
 </div>
 
 <!-- Popup Sửa Lệnh -->
-<div id="popupSuaLenh" class="popup-overlay" style="display:none;">
-    <div class="popup-content">
+<div id="popupSuaLenh" class="sua-lenh-popup-overlay" style="display:none;"
+     th:attr="style=${openPopup} ? 'display:flex;' : 'display:none;'">
+    <div class="sua-lenh-popup-content">
         <h3>Sửa Lệnh Giao Dịch</h3>
+        
+        <div th:if="${popupError}" class="alert alert-danger" th:text="${popupError}"></div>
+        
         <form id="formSuaLenh" method="post" th:action="@{/nhadautu/sua-lenh}">
             <input type="hidden" id="popupMaGD" name="maGD" />
 
@@ -143,11 +146,11 @@
             </div>
             <div class="form-group">
                 <label for="popupGiaDat">Giá Đặt:</label>
-                <input type="text" id="popupGiaDat" name="giaDat" required />
+                <input type="text" id="popupGiaDat" name="giaDat" th:value="${popupGiaDat}"/>
             </div>
             <div class="form-group">
                 <label for="popupSoLuong">Khối Lượng:</label>
-                <input type="text" id="popupSoLuong" name="soLuong" required />
+                <input type="text" id="popupSoLuong" name="soLuong" th:value="${popupSoLuong}" />
             </div>
 
             <div class="popup-buttons">
@@ -179,40 +182,6 @@
     document.getElementById("trangThai").addEventListener("change", function () {
         document.getElementById("filterForm").submit();
     });
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const openButton = document.getElementById("openPasswordPopup");
-        if (openButton) {
-            console.log("Open button found");
-            openButton.addEventListener("click", function (e) {
-                e.preventDefault();
-                console.log("Open button clicked");
-                openPopup();
-            });
-        } else {
-            console.error("Element #openPasswordPopup not found");
-        }
-    });
-
-    window.openPopup = function () {
-        const popup = document.getElementById("changePasswordPopup");
-        if (popup) {
-            console.log("Opening popup");
-            popup.style.display = "flex";
-        } else {
-            console.error("Element #changePasswordPopup not found");
-        }
-    }
-
-    window.closePopup = function () {
-        const popup = document.getElementById("changePasswordPopup");
-        if (popup) {
-            console.log("Closing popup");
-            popup.style.display = "none";
-        } else {
-            console.error("Element #changePasswordPopup not found");
-        }
-    }
     
     function handleOpenSuaPopup(button) {
         const maGD = button.getAttribute("data-magid");
@@ -232,13 +201,13 @@
         document.getElementById("popupLoaiLenh").innerText = loaiLenh;
         document.getElementById("popupMaCP").innerText = maCP;
 
-        // Chuẩn hóa chuỗi giá: xóa VND, dấu phẩy, rồi chuyển thành số
-        const giaRaw = giaDat.replace(" VND", "").replace("₫", "").replace(/,/g, "").trim();
-        const giaFormatted = Number(giaRaw).toLocaleString("vi-VN");
-        document.getElementById("popupGiaDat").value = giaFormatted;
+        const giaRaw = (giaDat + "").replace(/[^0-9.]/g, ""); // chỉ giữ số và dấu chấm
+        const soLuongRaw = (soLuong + "").replace(/[^0-9]/g, ""); // chỉ giữ số nguyên
 
-        // Format khối lượng đặt
-        const soLuongFormatted = Number(soLuong).toLocaleString("vi-VN");
+        const giaFormatted = giaRaw.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        const soLuongFormatted = soLuongRaw.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        document.getElementById("popupGiaDat").value = giaFormatted;
         document.getElementById("popupSoLuong").value = soLuongFormatted;
 
         document.getElementById("popupSuaLenh").style.display = "flex";
@@ -255,6 +224,30 @@
         giaInput.value = giaInput.value.replace(/\./g, "").replace(/,/g, "").trim(); // clean format
         slInput.value = slInput.value.replace(/\./g, "").replace(/,/g, "").trim();
     });
+    
+ 	// Tự động format #,### khi nhập input
+    function addInputFormatter(id) {
+        const input = document.getElementById(id);
+        input.addEventListener("input", function () {
+            // Lưu vị trí con trỏ trước khi xử lý
+            const cursorPos = input.selectionStart;
+            const raw = input.value.replace(/\D/g, ""); // chỉ giữ lại số
+
+            if (raw.length === 0) {
+                input.value = "";
+                return;
+            }
+
+            const formatted = raw.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+            const delta = formatted.length - input.value.length;
+            input.value = formatted;
+            input.setSelectionRange(cursorPos + delta, cursorPos + delta);
+        });
+    }
+
+addInputFormatter("popupGiaDat");
+addInputFormatter("popupSoLuong");
 </script>
 </body>
 </html>

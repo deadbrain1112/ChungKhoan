@@ -95,6 +95,35 @@ public class StocksController {
         if (tempList == null) {
             tempList = new ArrayList<>();
         }
+        
+     // Lấy danh sách cổ phiếu chính từ cơ sở dữ liệu
+        Page<CoPhieu> stockPage = coPhieuService.getPaginated(0, Integer.MAX_VALUE); // Lấy tất cả để kết hợp
+        
+        // Kết hợp danh sách: danh sách chính trước, danh sách tạm sau
+        List<CoPhieu> allStocks = new ArrayList<>();
+        allStocks.addAll(stockPage.getContent()); // Thêm danh sách chính trước
+        allStocks.addAll(tempList); // Thêm danh sách tạm sau
+        
+        // Tính toán phân trang cho danh sách kết hợp
+        int totalItems = allStocks.size();
+        int start = page * size;
+        int end = Math.min(start + size, totalItems);
+
+        // Đảm bảo start và end hợp lệ
+        if (start >= totalItems && totalItems > 0) {
+            // Nếu start vượt quá kích thước danh sách, chuyển về trang cuối cùng
+            page = (totalItems - 1) / size;
+            start = page * size;
+            end = Math.min(start + size, totalItems);
+        } else if (start >= totalItems) {
+            start = 0;
+            end = 0;
+        }
+
+        List<CoPhieu> allStocksPageContent = (start < end) ? allStocks.subList(start, end) : new ArrayList<>();
+
+        // Tạo đối tượng Page cho danh sách kết hợp
+        Page<CoPhieu> allStocksPage = new PageImpl<>(allStocksPageContent, PageRequest.of(page, size), totalItems);
 
         // Kiểm tra xem mã CP đã tồn tại trong danh sách tạm chưa
         boolean exists = tempList.stream().anyMatch(s -> s.getMaCP().equals(stock.getMaCP()));
@@ -103,6 +132,7 @@ public class StocksController {
             ra.addFlashAttribute("messageType", "error");
         } else {
             tempList.add(stock);
+            ra.addFlashAttribute("stocks", allStocksPage);
             session.setAttribute("temporaryStocks", tempList);
             ra.addFlashAttribute("message", "Đã thêm tạm cổ phiếu " + stock.getMaCP());
             ra.addFlashAttribute("messageType", "success");

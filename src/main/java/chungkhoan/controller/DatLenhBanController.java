@@ -3,6 +3,7 @@ package chungkhoan.controller;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,15 +80,10 @@ public class DatLenhBanController {
         model.addAttribute("formattedSoTien", formattedSoTien);
 
         if (maCP != null && !maCP.isBlank()) {
-            LichSuGia gia = lichSuGiaService.layGiaMoiNhat(maCP.trim());
-            if (gia != null) {
-                model.addAttribute("lichSuGia", gia);
-                model.addAttribute("giaThamChieu", formatGia(gia.getGiaTC()));
-                model.addAttribute("giaTran", formatGia(gia.getGiaTran()));
-                model.addAttribute("giaSan", formatGia(gia.getGiaSan()));
-            } else {
-                model.addAttribute("khongTimThay", true);
-            }
+            Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCP.trim());
+            model.addAttribute("giaThamChieu", formatGia(giaMap.get("tc")));
+            model.addAttribute("giaTran", formatGia(giaMap.get("tran")));
+            model.addAttribute("giaSan", formatGia(giaMap.get("san")));
         }
 
         model.addAttribute("tatCaCoPhieu", coPhieuService.findByMaCPIn(soHuuService.getMaCPByNDT(nhaDauTu.getMaNDT())));
@@ -96,12 +92,12 @@ public class DatLenhBanController {
     }
 
     @PostMapping("/nhadautu/dat-lenh-ban")
-    public String datLenhBan(@RequestParam String maCP,
+    public String datLenhBan(@RequestParam(required = false) String maCP,
                              @RequestParam String nganHang,
                              @RequestParam String loaiLenh,
-                             @RequestParam Integer soLuong,
+                             @RequestParam(required = false) Integer soLuong,
                              @RequestParam(required = false) Double gia,
-                             @RequestParam String matKhau,
+                             @RequestParam(required = false) String matKhau,
                              Model model,
                              HttpSession session) {
 
@@ -124,12 +120,28 @@ public class DatLenhBanController {
             taiKhoan = danhSachTaiKhoan.get(0);
         }
 
+        double soTien = (taiKhoan != null && taiKhoan.getSoTien() != null) ? taiKhoan.getSoTien().doubleValue() : 0;
+        String formattedSoTien = formatGia(soTien);
+
         model.addAttribute("nhaDauTu", nhaDauTu);
         model.addAttribute("danhSachTaiKhoan", danhSachTaiKhoan);
         model.addAttribute("taiKhoan", taiKhoan);
+        model.addAttribute("formattedSoTien", formattedSoTien);
 
-        double soTien = (taiKhoan != null && taiKhoan.getSoTien() != null) ? taiKhoan.getSoTien().doubleValue() : 0;
-        model.addAttribute("formattedSoTien", formatGia(soTien));
+        if (maCP == null || maCP.isBlank()) {
+            model.addAttribute("error", "Mã cổ phiếu không được để trống!");
+            return "ndt/dat_lenh_ban";
+        }
+
+        if (soLuong != null && soLuong % 100 != 0) {
+            model.addAttribute("error", "Số lượng phải là bội số của 100!");
+            return "ndt/dat_lenh_ban";
+        }
+
+        if (gia != null && gia % 100 != 0) {
+            model.addAttribute("error", "Giá phải là bội số của 100!");
+            return "ndt/dat_lenh_ban";
+        }
 
         Optional<CoPhieu> coPhieuOpt = coPhieuService.findById(maCP);
         if (coPhieuOpt.isEmpty()) {
@@ -143,17 +155,16 @@ public class DatLenhBanController {
         }
 
         if (matKhau == null || !matKhau.equals(nhaDauTu.getMkGiaoDich())) {
-            System.out.println("MK từ người dùng: " + matKhau);
-            System.out.println("MK từ DB: " + nhaDauTu.getMkGiaoDich());
-
             model.addAttribute("error", "Mật khẩu giao dịch không đúng!");
             return "ndt/dat_lenh_ban";
         }
 
+        Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCP);
+        Double giaTran = giaMap.get("tran");
+        Double giaSan = giaMap.get("san");
 
-        LichSuGia lichSuGia = lichSuGiaService.layGiaMoiNhat(maCP);
-        if (lichSuGia == null) {
-            model.addAttribute("error", "Không có dữ liệu giá sàn cho cổ phiếu này");
+        if (giaTran == null || giaSan == null || giaTran == 0.0 || giaSan == 0.0) {
+            model.addAttribute("error", "Không có dữ liệu giá sàn hoặc giá trần cho cổ phiếu này!");
             return "ndt/dat_lenh_ban";
         }
 
@@ -165,26 +176,14 @@ public class DatLenhBanController {
                 return "ndt/dat_lenh_ban";
             }
 
-            Double giaTran = lichSuGia.getGiaTran();
-            Double giaSan = lichSuGia.getGiaSan();
-
-            if (giaTran == null || giaSan == null) {
-                model.addAttribute("error", "Thiếu thông tin giá trần hoặc sàn!");
-                return "ndt/dat_lenh_ban";
-            }
-
             if (gia < giaSan || gia > giaTran) {
                 model.addAttribute("error", "Giá bán không được thấp hơn giá sàn hoặc lớn hơn giá trần!");
                 return "ndt/dat_lenh_ban";
             }
             giaDat = gia;
-            messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, gia, soLuong, "B"));
-        }
-        else if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
-            giaDat = 0.0; // Hệ thống sẽ xử lý sau khi khớp
-            messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, giaDat, soLuong, "B"));
-        }
-        else {
+        } else if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
+            giaDat = 0.0;
+        } else {
             model.addAttribute("error", "Loại lệnh không hợp lệ!");
             return "ndt/dat_lenh_ban";
         }
@@ -208,7 +207,8 @@ public class DatLenhBanController {
 
         lenhDatService.save(lenh);
 
-       
+        messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, giaDat, soLuong, "B"));
+
         model.addAttribute("success", "Đặt lệnh bán thành công, chờ khớp lệnh!");
         model.addAttribute("tatCaCoPhieu", coPhieuService.findByMaCPIn(soHuuService.getMaCPByNDT(nhaDauTu.getMaNDT())));
 

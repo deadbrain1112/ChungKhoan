@@ -32,8 +32,13 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     // Khớp lệnhs
     List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiOrderByGiaDescNgayGDAsc(String maCP, String loaiGD, String trangThai);
     
-    @Query("SELECT DISTINCT ld.coPhieu.maCP FROM LenhDat ld WHERE LOWER(ld.trangThai) = LOWER(:status)")
-    List<String> findAllMaCPDangChoKhop(@Param("status") String status);
+    // Lấy các mã cổ phiếu có khả năng khớp lệnh LO
+    @Query(value = "EXEC sp_FindMaCPCoTheKhop :loaiLenh, :trangThai1, :trangThai2", nativeQuery = true)
+    List<String> findMaCPCoTheKhop(
+        @Param("loaiLenh") String loaiLenh,
+        @Param("trangThai1") String trangThai1,
+        @Param("trangThai2") String trangThai2
+    );
 
     List<LenhDat> findByTrangThai(String trangThai);
 
@@ -85,5 +90,29 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
 	     @Param("endDate") LocalDateTime endDate,
 	     @Param("trangThai") String trangThai);
 
+    // Top 3 giá mua cuối phiên chưa khớp
+    @Query(value = """
+    	    SELECT TOP 3 ld.gia, SUM(ld.soluong) AS TongKL
+    	    FROM lenhdat ld
+    	    WHERE ld.loaigd = 'M'
+    	      AND ld.trangthai = 'Chờ'
+    	      AND ld.macp = :maCP
+    	      AND CONVERT(date, ld.ngaygd) = :ngay
+    	    GROUP BY ld.gia
+    	    ORDER BY ld.gia DESC
+    	    """, nativeQuery = true)
+    	List<Object[]> findTop3GiaMuaSnapshot(@Param("maCP") String maCP, @Param("ngay") String ngay);
 
+	// Top 3 giá bán cuối phiên chưa khớp
+    @Query(value = """
+    		SELECT TOP 3 ld.gia, SUM(ld.soluong) AS TongKL
+    		FROM lenhdat ld
+    		WHERE ld.loaigd = 'B'
+    		AND ld.trangthai = 'Chờ'
+    		AND ld.macp = :maCP
+    		AND CONVERT(date, ld.ngaygd) = :ngay
+    		GROUP BY ld.gia
+    		ORDER BY ld.gia ASC
+    		""", nativeQuery = true)
+    	List<Object[]> findTop3GiaBanSnapshot(@Param("maCP") String maCP, @Param("ngay") String ngay);    	
 }

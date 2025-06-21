@@ -2,7 +2,6 @@ package chungkhoan.repository;
 
 import chungkhoan.entity.LichSuGia;
 import chungkhoan.entity.LichSuGiaKey;
-import jakarta.transaction.Transactional;
 
 import java.sql.Timestamp;
 import java.util.Optional;
@@ -27,4 +26,8 @@ public interface LichSuGiaRepository extends JpaRepository<LichSuGia, LichSuGiaK
 
     @Query(nativeQuery = true, value = "EXEC sp_LayGiaMoiNhat :maCP")
     LichSuGia layGiaMoiNhat(@Param("maCP") String maCP);
+    
+    Optional<LichSuGia> findByMaCPAndNgay(String maCP, Timestamp ngay);
+    Optional<LichSuGia> findFirstByMaCPAndNgayBeforeOrderByNgayDesc(String maCP, Timestamp ngay);
+
 }
