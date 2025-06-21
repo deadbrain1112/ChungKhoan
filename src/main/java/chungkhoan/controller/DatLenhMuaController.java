@@ -239,20 +239,29 @@ public class DatLenhMuaController {
     @GetMapping("/nhadautu/gia-co-phieu")
     @ResponseBody
     public ResponseEntity<?> layGiaCoPhieu(@RequestParam("maCP") String maCP) {
-        Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCP.trim());
+        String maCPTrimmed = maCP.trim();
 
-        if (giaMap == null || giaMap.isEmpty()
-                || (giaMap.getOrDefault("tc", 0.0) == 0.0
-                    && giaMap.getOrDefault("tran", 0.0) == 0.0
-                    && giaMap.getOrDefault("san", 0.0) == 0.0)) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Không tìm thấy cổ phiếu!");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-            }
+        // Chỉ cho phép mã toàn CHỮ HOA
+        if (!maCPTrimmed.matches("^[A-Z]+$")) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Mã cổ phiếu không hợp lệ!");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
 
+        Optional<CoPhieu> cp = coPhieuService.findById(maCPTrimmed);
+
+        // Kiểm tra tồn tại chính xác mã
+        if (cp.isEmpty() || !cp.get().getMaCP().equals(maCPTrimmed)) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Không tìm thấy cổ phiếu!");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+
+        Map<String, Double> giaMap = lichSuGiaService.getGiaThamChieu(maCPTrimmed);
         DecimalFormat df = new DecimalFormat("#,###");
+
         Map<String, String> result = new HashMap<>();
-        result.put("maCP", maCP.trim());
+        result.put("maCP", maCPTrimmed);
         result.put("giaTC", df.format(giaMap.getOrDefault("tc", 0.0)) + " VND");
         result.put("giaTran", df.format(giaMap.getOrDefault("tran", 0.0)) + " VND");
         result.put("giaSan", df.format(giaMap.getOrDefault("san", 0.0)) + " VND");
