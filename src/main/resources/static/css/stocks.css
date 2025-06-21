@@ -235,3 +235,19 @@ tr.unsaved td {
 .delete-btn:hover {
     background-color: #e0a800;
 }
+
+.subform-bank-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.subform-bank {
+    background: #f9f9f9;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    width: 48%;
+    overflow-x: auto;
+}

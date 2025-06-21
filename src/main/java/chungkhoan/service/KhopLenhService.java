@@ -101,7 +101,7 @@ public class KhopLenhService implements ApplicationContextAware {
         return topBanSnapshotMap.getOrDefault(maCP, List.of());
     }
 
-    @Scheduled(fixedDelay = 3000)
+    //@Scheduled(fixedDelay = 3000)
     @Transactional
     public void khopLORealtime() {
         LocalDateTime now = LocalDateTime.now();
