@@ -109,6 +109,12 @@ public class InvestorsController {
 		}
 
 		model.addAttribute("canUndo", !nhaDauTuService.isUndoStackEmpty());
+		
+		// Danh sách ngân hàng để hiển thị trong <select>
+		model.addAttribute("dsNganHang", nganHangService.findAll()
+		        .stream()
+		        .map(nh -> Map.of("maNH", nh.getMaNH(), "tenNH", nh.getTenNH()))
+		        .collect(Collectors.toList()));
 
 		return "nhanvien/investor_list";
 	}

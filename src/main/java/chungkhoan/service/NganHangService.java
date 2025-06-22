@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.util.List;
 
 @Service
 public class NganHangService {
@@ -68,5 +69,9 @@ public class NganHangService {
 
     public boolean existsByMaNH(String maNH) {
         return nganHangRepository.existsByMaNH(maNH);
+    }
+    
+    public List<NganHang> findAll() {
+        return nganHangRepository.findAll();
     }
 }

@@ -124,7 +124,7 @@
         <form th:action="@{/investors/add-temp(page=${investors.number},size=${investors.size})}" method="post">
             <label>Mã nhà đầu tư: <input type="text" name="maNDT" maxlength="20" required/></label><br/>
             <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
-            <label>Mã khẩu giao dịch: <input type="text" name="mkGiaoDich" maxlength="50" required/></label><br/>
+            <label>Mã khẩu giao dịch: <input type="password" name="mkGiaoDich" maxlength="50" required/></label><br/>
             <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
             <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
             <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
@@ -151,9 +151,11 @@
                 </thead>
                 <tbody></tbody>
             </table>
-            <button type="button" onclick="addBankAccount('bank-accounts-add')">Thêm tài khoản ngân hàng</button><br/>
-            <button type="submit">Lưu vào tạm</button>
-            <button type="button" onclick="hideSubform('add-form')">Hủy</button>
+            <div class="form-actions">
+            	<button type="button" onclick="addBankAccount('bank-accounts-add')">Thêm tài khoản ngân hàng</button><br/>
+	            <button type="submit">Lưu vào tạm</button>
+	            <button type="button" onclick="hideSubform('add-form')">Hủy</button>
+            </div>
         </form>
     </div>
 
@@ -163,7 +165,7 @@
         <form th:action="@{/investors/edit-temp}" method="post">
             <input type="hidden" name="maNDT" id="maNDT" />
             <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
-            <label>Mã khẩu giao dịch: <input type="text" name="mkGiaoDich" maxlength="50" required/></label><br/>
+            <label>Mã khẩu giao dịch: <input type="password" name="mkGiaoDich" maxlength="50" readonly="readonly"/></label><br/>
             <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
             <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
             <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
@@ -175,30 +177,35 @@
                 <label for="edit-nu">Nữ</label>
             </label><br/>
             <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
-            <button type="submit">Lưu thay đổi</button>
-            <button type="button" onclick="hideSubform('edit-form')">Hủy</button>
+            <div class="form-actions">
+            	<button type="submit">Lưu thay đổi</button>
+            	<button type="button" onclick="hideSubform('edit-form')">Hủy</button>
+            </div>
         </form>
     </div>
     
     <!-- Container chứa 2 subform ngân hàng -->
 	<div id="bank-subform-wrapper" style="display: none; gap: 20px;" class="subform-bank-wrapper">
 	    <div id="bank-subform-1" class="subform-bank half-width">
-	        <h3>Tài khoản ngân hàng</h3>
+	        <h3>Tài Khoản Ngân Hàng</h3>
 	        <table class="bank-account-table" id="bank-accounts-subform-1">
 	            <thead>
 	            <tr>
-	                <th>Mã tài khoản</th>
-	                <th>Mã ngân hàng</th>
+	            	<th>Mã ngân hàng</th>
+	                <th>Mã tài khoản</th>	                
 	                <th>Số tiền</th>
 	                <th>Hành động</th>
 	            </tr>
 	            </thead>
 	            <tbody id="bank-subform-1-body"></tbody>
 	        </table>
-	        <button type="button" onclick="hideSubform('bank-subform-1')">Đóng</button>
+	        <div class="form-actions">
+	        	<button type="button" onclick="createNewBankAccountRow()">Tạo tài khoản</button>	
+	        	<button type="button" onclick="hideSubform('bank-subform-1')">Đóng</button>
+	        </div>
 	    </div>
 	    <div id="bank-subform-2" class="subform-bank half-width">
-	        <h3>Chi tiết tài khoản ngân hàng</h3>
+	        <h3>Chi Tiết Ngân Hàng</h3>
 	        <form id="bank-subform-2-form" th:action="@{/investors/edit-bank-temp}" method="post">
 	            <input type="hidden" name="maNDT" id="bank-subform-2-maNDT" />
 	            <table class="bank-account-table" id="bank-accounts-subform-2">
@@ -214,10 +221,12 @@
 	                </thead>
 	                <tbody id="bank-subform-2-body"></tbody>
 	            </table>
-	            <button type="button" onclick="addBankAccount('bank-accounts-subform-2')">Thêm</button>
-	            <button type="button">Sửa</button>
-	            <button type="submit">Ghi</button>
-	            <button type="button" onclick="hideSubform('bank-subform-2')">Đóng</button>
+	            <div class="form-actions">
+				    <button type="button" onclick="addBankAccount('bank-accounts-subform-2')">Thêm</button>
+				    <button type="button">Sửa</button>
+				    <button type="submit">Ghi</button>
+				    <button type="button" onclick="hideSubform('bank-subform-2')">Đóng</button>
+				</div>
 	        </form>
 	    </div>
 	</div>
@@ -244,6 +253,7 @@
 
 <script th:inline="javascript">
     let usedMaTKs = /*[[${usedMaTKs}]]*/ [];
+    let danhSachNganHang = /*[[${dsNganHang}]]*/ [];
 </script>
 
 <script>
@@ -332,8 +342,8 @@
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${maTK}</td>
                     <td>${maNH}</td>
+                    <td>${maTK}</td>
                     <td>${soTien}</td>
                     <td>
                         <button type="button" onclick="showBankSubform2('${maNDT}', '${maTK}')">Sửa</button>
@@ -437,16 +447,29 @@
     function addBankAccount(tableId) {
         const table = document.getElementById(tableId).querySelector('tbody');
         const newRow = document.createElement('tr');
-        newRow.innerHTML = `
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" maxlength="20" required /></td>
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required /></td>
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" maxlength="20" required /></td>
-            <td><input type="number" step="0.01" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" value="0.00" required /></td>
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" maxlength="100" required /></td>
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="10" required /></td>
-            <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required /></td>
-            <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
-        `;
+
+        if (tableId === 'bank-accounts-add') {
+            newRow.innerHTML = `
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" maxlength="20" required /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" maxlength="20" required /></td>
+                <td><input type="number" step="0.01" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" value="0.00" required /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" maxlength="100" required /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="10" required /></td>
+                <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required /></td>
+                <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
+            `;
+        } else if (tableId === 'bank-accounts-subform-2') {
+            newRow.innerHTML = `
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" maxlength="20" required /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" maxlength="100" required /></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="10" required /></td>
+                <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required /></td>
+                <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
+            `;
+        }
+
         table.appendChild(newRow);
         bankAccountIndex++;
     }
@@ -454,6 +477,32 @@
     function removeBankAccount(button) {
         const row = button.parentElement.parentElement;
         row.remove();
+    }
+    
+    function createNewBankAccountRow() {
+        const tbody = document.getElementById('bank-subform-1-body');
+        const row = document.createElement('tr');
+
+        const selectOptions = danhSachNganHang.map(nh => 
+            `<option value="${nh.maNH}">${nh.tenNH}</option>`
+        ).join('');
+
+        row.innerHTML = `
+            <td>
+                <select name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" required>
+                    ${selectOptions}
+                </select>
+            </td>
+            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" maxlength="20" required></td>
+            <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" required></td>
+            <td>
+            	<button type="button" onclick="submitNewBankAccount(this)">Tạo</button>
+            	<button type="button" onclick="removeBankAccount(this)">Xóa</button>
+            </td>
+        `;
+
+        tbody.appendChild(row);
+        bankAccountIndex++;
     }
 </script>
 </body>
