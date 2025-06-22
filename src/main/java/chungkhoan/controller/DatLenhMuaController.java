@@ -202,14 +202,16 @@ public class DatLenhMuaController {
         return "redirect:/nhadautu/dat-lenh-mua";
     }
 
-    private Object createOrderMessage(String maCPInput, double giaInput, int soLuongInput, String loaiGDInput) {
-        return new Object() {
-            public String maCP = maCPInput;
-            public double gia = giaInput;
-            public int soLuong = soLuongInput;
-            public String loaiGD = loaiGDInput;
-        };
+    private Map<String, Object> createOrderMessage(String maCPInput, double giaInput, int soLuongInput, String loaiGDInput) {
+        return Map.of(
+                "maCP", maCPInput,
+                "gia", giaInput,
+                "soLuong", soLuongInput,
+                "loaiGD", loaiGDInput,
+                "type", "order"
+        );
     }
+
 
     private String formatGia(Double gia) {
         return gia != null ? new DecimalFormat("#,###").format(gia) + " VND" : "Chưa cập nhật";

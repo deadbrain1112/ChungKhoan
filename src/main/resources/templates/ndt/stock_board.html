@@ -133,129 +133,188 @@
     </tr>
     </tbody>
 </table>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        let socket = new SockJS('/ws-stock');
+        let stompClient = Stomp.over(socket);
+        let orderBook = {};
 
-<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-<script>
-    let socket = new SockJS('/ws-stock');
-    let stompClient = Stomp.over(socket);
+        // Hàm lấy dữ liệu từ bảng để khởi tạo orderBook
+        function initializeOrderBookFromTable() {
+            const tableBody = document.querySelector('table tbody');
+            if (!tableBody) return;
 
-    let orderBook = {};
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            rows.forEach(row => {
+                const maCP = row.cells[0]?.textContent.trim();
+                if (!maCP) return;
 
-    stompClient.connect({}, function () {
-        console.log('WebSocket connected');
-
-        stompClient.subscribe('/topic/stock-board', function (message) {
-            try {
-                const order = JSON.parse(message.body);
-                if (!order || !order.maCP) return;
-
-                const maCP = order.maCP.trim();
-                const isMatch = order.type === 'match';
-
+                // Khởi tạo orderBook cho mã cổ phiếu
                 if (!orderBook[maCP]) {
                     orderBook[maCP] = { buy: [], sell: [] };
                 }
 
-                // ===== ĐẶT LỆNH MỚI =====
-                if (!isMatch && order.loaiGD && order.gia != null && order.soLuong != null) {
-                    const gia = parseFloat(order.gia);
-                    const soLuong = parseInt(order.soLuong);
-                    const side = order.loaiGD === 'M' ? 'buy' : 'sell';
+                // Lấy dữ liệu bên mua (Giá 1, KL 1, Giá 2, KL 2, Giá 3, KL 3)
+                for (let i = 1; i <= 3; i++) {
+                    const priceElem = document.getElementById(`mua-gia${i}-${maCP}`);
+                    const quantityElem = document.getElementById(`mua-kl${i}-${maCP}`);
+                    if (priceElem && quantityElem && priceElem.textContent !== '-' && quantityElem.textContent !== '-') {
+                        const gia = parseFloat(priceElem.textContent);
+                        const soLuong = parseInt(quantityElem.textContent.replace(/,/g, ''));
+                        if (!isNaN(gia) && !isNaN(soLuong)) {
+                            orderBook[maCP].buy.push({ gia, soLuong });
+                        }
+                    }
+                }
 
-                    const existing = orderBook[maCP][side].find(o => o.gia === gia);
-                    if (existing) {
-                        existing.soLuong += soLuong;
-                    } else {
-                        orderBook[maCP][side].push({ gia, soLuong });
+                // Lấy dữ liệu bên bán
+                for (let i = 1; i <= 3; i++) {
+                    const priceElem = document.getElementById(`ban-gia${i}-${maCP}`);
+                    const quantityElem = document.getElementById(`ban-kl${i}-${maCP}`);
+                    if (priceElem && quantityElem && priceElem.textContent !== '-' && quantityElem.textContent !== '-') {
+                        const gia = parseFloat(priceElem.textContent);
+                        const soLuong = parseInt(quantityElem.textContent.replace(/,/g, ''));
+                        if (!isNaN(gia) && !isNaN(soLuong)) {
+                            orderBook[maCP].sell.push({ gia, soLuong });
+                        }
+                    }
+                }
+
+                // Sắp xếp: mua giảm dần, bán tăng dần
+                orderBook[maCP].buy.sort((a, b) => b.gia - a.gia);
+                orderBook[maCP].sell.sort((a, b) => a.gia - b.gia);
+            });
+
+            console.log('Initialized orderBook:', orderBook);
+        }
+
+        stompClient.connect({}, function () {
+            console.log('WebSocket connected');
+            stompClient.subscribe('/topic/stock-board', function (message) {
+                try {
+                    const order = JSON.parse(message.body);
+                    if (!order || !order.maCP) return;
+
+                    const maCP = order.maCP.trim();
+                    const isMatch = order.type === 'match';
+
+                    // Khởi tạo orderBook cho mã cổ phiếu nếu chưa tồn tại
+                    if (!orderBook[maCP]) {
+                        orderBook[maCP] = { buy: [], sell: [] };
                     }
 
-                    orderBook[maCP][side].sort((a, b) => side === 'buy' ? b.gia - a.gia : a.gia - b.gia);
-                    orderBook[maCP][side] = orderBook[maCP][side].slice(0, 3);
-                    updateOrderSide(maCP, side);
+                    // Xử lý lệnh mới (không phải khớp lệnh)
+                    if (!isMatch && order.loaiGD && order.gia != null && order.soLuong != null) {
+                        const gia = parseFloat(order.gia) / 1000;
+                        const soLuong = parseInt(order.soLuong);
+                        const side = order.loaiGD === 'M' ? 'buy' : 'sell';
+
+                        // Tìm lệnh hiện có với cùng giá
+                        let existing = orderBook[maCP][side].find(o => Math.abs(o.gia - gia) < 0.001);
+                        if (existing) {
+                            // Cộng dồn khối lượng
+                            existing.soLuong = parseInt(existing.soLuong) + soLuong;
+                            if (existing.soLuong <= 0) {
+                                // Xóa lệnh nếu khối lượng <= 0
+                                orderBook[maCP][side] = orderBook[maCP][side].filter(o => Math.abs(o.gia - gia) >= 0.001);
+                            }
+                        } else {
+                            // Thêm lệnh mới nếu giá chưa tồn tại
+                            orderBook[maCP][side].push({ gia, soLuong });
+                        }
+
+                        // Sắp xếp danh sách: mua giảm dần, bán tăng dần
+                        orderBook[maCP][side].sort((a, b) => side === 'buy' ? b.gia - a.gia : a.gia - b.gia);
+
+                        // Cập nhật giao diện
+                        updateOrderSide(maCP, side);
+                    }
+
+                    // Xử lý khớp lệnh
+                    if (isMatch && order.giaKhop != null && order.soLuongKhop != null) {
+                        capNhatBangGia({
+                            maCP,
+                            giakhop: parseFloat(order.giaKhop) / 1000,
+                            soLuong: order.soLuongKhop,
+                            delta: order.delta != null ? parseFloat(order.delta) / 1000 : 0
+                        });
+
+                        const soLuongKhop = parseInt(order.soLuongKhop);
+                        const giaMua = parseFloat(order.giaMua) / 1000;
+                        const giaBan = parseFloat(order.giaBan) / 1000;
+
+                        if (!isNaN(giaMua)) capNhatSoLuong(maCP, 'buy', giaMua, soLuongKhop);
+                        if (!isNaN(giaBan)) capNhatSoLuong(maCP, 'sell', giaBan, soLuongKhop);
+                    }
+                } catch (e) {
+                    console.error('WebSocket error:', e);
                 }
-
-                // ===== KHỚP LỆNH =====
-                if (isMatch && order.giaKhop != null && order.soLuongKhop != null) {
-                    capNhatBangGia({
-                        maCP,
-                        giakhop: order.giaKhop,
-                        soLuong: order.soLuongKhop,
-                        delta: order.delta
-                    });
-
-                    const soLuongKhop = parseInt(order.soLuongKhop);
-                    const giaMua = parseFloat(order.giaMua);
-                    const giaBan = parseFloat(order.giaBan);
-
-                    if (!isNaN(giaMua)) capNhatSoLuong(maCP, 'buy', giaMua, soLuongKhop);
-                    if (!isNaN(giaBan)) capNhatSoLuong(maCP, 'sell', giaBan, soLuongKhop);
-                }
-
-            } catch (e) {
-                console.error('WebSocket error:', e);
-            }
+            });
         });
-    });
 
-    function updateOrderSide(maCP, side) {
-        const sideOrders = orderBook[maCP][side] || [];
-        for (let i = 1; i <= 3; i++) {
-            const priceElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-gia${i}-${maCP}`);
-            const quantityElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-kl${i}-${maCP}`);
-            if (priceElem && quantityElem) {
-                const order = sideOrders[i - 1];
-                if (order) {
-                    priceElem.textContent = order.gia.toFixed(2);
-                    quantityElem.textContent = order.soLuong.toLocaleString();
-                    const color = side === 'buy' ? 'green' : 'red';
-                    priceElem.className = quantityElem.className = `${color} flash`;
-                    setTimeout(() => {
-                        priceElem.className = quantityElem.className = color;
-                    }, 1000);
-                } else {
-                    priceElem.textContent = quantityElem.textContent = '-';
-                    priceElem.className = quantityElem.className = '';
+        function updateOrderSide(maCP, side) {
+            const sideOrders = (orderBook[maCP][side] || []).slice(0, 3); // Hiển thị top 3
+            for (let i = 1; i <= 3; i++) {
+                const priceElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-gia${i}-${maCP}`);
+                const quantityElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-kl${i}-${maCP}`);
+                if (priceElem && quantityElem) {
+                    const order = sideOrders[i - 1];
+                    if (order) {
+                        priceElem.textContent = order.gia.toFixed(3);
+                        quantityElem.textContent = order.soLuong.toLocaleString();
+                        const color = side === 'buy' ? 'green' : 'red';
+                        priceElem.className = quantityElem.className = `${color} flash`;
+                        setTimeout(() => {
+                            priceElem.className = quantityElem.className = color;
+                        }, 1000);
+                    } else {
+                        priceElem.textContent = quantityElem.textContent = '-';
+                        priceElem.className = quantityElem.className = '';
+                    }
                 }
             }
         }
-    }
 
-    function capNhatBangGia(data) {
-        const { maCP, giakhop, soLuong, delta } = data;
+        function capNhatBangGia(data) {
+            const { maCP, giakhop, soLuong, delta } = data;
+            let giaKhopElem = document.getElementById(`giaKhop-${maCP}`);
+            let klKhopElem = document.getElementById(`klKhop-${maCP}`);
+            let deltaElem = document.getElementById(`delta-${maCP}`);
 
-        let giaKhopElem = document.getElementById(`giaKhop-${maCP}`);
-        let klKhopElem = document.getElementById(`klKhop-${maCP}`);
-        let deltaElem = document.getElementById(`delta-${maCP}`);
+            if (!giaKhopElem || !klKhopElem || !deltaElem) return;
 
-        if (!giaKhopElem || !klKhopElem || !deltaElem) return;
+            giaKhopElem.textContent = giakhop?.toFixed(3) ?? '-';
+            klKhopElem.textContent = soLuong?.toLocaleString() ?? '-';
+            deltaElem.textContent = delta?.toFixed(3) ?? '-';
 
-        giaKhopElem.textContent = giakhop?.toFixed(0) ?? '-';
-        klKhopElem.textContent = soLuong?.toLocaleString() ?? '-';
-        deltaElem.textContent = delta?.toFixed(0) ?? '-';
-
-        const color = delta > 0 ? 'green' : delta < 0 ? 'red' : 'yellow';
-        giaKhopElem.className = klKhopElem.className = deltaElem.className = `${color} flash`;
-        setTimeout(() => {
-            giaKhopElem.className = klKhopElem.className = deltaElem.className = color;
-        }, 1000);
-    }
-
-    function capNhatSoLuong(maCP, side, giaCanTru, soLuongTru) {
-        const list = orderBook[maCP]?.[side];
-        if (!list) return;
-
-        const index = list.findIndex(o => o.gia === giaCanTru);
-        if (index === -1) return;
-
-        list[index].soLuong -= soLuongTru;
-        if (list[index].soLuong <= 0) {
-            list.splice(index, 1);
+            const color = delta > 0 ? 'green' : delta < 0 ? 'red' : 'yellow';
+            giaKhopElem.className = klKhopElem.className = deltaElem.className = `${color} flash`;
+            setTimeout(() => {
+                giaKhopElem.className = klKhopElem.className = deltaElem.className = color;
+            }, 1000);
         }
 
-        updateOrderSide(maCP, side);
-    }
+        function capNhatSoLuong(maCP, side, giaCanTru, soLuongTru) {
+            const list = orderBook[maCP]?.[side];
+            if (!list) return;
+
+            const index = list.findIndex(o => Math.abs(o.gia - giaCanTru) < 0.001);
+            if (index === -1) return;
+
+            list[index].soLuong = parseInt(list[index].soLuong) - soLuongTru;
+            if (list[index].soLuong <= 0) {
+                list.splice(index, 1);
+            }
+
+            list.sort((a, b) => side === 'buy' ? b.gia - a.gia : a.gia - b.gia);
+            updateOrderSide(maCP, side);
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
+            // Khởi tạo orderBook từ bảng
+            initializeOrderBookFromTable();
+
             const input = document.querySelector('input[name="maCP"]');
             const tableBody = document.querySelector('table tbody');
 
@@ -263,19 +322,14 @@
 
             input.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
-                    e.preventDefault(); // không reload trang
+                    e.preventDefault();
                     const value = input.value.trim().toUpperCase();
-
                     const rows = Array.from(tableBody.querySelectorAll('tr'));
                     const matchingRow = rows.find(row => row.cells[0]?.textContent.trim().toUpperCase() === value);
 
                     if (matchingRow) {
-                        // Đưa dòng tìm thấy lên đầu
                         tableBody.insertBefore(matchingRow, tableBody.firstChild);
-
-                        // Highlight dòng trong 3s
                         matchingRow.classList.add('highlighted-row');
-
                         setTimeout(() => {
                             matchingRow.classList.remove('highlighted-row');
                         }, 3000);
@@ -283,7 +337,6 @@
                 }
             });
         });
-
     </script>
 </body>
 </html>

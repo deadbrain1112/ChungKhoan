@@ -56,7 +56,8 @@
         </thead>
         <tbody>
         <!-- Duyệt qua employees.content -->
-        <tr th:each="employee : ${employees.content}" th:classappend="${temporaryEmployees.contains(employee)} ? 'unsaved'">
+        <tr th:each="employee : ${employees.content}"
+            th:classappend="${temporaryMaNVList.contains(employee.maNV)} ? 'unsaved'">
             <td th:text="${employee.maNV}"></td>
             <td th:text="${employee.hoTen}"></td>
             <td th:text="${employee.ngaySinh}"></td>
@@ -66,21 +67,42 @@
             <td th:text="${employee.gioiTinh}"></td>
             <td th:text="${employee.email}"></td>
             <td>
-                <button type="button" class="edit-link"
-                        th:attr="data-maNV=${employee.maNV},
-                                 data-hoTen=${employee.hoTen},
-                                 data-ngaySinh=${employee.ngaySinh},
-                                 data-diaChi=${employee.diaChi},
-                                 data-phone=${employee.phone},
-                                 data-cmnd=${employee.cmnd},
-                                 data-gioiTinh=${employee.gioiTinh},
-                                 data-email=${employee.email}">Sửa</button> |
-                <form th:action="${temporaryEmployees.contains(employee) ? '/employees/remove-temp' : '/employees/delete'}" method="post" style="display:inline;">
+                <!-- Nếu nhân viên đã bị xóa: chỉ hiển thị nút "Hoàn tác xóa" -->
+                <form th:if="${employee.daXoa}" th:action="@{/employees/undo-delete}" method="post" style="display:inline;">
                     <input type="hidden" name="maNV" th:value="${employee.maNV}" />
-                    <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                    <button type="submit" class="toolbar-btn">Hoàn tác xóa</button>
                 </form>
+
+                <!-- Nếu chưa bị xóa: hiển thị Sửa và Xóa -->
+                <div th:if="${!employee.daXoa}">
+                    <button type="button" class="edit-link"
+                            th:attr="data-maNV=${employee.maNV},
+                         data-hoTen=${employee.hoTen},
+                         data-ngaySinh=${employee.ngaySinh},
+                         data-diaChi=${employee.diaChi},
+                         data-phone=${employee.phone},
+                         data-cmnd=${employee.cmnd},
+                         data-gioiTinh=${employee.gioiTinh},
+                         data-email=${employee.email}">Sửa</button> |
+
+                    <!-- Nếu là nhân viên tạm thời -->
+                    <form th:if="${temporaryMaNVList.contains(employee.maNV)}"
+                          th:action="@{/employees/remove-temp}" method="post" style="display:inline;">
+                        <input type="hidden" name="maNV" th:value="${employee.maNV}" />
+                        <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi danh sách tạm?')">Xóa</button>
+                    </form>
+
+                    <!-- Nếu là nhân viên trong DB -->
+                    <form th:unless="${temporaryMaNVList.contains(employee.maNV)}"
+                          th:action="@{/employees/delete}" method="post" style="display:inline;">
+                        <input type="hidden" name="maNV" th:value="${employee.maNV}" />
+                        <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi hệ thống?')">Xóa</button>
+                    </form>
+                </div>
             </td>
+
         </tr>
+
         <!-- Nếu không có bản ghi -->
         <tr th:if="${employees.empty}">
             <td colspan="9" style="text-align:center;">Không có dữ liệu nhân viên.</td>

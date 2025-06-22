@@ -98,9 +98,9 @@ public class KhopLenhProcessorService {
 
         for (Double gia : tapGia) {
             int muaDuoc = muaAT.stream().mapToInt(LenhDat::getSoLuong).sum() +
-                          loMua.stream().filter(l -> l.getGia() >= gia).mapToInt(LenhDat::getSoLuong).sum();
+                    loMua.stream().filter(l -> l.getGia() >= gia).mapToInt(LenhDat::getSoLuong).sum();
             int banDuoc = banAT.stream().mapToInt(LenhDat::getSoLuong).sum() +
-                          loBan.stream().filter(l -> l.getGia() <= gia).mapToInt(LenhDat::getSoLuong).sum();
+                    loBan.stream().filter(l -> l.getGia() <= gia).mapToInt(LenhDat::getSoLuong).sum();
 
             int slKhop = Math.min(muaDuoc, banDuoc);
             if (slKhop > maxKL || (slKhop == maxKL && Math.abs(gia - giaTC) < Math.abs(bestGia - giaTC))) {
@@ -173,20 +173,20 @@ public class KhopLenhProcessorService {
         soHuuService.tangSoHuu(maNDTMua, maCP, slKhop);
 
         lenhKhopRepo.save(LenhKhop.builder()
-            .lenhDat(mua)
-            .ngayGioKhop(LocalDateTime.now())
-            .soLuongKhop(slKhop)
-            .giaKhop(giaKhop)
-            .kieuKhop(mua.getSoLuong() == slKhop ? "Khớp hết" : "Khớp 1 phần")
-            .build());
+                .lenhDat(mua)
+                .ngayGioKhop(LocalDateTime.now())
+                .soLuongKhop(slKhop)
+                .giaKhop(giaKhop)
+                .kieuKhop(mua.getSoLuong() == slKhop ? "Khớp hết" : "Khớp 1 phần")
+                .build());
 
         lenhKhopRepo.save(LenhKhop.builder()
-            .lenhDat(ban)
-            .ngayGioKhop(LocalDateTime.now())
-            .soLuongKhop(slKhop)
-            .giaKhop(giaKhop)
-            .kieuKhop(ban.getSoLuong() == slKhop ? "Khớp hết" : "Khớp 1 phần")
-            .build());
+                .lenhDat(ban)
+                .ngayGioKhop(LocalDateTime.now())
+                .soLuongKhop(slKhop)
+                .giaKhop(giaKhop)
+                .kieuKhop(ban.getSoLuong() == slKhop ? "Khớp hết" : "Khớp 1 phần")
+                .build());
 
         capNhatTrangThai(mua, slKhop);
         capNhatTrangThai(ban, slKhop);
