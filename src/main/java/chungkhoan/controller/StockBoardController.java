@@ -98,11 +98,16 @@ public class StockBoardController {
             benBanMap.put(maCP, tongHopTheoGia(lenhBan, false));
 
             // --- Lệnh khớp và màu sắc ---
+            LocalDate ngayHienThi = (phase == TradingTimeUtil.Phase.NGHI)
+                    ? LocalDate.now().minusDays(1)
+                    : LocalDate.now();
+            String ngayStr = ngayHienThi.toString();
+
             LenhKhop khopCuoi;
             if (phase == TradingTimeUtil.Phase.NGHI) {
-                khopCuoi = lenhKhopRepo.findLenhKhopCuoiTrongNgay(maCP, homNay.toString()); // dùng snapshot nếu có
+                khopCuoi = lenhKhopRepo.findLenhKhopCuoiTrongNgay(maCP, ngayStr);
             } else {
-                khopCuoi = lenhKhopRepo.findLenhKhopCuoiTrongNgay(maCP, homNay.toString());
+                khopCuoi = lenhKhopRepo.findLatestKhopLenh(maCP);
             }
 
             if (khopCuoi != null) {
@@ -120,14 +125,7 @@ public class StockBoardController {
             }
 
             // --- Tổng khối lượng ---
-            Long tongKL;
-            if (phase == TradingTimeUtil.Phase.NGHI) {
-                tongKL = lenhKhopRepo.sumSoLuongKhopByMaCPAndNgay(maCP, homNay.toString());
-            } else {
-                tongKL = lenhKhopRepo.findTopByLenhDat_CoPhieuOrderByNgayGioKhopDesc(cp, startOfDay, endOfDay).stream()
-                        .mapToLong(LenhKhop::getSoLuongKhop)
-                        .sum();
-            }
+            Long tongKL = lenhKhopRepo.sumSoLuongKhopByCoPhieu(cp, startOfDay, endOfDay);
 
             tongKLMoiMap.put(maCP, tongKL != null ? tongKL : 0L);
         }
