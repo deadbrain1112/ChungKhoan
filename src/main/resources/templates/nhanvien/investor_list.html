@@ -96,7 +96,6 @@
                     </div>
                 </td>
             </tr>
-
             <!-- Nếu không có bản ghi -->
             <tr th:if="${investors.empty}">
                 <td colspan="9" style="text-align:center;">Không có dữ liệu nhà đầu tư.</td>
@@ -104,7 +103,6 @@
             </tbody>
         </table>
     </div>
-
         <!-- Div ẩn chứa tài khoản ngân hàng từ session tạm -->
         <div style="display: none;" id="temp-bank-accounts-data">
             <th:block th:each="entry : ${tempBankAccounts}">
@@ -153,24 +151,6 @@
                 <input type="radio" name="gioiTinh" value="Nữ" required style="margin-left: 20px;"/> Nữ
             </label><br/>
             <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
-
-            <h4>Tài khoản ngân hàng</h4>
-            <table class="bank-account-table" id="bank-accounts-add">
-                <thead>
-                <tr>
-                    <th>Số tài khoản</th>
-                    <th>Tên ngân hàng</th>
-                    <th>Mã ngân hàng</th>
-                    <th>Số tiền</th>
-                    <th>Địa chỉ</th>
-                    <th>Số điện thoại</th>
-                    <th>Email</th>
-                    <th>Hành động</th>
-                </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button type="button" onclick="addBankAccount('bank-accounts-add')">Thêm tài khoản ngân hàng</button><br/>
             <button type="submit">Lưu vào tạm</button>
             <button type="button" onclick="hideSubform('add-form')">Hủy</button>
         </form>
@@ -331,23 +311,26 @@
     }
 
     function showBankSubform1(maNDT) {
-        const tbody = document.getElementById('bank-subform-1-body');
-        tbody.innerHTML = '';
+        fetch(`/bank-accounts/by-investor?maNDT=${maNDT}`)
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('bank-subform-1-body');
+                tbody.innerHTML = '';
 
-        const allDivs = document.querySelectorAll(`#temp-bank-accounts-data div[data-maNDT="${maNDT}"]`);
+                if (data.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="4" style="text-align:center;">Không có tài khoản ngân hàng</td>`;
+                    tbody.appendChild(row);
+                    return;
+                }
 
-        if (allDivs.length === 0) {
-            const emptyRow = document.createElement('tr');
-            emptyRow.innerHTML = `<td colspan="4" style="text-align:center;">Không có tài khoản ngân hàng</td>`;
-            tbody.appendChild(emptyRow);
-        } else {
-            allDivs.forEach(div => {
-                const maTK = div.getAttribute("data-accountnumber") || '';
-                const maNH = div.getAttribute("data-bankcode") || '';
-                const soTien = div.getAttribute("data-amount") || '0.00';
+                data.forEach(account => {
+                    const maTK = account.maTK || '';
+                    const maNH = account.nganHang?.maNH || '';
+                    const soTien = account.soTien != null ? parseFloat(account.soTien).toLocaleString('vi-VN') : '0';
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
                     <td>${maTK}</td>
                     <td>${maNH}</td>
                     <td>${soTien}</td>
@@ -356,21 +339,17 @@
                         <button type="button" onclick="deleteBankAccount('${maNDT}', '${maTK}')">Xóa</button>
                     </td>
                 `;
-                tbody.appendChild(row);
+                    tbody.appendChild(row);
+                });
+
+                document.getElementById('bank-subform-wrapper').style.display = 'flex';
+                document.getElementById('bank-subform-1').style.display = 'block';
+                document.getElementById('bank-subform-2').style.display = 'none';
+
+                disableToolbarButtons();
             });
-        }
-
-        // Hiển thị wrapper
-        document.getElementById('bank-subform-wrapper').style.display = 'flex';
-
-        // Chỉ bật subform 1, ẩn subform 2 ban đầu
-        document.getElementById('bank-subform-1').style.display = 'block';
-        document.getElementById('bank-subform-2').style.display = 'none';
-
-        document.getElementById('add-form').style.display = 'none';
-        document.getElementById('edit-form').style.display = 'none';
-        disableToolbarButtons();
     }
+
 
 
     function showBankSubform2(maNDT, maTK) {
