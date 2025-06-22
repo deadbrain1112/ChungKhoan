@@ -168,4 +168,8 @@ public class TaiKhoanNganHangService {
         }
         return result;
     }
+
+    public TaiKhoanNganHang findByMaTK(String maTK) {
+        return taiKhoanNganHangRepository.findById(maTK).orElse(null);
+    }
 }

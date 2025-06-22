@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -18,31 +19,30 @@ public class BackUpController {
 
 	@Autowired
 	private BackupService backupService;
+	String dbName = "QUANLYGIAODICHCHUNGKHOAN";
 
 	@GetMapping("/backup")
-	public String backUpForm(@RequestParam(required = false) String dbName, Model model) {
-		List<String> databases = backupService.getAllDatabases();
-		model.addAttribute("databases", databases);
+	public String backUpForm(Model model) {
+		String dbName = "QUANLYGIAODICHCHUNGKHOAN";
+		String deviceName = "QUANLYGIAODICHCHUNGKHOAN";
 
-		if (dbName != null) {
-			List<Map<String, Object>> backupList = backupService.getBackupHistory(dbName);
-			model.addAttribute("backupList", backupList);
-			model.addAttribute("selectedDb", dbName);
-		}
+		List<Map<String, Object>> backupList = backupService.getBackupHistory(dbName, deviceName);
+
+		model.addAttribute("backupList", backupList);
+		model.addAttribute("selectedDb", dbName);
 
 		return "nhanvien/backup";
 	}
 
 	@PostMapping("/backup/device-create")
-	public String createDevice(@RequestParam("dbName") String dbName, RedirectAttributes ra) {
+	public String createDevice( RedirectAttributes ra) {
 		backupService.createBackupDevice(dbName);
 		ra.addFlashAttribute("msg", "Đã tạo device cho " + dbName);
 		return "redirect:/backup?dbName=" + dbName;
 	}
 
 	@PostMapping("/backup/save")
-	public String backupDatabase(@RequestParam("dbName") String dbName,
-								 @RequestParam(value = "deleteOld", required = false, defaultValue = "false") boolean deleteOld,
+	public String backupDatabase(@RequestParam(value = "deleteOld", required = false, defaultValue = "false") boolean deleteOld,
 								 RedirectAttributes ra) {
 		backupService.backupDatabase(dbName, deleteOld);
 		ra.addFlashAttribute("msg", "Đã sao lưu " + dbName + " thành công.");
@@ -50,29 +50,24 @@ public class BackUpController {
 	}
 
 	@PostMapping("/backup/recovery")
-	public String restoreDatabase(@RequestParam("dbName") String dbName,
-								  @RequestParam(value = "enableTimeRecovery", required = false) boolean enableTimeRecovery,
-								  @RequestParam(value = "recoveryDate", required = false)
-								  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate recoveryDate,
-								  @RequestParam(value = "recoveryTime", required = false)
-								  @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime recoveryTime,
-								  RedirectAttributes ra) {
-
+	public String restoreSelectedBackup(
+			@RequestParam("selectedBackup") String selectedBackup,
+			RedirectAttributes ra) {
 		try {
-			if (enableTimeRecovery && recoveryDate != null && recoveryTime != null) {
-				backupService.restoreToTime(dbName, recoveryDate, recoveryTime);
-				ra.addFlashAttribute("msg", "Đã phục hồi " + dbName + " về thời điểm " + recoveryDate + " " + recoveryTime);
-			} else {
-				backupService.restoreLatestBackup(dbName);
-				ra.addFlashAttribute("msg", "Đã phục hồi " + dbName + " từ bản backup mới nhất.");
-			}
+			System.out.println(selectedBackup);
+			String[] parts = selectedBackup.split("::");
+			String path = parts[0];
+
+			int index = Integer.parseInt(parts[1]);
+
+			backupService.restoreBackup(path, index);
+
+			ra.addFlashAttribute("msg", "Phục hồi cơ sở dữ liệu thành công.");
 		} catch (Exception e) {
-			ra.addFlashAttribute("error", "Lỗi khi phục hồi: " + e.getMessage());
+			ra.addFlashAttribute("errorMsg", "Phục hồi thất bại: " + e.getMessage());
 		}
-
-		return "redirect:/backup?dbName=" + dbName;
+		return "redirect:/backup";
 	}
-
 
 
 }

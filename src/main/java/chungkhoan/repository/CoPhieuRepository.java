@@ -24,10 +24,11 @@ public interface CoPhieuRepository extends JpaRepository<CoPhieu, String> {
             @Param("diaChi") String diaChi,
             @Param("soLuongPH") int soLuongPH
     );
-    
-    //List<CoPhieu> findByNhaDauTu(NhaDauTu nhaDauTu);
+
     List<CoPhieu> findByMaCPIn(List<String> maCPs);
-    
+
     @Query("SELECT c.maCP FROM CoPhieu c")
     List<String> findAllMaCP();
+
+    boolean existsByMaCP(String maCP);
 }

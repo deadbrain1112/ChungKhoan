@@ -184,8 +184,12 @@ public class NDTService {
         }
         return false;
     }
+    public boolean existsById(String maNDT) {
+        return ndtRepository.existsById(maNDT);
+    }
 
-
-
+    public boolean existsByCmnd(String cmnd) {
+        return ndtRepository.existsByCmnd(cmnd);
+    }
 
 }

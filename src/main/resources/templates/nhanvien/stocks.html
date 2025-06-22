@@ -45,32 +45,53 @@
         </tr>
         </thead>
         <tbody>
-        <!-- Duyệt qua stocks.content (bao gồm cả cổ phiếu tạm) -->
-        <tr th:each="stock : ${stocks.content}" th:classappend="${temporaryStocks.contains(stock)} ? 'unsaved'">
+        <!-- Duyệt qua stocks.content -->
+        <tr th:each="stock : ${stocks.content}"
+            th:classappend="${temporaryMaCPList.contains(stock.maCP)} ? 'unsaved'">
             <td th:text="${stock.maCP}"></td>
             <td th:text="${stock.tenCty}"></td>
             <td th:text="${stock.diaChi}"></td>
             <td th:text="${stock.soLuongPH}"></td>
             <td>
-                <button type="button" class="edit-link"
-                        th:attr="data-maCP=${stock.maCP},
-                         data-tenCty=${stock.tenCty},
-                         data-diaChi=${stock.diaChi},
-                         data-soLuongPH=${stock.soLuongPH}">
-                    Sửa
-                </button>
-                |
-                <form th:action="${temporaryStocks.contains(stock) ? '/stocks/remove-temp' : '/stocks/delete'}" method="post" style="display:inline;">
-                    <input type="hidden" name="maCP" th:value="${stock.maCP}"/>
-                    <button type="submit" class="delete-btn" onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</button>
+                <!-- Nếu cổ phiếu đã bị xóa: chỉ hiển thị nút "Hoàn tác xóa" -->
+                <form th:if="${stock.daXoa}" th:action="@{/stocks/undo-delete}" method="post" style="display:inline;">
+                    <input type="hidden" name="maCP" th:value="${stock.maCP}" />
+                    <button type="submit" class="toolbar-btn">Hoàn tác xóa</button>
                 </form>
+
+                <!-- Nếu chưa bị xóa: hiển thị Sửa và Xóa -->
+                <div th:if="${!stock.daXoa}">
+                    <button type="button" class="edit-link"
+                            th:attr="data-maCP=${stock.maCP},
+                             data-tenCty=${stock.tenCty},
+                             data-diaChi=${stock.diaChi},
+                             data-soLuongPH=${stock.soLuongPH}">Sửa</button> |
+
+                    <!-- Nếu là cổ phiếu tạm thời -->
+                    <form th:if="${temporaryMaCPList.contains(stock.maCP)}"
+                          th:action="@{/stocks/remove-temp}" method="post" style="display:inline;">
+                        <input type="hidden" name="maCP" th:value="${stock.maCP}" />
+                        <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi danh sách tạm?')">Xóa</button>
+                    </form>
+
+                    <!-- Nếu là cổ phiếu trong DB -->
+                    <form th:unless="${temporaryMaCPList.contains(stock.maCP)}"
+                          th:action="@{/stocks/delete}" method="post" style="display:inline;">
+                        <input type="hidden" name="maCP" th:value="${stock.maCP}" />
+                        <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi hệ thống?')">Xóa</button>
+                    </form>
+                </div>
             </td>
         </tr>
-        <!-- Nếu không có bản ghi nào -->
+
+
+        <!-- Nếu không có bản ghi -->
         <tr th:if="${stocks.empty}">
-            <td colspan="5" style="text-align:center;">Không có dữ liệu cổ phiếu.</td>
+            <td colspan="7" style="text-align:center;">Không có dữ liệu cổ phiếu.</td>
         </tr>
         </tbody>
+
+
     </table>
 
     <!-- Phân trang -->
