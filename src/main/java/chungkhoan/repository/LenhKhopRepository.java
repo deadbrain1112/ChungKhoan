@@ -21,6 +21,9 @@ public interface LenhKhopRepository extends JpaRepository<LenhKhop, Long> {
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
     );
+    
+    @Query("SELECT lk FROM LenhKhop lk WHERE lk.lenhDat.coPhieu.maCP = :maCP ORDER BY lk.ngayGioKhop DESC")
+    LenhKhop findLatestKhopLenh(@Param("maCP") String maCP);
 
     // Tính tổng khối lượng khớp trong ngày hiện tại
     @Query("SELECT SUM(lk.soLuongKhop) FROM LenhKhop lk WHERE lk.lenhDat.coPhieu = :cp " +
@@ -37,18 +40,6 @@ public interface LenhKhopRepository extends JpaRepository<LenhKhop, Long> {
     @Query(value = "SELECT * FROM LenhKhop WHERE MaGD = :maGD ORDER BY NgayGioKhop DESC", nativeQuery = true)
     List<LenhKhop> findAllByMaGDOrderByNgayGioKhopDesc(@Param("maGD") Long maGD);
     
-	    // Tổng khối lượng khớp theo mã CP trong ngày (dạng đơn)
-	    @Query(value = """
-	        SELECT SUM(kh.SoLuongKhop)
-	        FROM LenhKhop kh
-	        JOIN LenhDat ld ON kh.MaGD = ld.MaGD
-	        JOIN CoPhieu cp ON ld.MaCP = cp.MaCP
-	        WHERE cp.MaCP = :maCP
-	          AND CONVERT(date, kh.NgayGioKhop) = :ngay
-	    """, nativeQuery = true)
-	    Long sumSoLuongKhopByMaCPAndNgay(@Param("maCP") String maCP, @Param("ngay") String ngay); // yyyy-MM-dd
-
-
 	    //Lệnh khớp cuối cùng trong ngày của một mã CP
     	@Query(value = """
     		    SELECT TOP 1 kh.*

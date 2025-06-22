@@ -229,3 +229,40 @@ tbody tr:hover {
         background-color: transparent;
     }
 }
+
+.green { color: green; }
+    .red { color: red; }
+    .yellow { color: yellow; }
+    .flash {
+    animation: flash 0.5s ease-in-out 2;
+}
+@keyframes flash {
+     0%, 100% { opacity: 1; }
+     50% { opacity: 0.5; }
+}
+
+/* Trong phiên - nền + chữ trắng */
+.bg-tang-live { background-color: #2e7d32; color: white; }
+.bg-giam-live { background-color: #e53935; color: white; }
+.bg-tran-live { background-color: #9933cc; color: white; }
+.bg-san-live  { background-color: #3366cc; color: white; }
+.bg-thamchieu-live { background-color: #fbc02d; color: black; }
+
+/* Ngoài phiên - chỉ màu chữ */
+.text-tang { color: #00ff00; font-weight: bold; }
+.text-giam { color: #ff3333; font-weight: bold; }
+.text-tran { color: #dd99ff; font-weight: bold; }
+.text-san { color: #3399ff; font-weight: bold; }
+.text-thamchieu { color: #ffcc00; font-weight: bold; }
+
+/* Không có giá */
+.bg-chua-co { background-color: #666; color: white; }
+
+/* Flash nhấp nháy */
+.flash {
+    animation: flash 0.5s ease-in-out 2;
+}
+@keyframes flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}

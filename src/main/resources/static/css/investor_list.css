@@ -63,13 +63,11 @@ body {
 .table td.action-cell {
     position: sticky;
     right: 0;
-    background: #fff;
     z-index: 2;
     min-width: 120px;
     text-align: center;
     box-shadow: -1px 0 5px rgba(0,0,0,0.1);
 }
-
 
 /* --- FORM CON (SUBFORM) --- */
 .subform-container {
@@ -78,6 +76,7 @@ body {
     padding: 15px;
     border: 1px solid #ccc;
     background: #f9f9f9;
+    border-radius: 6px;
 }
 
 .subform-container.active {
@@ -125,7 +124,12 @@ button:disabled {
     cursor: not-allowed;
 }
 
+/* --- FORM ACTION BUTTONS (Đặt về bên phải) --- */
 .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
     margin-top: 15px;
 }
 
@@ -184,11 +188,80 @@ tr.unsaved {
     font-weight: bold;
 }
 
-.bank-account-table th:nth-child(1) { width: 14%; }  /* Số tài khoản */
-.bank-account-table th:nth-child(2) { width: 14%; }  /* Tên ngân hàng */
-.bank-account-table th:nth-child(3) { width: 10%; }  /* Mã ngân hàng */
-.bank-account-table th:nth-child(4) { width: 12%; }  /* Số tiền */
-.bank-account-table th:nth-child(5) { width: 16%; }  /* Địa chỉ */
-.bank-account-table th:nth-child(6) { width: 12%; }  /* Số điện thoại */
-.bank-account-table th:nth-child(7) { width: 14%; }  /* Email */
-.bank-account-table th:nth-child(8) { width: 8%; }   /* Hành động */
+.bank-account-table th:nth-child(1) { width: 14%; }
+.bank-account-table th:nth-child(2) { width: 14%; }
+.bank-account-table th:nth-child(3) { width: 10%; }
+.bank-account-table th:nth-child(4) { width: 12%; }
+.bank-account-table th:nth-child(5) { width: 16%; }
+.bank-account-table th:nth-child(6) { width: 12%; }
+.bank-account-table th:nth-child(7) { width: 14%; }
+.bank-account-table th:nth-child(8) { width: 8%; }
+
+/* --- NÚT Ở CỘT HÀNH ĐỘNG CỦA BẢNG CHÍNH --- */
+.table td.action-cell button {
+    padding: 5px 10px;
+    margin: 3px;
+    font-size: 13px;
+    border: 1px solid #bbb;
+    color: #333;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.table td.action-cell button:hover {
+    background-color: #f2f2f2;
+}
+
+/* --- WRAPPER CHỨA 2 SUBFORM NGÂN HÀNG --- */
+#bank-subform-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 25px;
+}
+
+/* --- MỖI SUBFORM Ở TRONG 1 BOX RIÊNG --- */
+.subform-bank {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* đẩy phần button xuống cuối */
+    height: 100%;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.subform-bank h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+}
+
+/* --- FORM SUBFORM KHÔNG ĐẨY INPUT SANG PHẢI --- */
+.subform-container form,
+.subform-bank form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+select {
+    width: 100%;
+    padding: 8px 10px;
+    margin: 5px 0 12px;
+    box-sizing: border-box;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    appearance: none; 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    text-align: center;
+}
+

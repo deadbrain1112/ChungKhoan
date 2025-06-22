@@ -73,65 +73,63 @@
         <th>Giá 3</th><th>KL 3</th>
     </tr>
     </thead>
-    <tbody>
-    <tr th:each="cp : ${dsCP}">
-        <td th:text="${cp.maCP}"></td>
-
-        <!-- Tham chiếu / Trần / Sàn -->
-        <td class="gia-tham-chieu" th:text="${#numbers.formatDecimal(giaTCMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
-        <td class="gia-tran" th:text="${#numbers.formatDecimal(giaTranMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
-        <td class="gia-san" th:text="${#numbers.formatDecimal(giaSanMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
-
-        <!-- Bên mua -->
-        <td th:id="'mua-gia3-' + ${cp.maCP}"
-            th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-        <td th:id="'mua-kl3-' + ${cp.maCP}"
-            th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-
-        <td th:id="'mua-gia2-' + ${cp.maCP}"
-            th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-        <td th:id="'mua-kl2-' + ${cp.maCP}"
-            th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-
-        <td th:id="'mua-gia1-' + ${cp.maCP}"
-            th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-        <td th:id="'mua-kl1-' + ${cp.maCP}"
-            th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-
-        <!-- Giá khớp -->
-        <td th:id="'giaKhop-' + ${cp.maCP}"
-            th:text="${lenhKhopMap[cp.maCP]?.giaKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop, 0, 'POINT', 0, 'POINT') : '-'}"
-            th:classappend="${colorMap[cp.maCP]} + ' flash'"></td>
-
-        <!-- Khối lượng khớp -->
-        <td th:id="'klKhop-'+ ${cp.maCP}"
-            th:text="${lenhKhopMap[cp.maCP]?.soLuongKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].soLuongKhop, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-
-        <!-- +/- -->
-        <td th:id="'delta-' + ${cp.maCP}"
-            th:text="${deltaMap[cp.maCP] != null ? #numbers.formatDecimal(deltaMap[cp.maCP], 0, 'POINT', 0, 'POINT') : '-'}"
-            th:classappend="${colorMap[cp.maCP]} + ' flash'"></td>
-
-        <!-- Bên bán -->
-        <td th:id="'ban-gia1-' + ${cp.maCP}"
-            th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-        <td th:id="'ban-kl1-' + ${cp.maCP}"
-            th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-
-        <td th:id="'ban-gia2-' + ${cp.maCP}"
-            th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-        <td th:id="'ban-kl2-' + ${cp.maCP}"
-            th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-
-        <td th:id="'ban-gia3-' + ${cp.maCP}"
-            th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-        <td th:id="'ban-kl3-' + ${cp.maCP}"
-            th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-
-        <!-- Tổng khối lượng -->
-        <td class="tong-kl" th:text="${#numbers.formatDecimal(tongKhopMap[cp.maCP], 0, 'COMMA', 0, 'COMMA')}"></td>
-    </tr>
-    </tbody>
+	    <tbody>
+			<tr th:each="cp : ${dsCP}">
+			    <td th:text="${cp.maCP}"></td>
+			
+			    <!-- Tham chiếu / Trần / Sàn -->
+			    <td class="gia-tham-chieu" th:text="${#numbers.formatDecimal(giaTCMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
+			    <td class="gia-tran" th:text="${#numbers.formatDecimal(giaTranMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
+			    <td class="gia-san" th:text="${#numbers.formatDecimal(giaSanMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
+			
+			    <!-- Bên mua -->
+			    <td th:id="'mua-gia3-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+			    <td th:id="'mua-kl3-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			
+			    <td th:id="'mua-gia2-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+			    <td th:id="'mua-kl2-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			
+			    <td th:id="'mua-gia1-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+			    <td th:id="'mua-kl1-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			
+			    <!-- Giá khớp -->
+			    <td th:id="'giaKhop-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]} + ' flash'"
+			        th:text="${lenhKhopMap[cp.maCP]?.giaKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+			
+			    <!-- Khối lượng khớp -->
+			    <td th:id="'klKhop-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]} + ' flash'"
+			        th:text="${lenhKhopMap[cp.maCP]?.soLuongKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].soLuongKhop, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			
+			    <!-- +/- -->
+			    <td th:id="'delta-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]} + ' flash'"
+			        th:text="${deltaMap[cp.maCP] != null ? #numbers.formatDecimal(deltaMap[cp.maCP], 0, 'POINT', 0, 'POINT') : '-'}"></td>
+			
+			    <!-- Bên bán -->
+			    <td th:id="'ban-gia1-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+			    <td th:id="'ban-kl1-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			
+			    <td th:id="'ban-gia2-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+			    <td th:id="'ban-kl2-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			
+			    <td th:id="'ban-gia3-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
+			    <td th:id="'ban-kl3-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
+			        th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			
+			    <!-- Tổng khối lượng -->
+			    <td class="tong-kl" th:text="${#numbers.formatDecimal(tongKhopMap[cp.maCP], 0, 'COMMA', 0, 'COMMA')}"></td>
+			</tr>
+		</tbody>
 </table>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
