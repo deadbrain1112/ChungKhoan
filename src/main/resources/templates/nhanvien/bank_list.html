@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách ngân hàng</title>
+    <link rel="stylesheet" th:href="@{/css/stocks.css}">
+</head>
+<body>
+<div>
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <button type="button" class="toolbar-btn" onclick="showAddForm(); return false;">Thêm</button> |
+        <form th:action="@{/banks/reload}" method="get" style="display:inline;">
+            <button type="submit" class="toolbar-btn">Reload</button> |
+        </form>
+        <form th:action="@{/banks/save-all}" method="post" style="display:inline;">
+            <button type="submit" class="toolbar-btn" th:disabled="${temporaryBanks.isEmpty()}">Ghi tất cả</button>
+        </form> |
+        <form th:action="@{/banks/search}" method="post" style="display:inline;">
+            <input type="text" name="query" placeholder="Tìm kiếm..."/>
+            <button type="submit" class="toolbar-btn">Tìm</button>
+        </form> |
+        <form th:action="@{/banks/undo}" method="post" style="display:inline;">
+            <button type="submit" class="toolbar-btn" th:disabled="${!canUndo}">Hoàn tác</button>
+        </form> |
+        <form th:action="@{/banks/clear-undo}" method="post" style="display:inline;">
+            <button type="submit" class="toolbar-btn btn btn-danger">Thoát</button>
+        </form>
+    </div>
+
+    <!-- Thông báo -->
+    <div th:if="${message}" th:class="'alert ' + (${messageType}=='success'?'alert-success':'alert-danger')" role="alert">
+        <span th:text="${message}"></span>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Mã NH</th>
+            <th>Tên NH</th>
+            <th>Địa chỉ</th>
+            <th>Số điện thoại</th>
+            <th>Email</th>
+            <th>Hành động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Duyệt qua stocks.content -->
+        <tr th:each="bank : ${banks.content}"
+            th:classappend="${temporaryMaNHList.contains(bank.maNH)} ? 'unsaved'">
+            <td th:text="${bank.maNH}"></td>
+            <td th:text="${bank.tenNH}"></td>
+            <td th:text="${bank.diaChi}"></td>
+            <td th:text="${bank.phone}"></td>
+            <td th:text="${bank.email}"></td>
+            <td>
+                <!-- Nếu cổ phiếu đã bị xóa: chỉ hiển thị nút "Hoàn tác xóa" -->
+                <form th:if="${bank.daXoa}" th:action="@{/banks/undo-delete}" method="post" style="display:inline;">
+                    <input type="hidden" name="maNH" th:value="${bank.maNH}" />
+                    <button type="submit" class="toolbar-btn">Hoàn tác xóa</button>
+                </form>
+
+                <!-- Nếu chưa bị xóa: hiển thị Sửa và Xóa -->
+                <div th:if="${!bank.daXoa}">
+                    <button type="button" class="edit-link"
+                            th:attr="data-maNH=${bank.maNH},
+                             data-tenNH=${bank.tenNH},
+                             data-diaChi=${bank.diaChi},
+                             data-phone=${bank.phone},
+                             data-email=${bank.email}">Sửa</button> |
+
+                    <!-- Nếu là cổ phiếu tạm thời -->
+                    <form th:if="${temporaryMaNHList.contains(bank.maNH)}"
+                          th:action="@{/banks/remove-temp}" method="post" style="display:inline;">
+                        <input type="hidden" name="maNH" th:value="${bank.maNH}" />
+                        <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi danh sách tạm?')">Xóa</button>
+                    </form>
+
+                    <!-- Nếu là cổ phiếu trong DB -->
+                    <form th:unless="${temporaryMaNHList.contains(bank.maNH)}"
+                          th:action="@{/banks/delete}" method="post" style="display:inline;">
+                        <input type="hidden" name="maNH" th:value="${bank.maNH}" />
+                        <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi hệ thống?')">Xóa</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+
+        <!-- Nếu không có bản ghi -->
+        <tr th:if="${banks.empty}">
+            <td colspan="7" style="text-align:center;">Không có dữ liệu ngân hàng.</td>
+        </tr>
+        </tbody>
+
+
+    </table>
+
+    <!-- Phân trang -->
+    <div class="pagination">
+        <span th:if="${banks.hasPrevious()}">
+            <a th:href="@{/banks(page=${banks.number-1},size=${banks.size})}">« Trước</a>
+        </span>
+        <span th:each="i : ${#numbers.sequence(0, banks.totalPages-1)}">
+            <a th:href="@{/banks(page=${i},size=${banks.size})}"
+               th:text="${i+1}"
+               th:classappend="${i==banks.number} ? 'active'">
+            </a>
+        </span>
+        <span th:if="${banks.hasNext()}">
+            <a th:href="@{/banks(page=${banks.number+1},size=${banks.size})}">Sau »</a>
+        </span>
+    </div>
+
+    <!-- Form Thêm -->
+    <div id="add-form" class="subform-container" style="display:none;">
+        <h3>Thêm ngân hàng</h3>
+        <form th:action="@{/banks/add-temp(page=${banks.number},size=${banks.size})}" method="post">
+            <input type="hidden" name="page" th:value="${banks.number}"/>
+            <input type="hidden" name="size" th:value="${banks.size}"/>
+            <label>Mã ngân hàng: <input type="text" name="maNH" required/></label><br/>
+            <label>Tên ngân hàng: <input type="text" name="tenNH" required/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" required/></label><br/>
+            <label>Số điện thoại: <input type="number" name="phone" required/></label><br/>
+            <label>Email: <input type="number" name="email" required/></label><br/>
+            <button type="submit">Lưu vào tạm</button>
+            <button type="button" onclick="hideSubform('add-form')">Hủy</button>
+        </form>
+    </div>
+
+    <!-- Form Sửa -->
+    <div id="edit-form" class="subform-container" style="display:none;">
+        <h3>Sửa ngân hàng</h3>
+        <form th:action="@{/banks/edit-temp}" method="post">
+            <input type="hidden" name="maNH" id="maNH" />
+            <label>Tên ngân hàng: <input type="text" name="tenCty" required/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" required/></label><br/>
+            <label>Số điện thoại: <input type="number" name="phone" required/></label><br/>
+            <label>Email: <input type="number" name="email" required/></label><br/>
+            <button type="submit">Lưu thay đổi</button>
+            <button type="button" onclick="hideSubform('edit-form')">Hủy</button>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    function disableToolbarButtons() {
+        document.querySelectorAll('.toolbar-btn').forEach(btn => btn.disabled = true);
+        document.querySelectorAll('.edit-link').forEach(btn => btn.disabled = true);
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.disabled = true);
+    }
+    function enableToolbarButtons() {
+        document.querySelectorAll('.toolbar-btn').forEach(btn => btn.disabled = false);
+        document.querySelectorAll('.edit-link').forEach(btn => btn.disabled = false);
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.disabled = false);
+    }
+    function showAddForm() {
+        document.getElementById('add-form').style.display = 'block';
+        document.getElementById('edit-form').style.display = 'none';
+        disableToolbarButtons();
+    }
+
+    function hideSubform(id) {
+        document.getElementById(id).style.display = 'none';
+        enableToolbarButtons();
+    }
+    function showEditForm(data) {
+        const form = document.querySelector('#edit-form form');
+        form.maNH.value = data.maNH;
+        form.tenNH.value = data.tenNH;
+        form.diaChi.value = data.diaChi;
+        form.phone.value = data.phone;
+        form.email.value = data.email;
+        document.getElementById('edit-form').style.display = 'block';
+        document.getElementById('add-form').style.display = 'none';
+        disableToolbarButtons();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".edit-link").forEach(link =>
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const maNH = this.getAttribute("data-maNH");
+                const tenNH = this.getAttribute("data-tenNH");
+                const diaChi = this.getAttribute("data-diaChi");
+                const phone = this.getAttribute("data-phone");
+                const email = this.getAttribute("data-email");
+                showEditForm({ maNH, tenNH, diaChi, phone,  email});
+            })
+        );
+    });
+</script>
+</body>
+</html>

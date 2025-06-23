@@ -151,8 +151,11 @@
                 <input type="radio" name="gioiTinh" value="Nữ" required style="margin-left: 20px;"/> Nữ
             </label><br/>
             <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
-            <button type="submit">Lưu vào tạm</button>
-            <button type="button" onclick="hideSubform('add-form')">Hủy</button>
+
+            <div class="form-actions">
+	            <button type="submit">Lưu vào tạm</button>
+	            <button type="button" onclick="hideSubform('add-form')">Hủy</button>
+            </div>
         </form>
     </div>
 
@@ -216,7 +219,6 @@
 	                <tbody id="bank-subform-2-body"></tbody>
 	            </table>
 	            <div class="form-actions">
-				    <button type="button" onclick="addBankAccount('bank-accounts-subform-2')">Thêm</button>
 				    <button type="button">Sửa</button>
 				    <button type="submit">Ghi</button>
 				    <button type="button" onclick="hideSubform('bank-subform-2')">Đóng</button>
@@ -226,21 +228,6 @@
 	</div>
 
 
-    <div style="display: none;" id="temp-bank-accounts-data">
-	    <th:block th:each="entry : ${bankAccountMap}">
-	        <th:block th:each="account : ${entry.value}">
-	            <div th:data-maNDT="${entry.key}"
-				     th:data-accountNumber="${account.maTK}"
-				     th:data-bankName="${account.nganHang.tenNH}"
-				     th:data-bankCode="${account.nganHang.maNH}"
-				     th:data-amount="${account.soTien}"
-				     th:data-address="${account.nganHang.diaChi}"
-				     th:data-phone="${account.nganHang.phone}"
-				     th:data-email="${account.nganHang.email}">
-				</div>
-	        </th:block>
-	    </th:block>
-	</div>
 
 
 </div>
@@ -319,84 +306,87 @@
         const tbody = document.getElementById('bank-subform-1-body');
         tbody.innerHTML = '';
 
-        const allDivs = document.querySelectorAll(`#temp-bank-accounts-data div[data-maNDT="${maNDT}"]`);
+        fetch('/investors/load-bank-ajax', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ maNDT })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Lỗi khi lấy dữ liệu tài khoản.");
+            return response.json();
+        })
+        .then(data => {
+            if (data.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `<td colspan="4" style="text-align:center;">Không có tài khoản ngân hàng</td>`;
+                tbody.appendChild(emptyRow);
+            } else {
+                data.forEach(acc => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${acc.maNH}</td>
+                        <td>${acc.maTK}</td>
+                        <td>${acc.soTien}</td>
+                        <td>
+	                        <button type="button" onclick="showBankSubform2('${acc.maNH}', '${maNDT}')">Sửa</button>
+	                        <button type="button" onclick="deleteBankAccount('${maNDT}', '${acc.maTK}')">Xóa</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
 
-        if (allDivs.length === 0) {
-            const emptyRow = document.createElement('tr');
-            emptyRow.innerHTML = `<td colspan="4" style="text-align:center;">Không có tài khoản ngân hàng</td>`;
-            tbody.appendChild(emptyRow);
-        } else {
-            allDivs.forEach(div => {
-                const maTK = div.getAttribute("data-accountnumber") || '';
-                const maNH = div.getAttribute("data-bankcode") || '';
-                const soTien = div.getAttribute("data-amount") || '0.00';
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${maTK}</td>
-                    <td>${maNH}</td>
-                    <td>${soTien}</td>
-                    <td>
-                        <button type="button" onclick="showBankSubform2('${maNDT}', '${maTK}')">Sửa</button>
-                        <button type="button" onclick="deleteBankAccount('${maNDT}', '${maTK}')">Xóa</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Hiển thị wrapper
-        document.getElementById('bank-subform-wrapper').style.display = 'flex';
-
-        // Chỉ bật subform 1, ẩn subform 2 ban đầu
-        document.getElementById('bank-subform-1').style.display = 'block';
-        document.getElementById('bank-subform-2').style.display = 'none';
-
-        document.getElementById('add-form').style.display = 'none';
-        document.getElementById('edit-form').style.display = 'none';
-        disableToolbarButtons();
+            document.getElementById('bank-subform-wrapper').style.display = 'flex';
+            document.getElementById('bank-subform-1').style.display = 'block';
+            document.getElementById('bank-subform-2').style.display = 'none';
+            document.getElementById('add-form').style.display = 'none';
+            document.getElementById('edit-form').style.display = 'none';
+            disableToolbarButtons();
+        })
+        .catch(error => {
+            alert("Lỗi khi tải tài khoản ngân hàng!");
+            console.error(error);
+        });
     }
 
-
-    function showBankSubform2(maNDT, maTK) {
-        const tbody = document.querySelector('#bank-subform-2-body');
-        tbody.innerHTML = '';
-        bankAccountIndex = 0;
-
-        const allDivs = document.querySelectorAll(`#temp-bank-accounts-data div[data-maNDT="${maNDT}"]`);
-        const usedSet = new Set(usedMaTKs);
-
-        allDivs.forEach(div => {
-            const accountNumber = div.dataset.accountnumber || '';
-            if (!accountNumber.trim()) return;
-
-            const isUsed = usedSet.has(accountNumber);
-
+    function showBankSubform2(maNH, maNDT) {
+        fetch('/investors/load-nganhang-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ maNH: maNH })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.querySelector('#bank-subform-2-body');
+            tbody.innerHTML = '';
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" value="${div.dataset.bankname || ''}" maxlength="50" required ${isUsed ? 'disabled' : ''}/></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" value="${div.dataset.bankcode || ''}" maxlength="20" required ${isUsed ? 'disabled' : ''}/></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" value="${div.dataset.address || ''}" maxlength="100" required ${isUsed ? 'disabled' : ''}/></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" value="${div.dataset.phone || ''}" maxlength="10" required ${isUsed ? 'disabled' : ''}/></td>
-                <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" value="${div.dataset.email || ''}" maxlength="50" required ${isUsed ? 'disabled' : ''}/></td>
-                <td><button type="button" onclick="removeBankAccount(this)" ${isUsed ? 'disabled' : ''}>Xóa</button></td>
+                <td><input type="text" name="nganHang.tenNH" value="${data.tenNH}" readonly /></td>
+                <td><input type="text" name="nganHang.maNH" value="${data.maNH}" readonly /></td>
+                <td><input type="text" name="nganHang.diaChi" value="${data.diaChi}" readonly /></td>
+                <td><input type="text" name="nganHang.phone" value="${data.phone}" readonly /></td>
+                <td><input type="email" name="nganHang.email" value="${data.email}" readonly /></td>
+                <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
             `;
             tbody.appendChild(row);
-            bankAccountIndex++;
+
+            // Truyền lại maNDT cho form
+            document.getElementById('bank-subform-2-maNDT').value = maNDT;
+
+            document.getElementById('bank-subform-wrapper').style.display = 'flex';
+            document.getElementById('bank-subform-1').style.display = 'block';
+            document.getElementById('bank-subform-2').style.display = 'block';
+            document.getElementById('add-form').style.display = 'none';
+            document.getElementById('edit-form').style.display = 'none';
+            disableToolbarButtons();
+        })
+        .catch(err => {
+            alert('Lỗi khi tải thông tin ngân hàng');
+            console.error(err);
         });
-
-        document.querySelector('#bank-subform-2-maNDT').value = maNDT;
-
-        // Bật cả 2 form song song
-        document.getElementById('bank-subform-wrapper').style.display = 'flex';
-        document.getElementById('bank-subform-1').style.display = 'block';
-        document.getElementById('bank-subform-2').style.display = 'block';
-
-        document.getElementById('add-form').style.display = 'none';
-        document.getElementById('edit-form').style.display = 'none';
-        disableToolbarButtons();
     }
-
 
     function deleteBankAccount(maNDT, maTK) {
         if (!confirm('Bạn có chắc muốn xóa tài khoản này?')) return;
@@ -434,6 +424,7 @@
     function enableToolbarButtons() {
         document.querySelectorAll('.toolbar-btn, .edit-link, .delete-btn, .bank-link').forEach(btn => btn.disabled = false);
     }
+
 
     function addBankAccount(tableId) {
         const table = document.getElementById(tableId).querySelector('tbody');

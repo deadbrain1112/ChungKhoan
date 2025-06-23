@@ -1,33 +1,49 @@
 package chungkhoan.controller;
 
 import chungkhoan.dto.NhaDauTuTemp;
+import chungkhoan.entity.NganHang;
 import chungkhoan.entity.NhaDauTu;
+import chungkhoan.entity.TaiKhoanNganHang;
 import chungkhoan.service.NDTService;
+import chungkhoan.service.NganHangService;
+import chungkhoan.service.TaiKhoanNganHangService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
 public class InvestorsController {
 
-    @Autowired
-    private NDTService ndtService;
+	@Autowired
+	private NDTService ndtService;
+
+	@Autowired
+	private TaiKhoanNganHangService taiKhoanNganHangService;
+
+	@Autowired
+	private NganHangService nganHangService;
 
     @GetMapping("/investors")
     public String InvestorList(@RequestParam(defaultValue = "0") int page,
@@ -85,13 +101,13 @@ public class InvestorsController {
                 .toList();
         model.addAttribute("temporaryMaNDTList", temporaryMaNDTList);
 
-        // Logging để debug
-        System.out.println("InvestorList - TempList size: " + tempList.size());
-        System.out.println("InvestorList - Allinvestors size: " + allinvestors.size());
-        System.out.println("InvestorList - Page content size: " + pageContent.size());
-        System.out.println("InvestorList - temporaryMaNDTList: " + temporaryMaNDTList);
-        System.out.println("InvestorList - investors class: " + allinvestorsPage.getClass().getName());
-        System.out.println("InvestorList - investors.content size: " + allinvestorsPage.getContent().size());
+		// Logging để debug
+		System.out.println("InvestorList - TempList size: " + tempList.size());
+		System.out.println("InvestorList - Allinvestors size: " + allinvestors.size());
+		System.out.println("InvestorList - Page content size: " + pageContent.size());
+		System.out.println("InvestorList - temporaryMaNDTList: " + temporaryMaNDTList);
+		System.out.println("InvestorList - investors class: " + allinvestorsPage.getClass().getName());
+		System.out.println("InvestorList - investors.content size: " + allinvestorsPage.getContent().size());
 
         return "nhanvien/investor_list";
     }
@@ -376,9 +392,49 @@ public class InvestorsController {
         return "redirect:/investors?page=" + page + "&size=" + size;
     }
 
-    @PostMapping("/investors/clear-undo")
-    public String clearUndoStackAndExit() {
-        ndtService.clearUndoStack();
-        return "redirect:/nhanvien/layout";
-    }
+	@PostMapping("/investors/clear-undo")
+	public String clearUndoStackAndExit() {
+		ndtService.clearUndoStack();
+		return "redirect:/nhanvien/layout";
+	}
+
+	@PostMapping(value = "/investors/load-bank-ajax", consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public List<Map<String, Object>> loadBankAccountsAjax(@RequestBody Map<String, String> request) {
+	    String maNDT = request.get("maNDT");
+
+	    // Gọi service để lấy danh sách từ DB
+	    List<TaiKhoanNganHang> accounts = taiKhoanNganHangService.findByInvestorMaNDT(maNDT);
+
+	    // Chuyển danh sách sang JSON dạng đơn giản
+	    return accounts.stream().map(acc -> {
+	        Map<String, Object> map = new HashMap<>();
+	        map.put("maTK", acc.getMaTK());
+	        map.put("maNH", acc.getNganHang().getMaNH());
+	        map.put("tenNH", acc.getNganHang().getTenNH());
+	        map.put("soTien", acc.getSoTien());
+	        return map;
+	    }).collect(Collectors.toList());
+	}
+
+	@PostMapping(value = "/investors/load-nganhang-info", consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Map<String, String> getNganHangInfo(@RequestBody Map<String, String> request) {
+	    String maNH = request.get("maNH");
+
+	    Optional<NganHang> optional = nganHangService.findByMaNH(maNH);
+	    if (optional.isEmpty()) {
+	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ngân hàng");
+	    }
+
+	    NganHang nh = optional.get();
+	    Map<String, String> result = new HashMap<>();
+	    result.put("maNH", nh.getMaNH());
+	    result.put("tenNH", nh.getTenNH());
+	    result.put("diaChi", nh.getDiaChi());
+	    result.put("phone", nh.getPhone());
+	    result.put("email", nh.getEmail());
+	    return result;
+	}
+
 }
