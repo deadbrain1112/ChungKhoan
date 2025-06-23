@@ -23,7 +23,7 @@ public interface LenhKhopRepository extends JpaRepository<LenhKhop, Long> {
     );
     
     @Query("SELECT lk FROM LenhKhop lk WHERE lk.lenhDat.coPhieu.maCP = :maCP ORDER BY lk.ngayGioKhop DESC")
-    LenhKhop findLatestKhopLenh(@Param("maCP") String maCP);
+    List<LenhKhop> findLatestKhopLenh(@Param("maCP") String maCP);
 
     // Tính tổng khối lượng khớp trong ngày hiện tại
     @Query("SELECT SUM(lk.soLuongKhop) FROM LenhKhop lk WHERE lk.lenhDat.coPhieu = :cp " +

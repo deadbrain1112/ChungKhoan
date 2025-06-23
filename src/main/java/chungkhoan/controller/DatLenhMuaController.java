@@ -152,6 +152,9 @@ public class DatLenhMuaController {
         double giaDat = 0;
         double soTien = taiKhoan != null && taiKhoan.getSoTien() != null ? taiKhoan.getSoTien().doubleValue() : 0;
 
+        // Xử lý phân loại
+        String giaTruyenWS = null;
+
         if ("LO".equalsIgnoreCase(loaiLenh)) {
             if (gia == null) {
                 model.addAttribute("error", "Thiếu dữ liệu giá mua!");
@@ -164,13 +167,17 @@ public class DatLenhMuaController {
             }
 
             giaDat = gia;
+            giaTruyenWS = String.valueOf((int) giaDat);
+
             if (soTien < giaDat * soLuong) {
                 model.addAttribute("error", "Số dư không đủ để đặt lệnh mua!");
                 return "ndt/dat_lenh_mua";
             }
 
         } else if ("ATO".equalsIgnoreCase(loaiLenh) || "ATC".equalsIgnoreCase(loaiLenh)) {
-            giaDat = 0;
+            giaDat = 0; // DB cần 0
+            giaTruyenWS = loaiLenh.toUpperCase(); // WebSocket cần gửi 'ATO' hoặc 'ATC'
+
             if (soTien < giaTran * soLuong) {
                 model.addAttribute("error", "Số dư không đủ để đặt lệnh " + loaiLenh + " theo giá trần!");
                 return "ndt/dat_lenh_mua";
@@ -181,6 +188,7 @@ public class DatLenhMuaController {
             return "ndt/dat_lenh_mua";
         }
 
+        // Lưu DB
         LenhDat lenh = LenhDat.builder()
             .coPhieu(coPhieuOpt.get())
             .taiKhoanNganHang(taiKhoan)
@@ -194,7 +202,9 @@ public class DatLenhMuaController {
 
         lenhDatService.save(lenh);
 
-        messagingTemplate.convertAndSend("/topic/stock-board", createOrderMessage(maCP, giaDat, soLuong, "M"));
+        // Gửi WebSocket
+        messagingTemplate.convertAndSend("/topic/stock-board",
+            createOrderMessage(maCP, giaTruyenWS, soLuong, "M"));
 
         model.addAttribute("success", "Đặt lệnh mua thành công!");
         model.addAttribute("tatCaCoPhieu", coPhieuService.getAllCoPhieu());
@@ -202,16 +212,15 @@ public class DatLenhMuaController {
         return "redirect:/nhadautu/dat-lenh-mua";
     }
 
-    private Map<String, Object> createOrderMessage(String maCPInput, double giaInput, int soLuongInput, String loaiGDInput) {
-        return Map.of(
-                "maCP", maCPInput,
-                "gia", giaInput,
-                "soLuong", soLuongInput,
-                "loaiGD", loaiGDInput,
-                "type", "order"
-        );
+    private Map<String, Object> createOrderMessage(String maCP, String gia, int soLuong, String loaiGD) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("maCP", maCP);
+        map.put("gia", gia); // Đã chuyển thành String 'ATO' / 'ATC' hoặc '13000'
+        map.put("soLuong", soLuong);
+        map.put("loaiGD", loaiGD);
+        map.put("type", "order");
+        return map;
     }
-
 
     private String formatGia(Double gia) {
         return gia != null ? new DecimalFormat("#,###").format(gia) + " VND" : "Chưa cập nhật";

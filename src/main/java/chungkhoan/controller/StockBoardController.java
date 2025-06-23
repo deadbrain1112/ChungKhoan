@@ -54,8 +54,6 @@ public class StockBoardController {
         Map<String, Long> tongKLMoiMap = new HashMap<>();
         Map<String, List<Map<String, Object>>> benMuaMap = new HashMap<>();
         Map<String, List<Map<String, Object>>> benBanMap = new HashMap<>();
-        Map<String, String> colorMap = new HashMap<>();
-        Map<String, Double> deltaMap = new HashMap<>();
 
         TradingTimeUtil.Phase phase = tradingTimeUtil.getCurrentPhase(now);
         model.addAttribute("phase", phase.name());
@@ -82,57 +80,53 @@ public class StockBoardController {
             giaTranMap.put(maCP, giaTran);
             giaSanMap.put(maCP, giaSan);
 
-            // --- Lấy lệnh đặt từ DB (luôn lấy realtime, kể cả phase NGHỈ) ---
-            List<String> statuses = Arrays.asList("Chờ", "Một phần");
+            // --- Lệnh đặt: theo phase ---
+            List<Map<String, Object>> benMua;
+            List<Map<String, Object>> benBan;
 
-            List<LenhDat> lenhMua = lenhDatRepo
-                    .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(maCP, "M", statuses).stream()
-                    .filter(ld -> !ld.getNgayGD().toLocalDate().isBefore(homNay))
-                    .collect(Collectors.toList());
-            benMuaMap.put(maCP, tongHopTheoGia(lenhMua, true));
+            if (phase == TradingTimeUtil.Phase.NGHI) {
+                // Dùng snapshot
+                List<Object[]> muaSnap = khopLenhService.getTopMuaSnapshot(maCP);
+                List<Object[]> banSnap = khopLenhService.getTopBanSnapshot(maCP);
+                benMua = convertSnapshotToMap(muaSnap, true);
+                benBan = convertSnapshotToMap(banSnap, false);
+            } else {
+                List<String> trangThai = List.of("Chờ", "Một phần");
+                List<String> loaiLenhCanLay = phase.getLenhHienThi(); // ATO: ATO+LO, LO: LO, ATC: ATC+LO
 
-            List<LenhDat> lenhBan = lenhDatRepo
-                    .findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaAscNgayGDAsc(maCP, "B", statuses).stream()
-                    .filter(ld -> !ld.getNgayGD().toLocalDate().isBefore(homNay))
-                    .collect(Collectors.toList());
-            benBanMap.put(maCP, tongHopTheoGia(lenhBan, false));
+                List<LenhDat> lenhMua = lenhDatRepo
+                    .findByMaCPLoaiGDTrangThaiLoaiLenh(maCP, "M", trangThai, loaiLenhCanLay);
+                benMua = tongHopTheoGia(lenhMua, true);
 
-            // --- Lệnh khớp và màu sắc ---
+                List<LenhDat> lenhBan = lenhDatRepo
+                    .findByMaCPLoaiGDTrangThaiLoaiLenh(maCP, "B", trangThai, loaiLenhCanLay);
+                benBan = tongHopTheoGia(lenhBan, false);
+            }
+
+            benMuaMap.put(maCP, benMua);
+            benBanMap.put(maCP, benBan);
+
+            // --- Lệnh khớp cuối ---
             LocalDate ngayHienThi = (phase == TradingTimeUtil.Phase.NGHI)
-                    ? LocalDate.now().minusDays(1)
-                    : LocalDate.now();
+                ? LocalDate.now().minusDays(1)
+                : LocalDate.now();
             String ngayStr = ngayHienThi.toString();
 
-            LenhKhop khopCuoi;
-            if (phase == TradingTimeUtil.Phase.NGHI) {
-                khopCuoi = lenhKhopRepo.findLenhKhopCuoiTrongNgay(maCP, ngayStr);
-            } else {
-                khopCuoi = lenhKhopRepo.findLatestKhopLenh(maCP);
-            }
+            LenhKhop khopCuoi = (phase == TradingTimeUtil.Phase.NGHI)
+                ? lenhKhopRepo.findLenhKhopCuoiTrongNgay(maCP, ngayStr)
+                : lenhKhopRepo.findLatestKhopLenh(maCP).stream().findFirst().orElse(null);
 
             if (khopCuoi != null) {
                 lenhKhopMoiNhatMap.put(maCP, khopCuoi);
-                double giaKhop = khopCuoi.getGiaKhop();
-
-                String cls = "gia-tham-chieu";
-                if (giaKhop == giaTran) cls = "gia-tran";
-                else if (giaKhop == giaSan) cls = "gia-san";
-                else if (giaKhop > giaTC) cls = "gia-tang";
-                else if (giaKhop < giaTC) cls = "gia-giam";
-
-                colorMap.put(maCP, cls);
-                deltaMap.put(maCP, giaKhop - giaTC);
             }
 
-            // --- Tổng khối lượng ---
+            // --- Tổng khối lượng khớp ---
             Long tongKL = lenhKhopRepo.sumSoLuongKhopByCoPhieu(cp, startOfDay, endOfDay);
-
             tongKLMoiMap.put(maCP, tongKL != null ? tongKL : 0L);
         }
 
+
         model.addAttribute("filter", filter);
-        model.addAttribute("colorMap", colorMap);
-        model.addAttribute("deltaMap", deltaMap);
         model.addAttribute("dsCP", dsCP);
         model.addAttribute("giaTCMap", giaTCMap);
         model.addAttribute("giaTranMap", giaTranMap);
@@ -157,33 +151,52 @@ public class StockBoardController {
             .entrySet().stream()
             .map(e -> {
                 Map<String, Object> m = new HashMap<>();
-                m.put("gia", e.getKey());
+                try {
+                    m.put("gia", Double.parseDouble(e.getKey())); // ép về Double nếu có thể
+                } catch (NumberFormatException ex) {
+                    m.put("gia", e.getKey()); // giữ nguyên ATO/ATC
+                }
                 m.put("soLuong", e.getValue());
                 return m;
             })
             .sorted((a, b) -> {
-                String giaA = a.get("gia").toString();
-                String giaB = b.get("gia").toString();
+                Object valA = a.get("gia");
+                Object valB = b.get("gia");
 
-                try {
-                    Double gA = Double.parseDouble(giaA);
-                    Double gB = Double.parseDouble(giaB);
-                    return isMua ? Double.compare(gB, gA) : Double.compare(gA, gB);
-                } catch (NumberFormatException e) {
-                    return 0;
-                }
+                double gA = (valA instanceof Number) ? ((Number) valA).doubleValue() : -1;
+                double gB = (valB instanceof Number) ? ((Number) valB).doubleValue() : -1;
+
+                boolean isZeroA = (gA == 0.0);
+                boolean isZeroB = (gB == 0.0);
+
+                if (isZeroA && !isZeroB) return -1; // Ưu tiên giá = 0
+                if (!isZeroA && isZeroB) return 1;
+
+                if (valA instanceof String && !(valB instanceof String)) return -1; // Ưu tiên ATO/ATC
+                if (!(valA instanceof String) && valB instanceof String) return 1;
+
+                if (valA instanceof String && valB instanceof String) return 0;
+
+                return isMua ? Double.compare(gB, gA) : Double.compare(gA, gB);
             })
             .limit(3)
             .collect(Collectors.toList());
     }
     
-    // 🟩 Chuyển từ List<Object[]> → List<Map<String, Object>>
-    private List<Map<String, Object>> convertObjectListToMapList(List<Object[]> rawList) {
-        return rawList.stream().map(obj -> {
-            Map<String, Object> m = new HashMap<>();
-            m.put("gia", obj[0]);
-            m.put("soLuong", obj[1]);
-            return m;
-        }).collect(Collectors.toList());
+    private List<Map<String, Object>> convertSnapshotToMap(List<Object[]> list, boolean isMua) {
+        return list.stream()
+            .map(obj -> {
+                Map<String, Object> m = new HashMap<>();
+                m.put("gia", Double.parseDouble(obj[0].toString()));
+                m.put("soLuong", Integer.parseInt(obj[1].toString()));
+                return m;
+            })
+            .sorted((a, b) -> {
+                Double giaA = (Double) a.get("gia");
+                Double giaB = (Double) b.get("gia");
+                return isMua ? Double.compare(giaB, giaA) : Double.compare(giaA, giaB);
+            })
+            .limit(3)
+            .collect(Collectors.toList());
     }
 }

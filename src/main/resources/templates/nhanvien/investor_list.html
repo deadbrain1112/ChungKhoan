@@ -469,12 +469,12 @@
         const row = button.parentElement.parentElement;
         row.remove();
     }
-
+    
     function createNewBankAccountRow() {
         const tbody = document.getElementById('bank-subform-1-body');
         const row = document.createElement('tr');
 
-        const selectOptions = danhSachNganHang.map(nh =>
+        const selectOptions = danhSachNganHang.map(nh => 
             `<option value="${nh.maNH}">${nh.tenNH}</option>`
         ).join('');
 
