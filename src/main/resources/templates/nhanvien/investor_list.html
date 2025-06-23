@@ -142,18 +142,18 @@
     <div id="add-form" class="subform-container" style="display:none;">
         <h3>Thêm nhà đầu tư</h3>
         <form th:action="@{/investors/add-temp(page=${investors.number},size=${investors.size})}" method="post">
-            <label>Mã nhà đầu tư: <input type="text" name="maNDT" maxlength="20" required/></label><br/>
-            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
-            <label>Mã khẩu giao dịch: <input type="password" name="mkGiaoDich" maxlength="50" required/></label><br/>
-            <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
-            <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
-            <label>CMND: <input type="text" name="cmnd" maxlength="10" required/></label><br/>
+            <label>Mã nhà đầu tư: <input type="text" name="maNDT" maxlength="20" required autocomplete="off"/></label><br/>
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"/></label><br/>
+            <label>Mã khẩu giao dịch: <input type="password" name="mkGiaoDich" maxlength="50" required autocomplete="off"/></label><br/>
+            <label>Ngày sinh: <input type="date" name="ngaySinh" required autocomplete="off"/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"/></label><br/>
+            <label>Số điện thoại: <input type="number" name="phone" maxlength="10" required autocomplete="off"/></label><br/>
+            <label>CMND: <input type="number" name="cmnd" maxlength="10" required autocomplete="off"/></label><br/>
             <label>Giới tính:
                 <input type="radio" name="gioiTinh" value="Nam" required/> Nam
                 <input type="radio" name="gioiTinh" value="Nữ" required style="margin-left: 20px;"/> Nữ
             </label><br/>
-            <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
+            <label>Email: <input type="email" name="email" maxlength="50" required autocomplete="off"/></label><br/>
 
             <div class="form-actions">
 	            <button type="submit">Lưu vào tạm</button>
@@ -167,19 +167,19 @@
         <h3>Sửa nhà đầu tư</h3>
         <form th:action="@{/investors/edit-temp}" method="post">
             <input type="hidden" name="maNDT" id="maNDT" />
-            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"/></label><br/>
             <label>Mã khẩu giao dịch: <input type="password" name="mkGiaoDich" maxlength="50" readonly="readonly"/></label><br/>
-            <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
-            <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
-            <label>CMND: <input type="text" name="cmnd" maxlength="10" required/></label><br/>
+            <label>Ngày sinh: <input type="date" name="ngaySinh" required autocomplete="off"/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"/></label><br/>
+            <label>Số điện thoại: <input type="number" name="phone" maxlength="10" required autocomplete="off"/></label><br/>
+            <label>CMND: <input type="number" name="cmnd" maxlength="10" required autocomplete="off"/></label><br/>
             <label>Giới tính:
                 <input type="radio" name="gioiTinh" value="Nam" id="edit-nam" required/>
                 <label for="edit-nam">Nam</label>
                 <input type="radio" name="gioiTinh" value="Nữ" id="edit-nu" style="margin-left: 20px;" required/>
                 <label for="edit-nu">Nữ</label>
             </label><br/>
-            <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
+            <label>Email: <input type="email" name="email" maxlength="50" required autocomplete="off"/></label><br/>
             <div class="form-actions">
             	<button type="submit">Lưu thay đổi</button>
             	<button type="button" onclick="hideSubform('edit-form')">Hủy</button>
@@ -203,7 +203,7 @@
 	            <tbody id="bank-subform-1-body"></tbody>
 	        </table>
 	        <div class="form-actions">
-	        	<button type="button" onclick="createNewBankAccountRow()">Tạo tài khoản</button>	
+	        	<button type="button" onclick="createNewBankAccountRow()">Thêm</button>	
 	        	<button type="button" onclick="hideSubform('bank-subform-1')">Đóng</button>
 	        </div>
 	    </div>
@@ -232,8 +232,6 @@
 	        </form>
 	    </div>
 	</div>
-
-
 
 
 <script th:inline="javascript">
@@ -335,7 +333,7 @@
                         <td>${acc.maTK}</td>
                         <td>${acc.soTien}</td>
                         <td>
-	                        <button type="button" onclick="showBankSubform2('${acc.maNH}', '${maNDT}')">Sửa</button>
+	                        <button type="button" onclick="showBankSubform2('${acc.maNH}', '${maNDT}')">Thông tin ngân hàng</button>
 	                        <button type="button" onclick="deleteBankAccount('${maNDT}', '${acc.maTK}')">Xóa</button>
                         </td>
                     `;

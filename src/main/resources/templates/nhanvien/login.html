@@ -30,12 +30,6 @@
 		<div class="error-message" th:if="${error != null}">
 			<p th:text="${error}"></p>
 		</div>
-		
-		<!-- Dòng tạo tài khoản -->
-		<div class="account-actions">
-		    <p><a th:href="@{/forget-password(from='admin')}">Quên mật khẩu</a></p>
-		    <p>Chưa có tài khoản? <a href="/sign-in-request">Đăng ký</a></p>
-		</div>
 	</form>
 </body>
 </html>
