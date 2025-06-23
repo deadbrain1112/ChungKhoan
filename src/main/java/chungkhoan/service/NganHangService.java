@@ -79,4 +79,20 @@ public class NganHangService {
     public Optional<NganHang> findByMaNH(String maNH) {
         return nganHangRepository.findById(maNH);
     }
+    
+    public boolean capNhatNganHang(String maNH, String tenNH, String diaChi, String phone, String email) {
+        Optional<NganHang> optional = nganHangRepository.findByMaNH(maNH);
+
+        if (optional.isPresent()) {
+            NganHang nh = optional.get();
+            nh.setTenNH(tenNH);
+            nh.setDiaChi(diaChi);
+            nh.setPhone(phone);
+            nh.setEmail(email);
+            nganHangRepository.save(nh);
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

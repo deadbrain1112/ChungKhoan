@@ -240,6 +240,8 @@
     <!-- Container chứa 2 subform ngân hàng -->
 	<div id="bank-subform-wrapper" style="display: none; gap: 20px;" class="subform-bank-wrapper">
 	    <div id="bank-subform-1" class="subform-bank half-width">
+	    	<input type="hidden" id="maNDT-hidden" value="" />
+	    
 	        <h3>Tài Khoản Ngân Hàng</h3>
 	        <table class="bank-account-table" id="bank-accounts-subform-1">
 	            <thead>
@@ -259,28 +261,28 @@
 	    </div>
 	    <div id="bank-subform-2" class="subform-bank half-width">
 	        <h3>Chi Tiết Ngân Hàng</h3>
-	        <form id="bank-subform-2-form" th:action="@{/investors/edit-bank-temp}" method="post"
-	        		onsubmit="disableBankSubform2Inputs()">
-	            <input type="hidden" name="maNDT" id="bank-subform-2-maNDT" />
-	            <table class="bank-account-table" id="bank-accounts-subform-2">
-	                <thead>
-	                <tr>
-	                    <th>Tên ngân hàng</th>
-	                    <th>Mã ngân hàng</th>
-	                    <th>Địa chỉ</th>
-	                    <th>Số điện thoại</th>
-	                    <th>Email</th>
-	                    <th>Hành động</th>
-	                </tr>
-	                </thead>
-	                <tbody id="bank-subform-2-body"></tbody>
-	            </table>
-	            <div class="form-actions">
-				    <button type="button" onclick="enableBankSubform2Inputs()">Sửa</button>
-				    <button type="submit">Ghi</button>
-				    <button type="button" onclick="hideSubform('bank-subform-2')">Đóng</button>
-				</div>
-	        </form>
+	        <form id="bank-subform-2-form" th:action="@{/investors/edit-bank-temp}" method="post">
+			    <input type="hidden" name="maNDT" id="bank-subform-2-maNDT" />
+			    <table class="bank-account-table" id="bank-accounts-subform-2">
+			        <thead>
+			        <tr>
+			            <th>Tên ngân hàng</th>
+			            <th>Mã ngân hàng</th>
+			            <th>Địa chỉ</th>
+			            <th>Số điện thoại</th>
+			            <th>Email</th>
+			        </tr>
+			        </thead>
+			        <tbody id="bank-subform-2-body">
+			            <!-- được JS render -->
+			        </tbody>
+			    </table>
+			    <div class="form-actions">
+			        <button type="button" onclick="enableBankSubform2Inputs()">Sửa</button>
+			        <button type="submit" id="save-bank-btn">Ghi</button>
+			        <button type="button" onclick="hideSubform('bank-subform-2')">Đóng</button>
+			    </div>
+			</form>
 	    </div>
 	</div>
 
@@ -323,7 +325,6 @@
         document.getElementById('bank-subform-1').style.display = 'none';
         document.getElementById('bank-subform-2').style.display = 'none';
         document.querySelector('#add-form form').reset();
-        document.querySelector('#bank-accounts-add tbody').innerHTML = '';
         disableToolbarButtons();
     }
 
@@ -360,6 +361,8 @@
     function showBankSubform1(maNDT) {
         const tbody = document.getElementById('bank-subform-1-body');
         tbody.innerHTML = '';
+        
+        document.getElementById('maNDT-hidden').value = maNDT;
 
         fetch('/investors/load-bank-ajax', {
             method: 'POST',
@@ -418,16 +421,14 @@
             tbody.innerHTML = '';
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" name="nganHang.tenNH" value="${data.tenNH}" readonly /></td>
-                <td><input type="text" name="nganHang.maNH" value="${data.maNH}" readonly /></td>
-                <td><input type="text" name="nganHang.diaChi" value="${data.diaChi}" readonly /></td>
-                <td><input type="text" name="nganHang.phone" value="${data.phone}" readonly /></td>
-                <td><input type="email" name="nganHang.email" value="${data.email}" readonly /></td>
-                <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
+                <td><input type="text" name="nganHang.tenNH" value="${data.tenNH}" readonly required /></td>
+                <td><input type="text" name="nganHang.maNH" value="${data.maNH}" readonly required /></td>
+                <td><input type="text" name="nganHang.diaChi" value="${data.diaChi}" readonly required /></td>
+                <td><input type="text" name="nganHang.phone" value="${data.phone}" readonly required /></td>
+                <td><input type="email" name="nganHang.email" value="${data.email}" readonly required /></td>
             `;
             tbody.appendChild(row);
 
-            // Truyền lại maNDT cho form
             document.getElementById('bank-subform-2-maNDT').value = maNDT;
 
             document.getElementById('bank-subform-wrapper').style.display = 'flex';
@@ -442,7 +443,7 @@
             console.error(err);
         });
     }
-
+    
     function deleteBankAccount(maNDT, maTK) {
         if (!confirm('Bạn có chắc muốn xóa tài khoản này?')) return;
 
@@ -485,40 +486,7 @@
         const table = document.getElementById(tableId).querySelector('tbody');
         const newRow = document.createElement('tr');
 
-        if (tableId === 'bank-accounts-add') {
-            newRow.innerHTML = `
-                <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" required autocomplete="off"/></td>
-                
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required 
-                	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)$" 
-			           title="Chữ cái đầu mỗi từ viết hoa. Cho phép khoảng trắng, dấu '-' và ','." 
-			           autocomplete="off"/></td>
-			           
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" maxlength="20" required 
-                	pattern="^[A-Z]+$" 
-	                   title="Chỉ nhập chữ in hoa, không chứa số hoặc ký tự đặc biệt." 
-	                   autocomplete="off"/></td>
-                
-                <td><input type="number" step="0.01" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" value="0.00" required 
-                	autocomplete="off"/></td>
-                
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" maxlength="100" required 
-                	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)$"
-			           title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'." 
-			           autocomplete="off"/></td>
-                
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" required 
-	                pattern="^[0-9]{10,11}$"
-				         maxlength="11"
-				         title="Số điện thoại gồm 10 hoặc 11 chữ số" 
-				         autocomplete="off"/></td>
-                
-                <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required 
-                	title="Nhập đúng định dạng email (abc@xyz.com)"/></td>
-                	
-                <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
-            `;
-        } else if (tableId === 'bank-accounts-subform-2') {
+        if (tableId === 'bank-accounts-subform-2') {
             newRow.innerHTML = `
             	<td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required 
 	            	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)$" 
@@ -571,8 +539,8 @@
                     ${selectOptions}
                 </select>
             </td>
-            <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" maxlength="20" required></td>
-            <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" required></td>
+            <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" maxlength="20" required autocomplete="off"></td>
+            <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" required autocomplete="off"></td>
             <td>
             	<button type="button" onclick="submitNewBankAccount(this)">Tạo</button>
             	<button type="button" onclick="removeBankAccount(this)">Xóa</button>
@@ -581,6 +549,41 @@
 
         tbody.appendChild(row);
         bankAccountIndex++;
+    }
+    
+    function submitNewBankAccount(button) {
+        const row = button.closest('tr');
+        const select = row.querySelector('select');
+        const inputMaTK = row.querySelector('input[name$=".maTK"]');
+        const inputSoTien = row.querySelector('input[name$=".soTien"]');
+
+        const maNH = select.value.trim();
+        const maTK = inputMaTK.value.trim();
+        const soTien = inputSoTien.value.trim();
+        const maNDT = document.getElementById('maNDT-hidden').value;
+
+        if (!maNH || !maTK || !soTien || isNaN(soTien) || Number(soTien) < 0) {
+            alert("Vui lòng nhập đúng và đầy đủ thông tin.");
+            return;
+        }
+
+        fetch('/investors/add-bank-account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ maNDT, maNH, maTK, soTien })
+        })
+        .then(res => {
+            if (!res.ok) throw res;
+            return res.text(); // Vì trả về String thông báo
+        })
+        .then(msg => {
+            alert(msg);
+            showBankSubform1(maNDT); // Reload danh sách
+        })
+        .catch(async err => {
+            const msg = await err.text();
+            alert("Lỗi: " + msg);
+        });
     }
     
     function allowOnlyDigitsAndLimit(id, maxLen) {
@@ -596,9 +599,10 @@
     allowOnlyDigitsAndLimit("cmnd", 10);
     
     function enableBankSubform2Inputs() {
-        const inputs = document.querySelectorAll('#bank-subform-2 input');
-        inputs.forEach(input => {
-            input.removeAttribute('readonly');
+        document.querySelectorAll('#bank-subform-2 input').forEach(input => {
+            if (input.name !== 'nganHang.maNH') {
+                input.removeAttribute('readonly');
+            }
         });
     }
     
@@ -614,6 +618,5 @@
     });
 </script>
 
-<script src="/js/validate.js"></script>
 </body>
 </html>

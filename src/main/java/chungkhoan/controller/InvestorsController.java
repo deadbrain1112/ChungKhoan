@@ -4,6 +4,7 @@ import chungkhoan.dto.NhaDauTuTemp;
 import chungkhoan.entity.NganHang;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.TaiKhoanNganHang;
+import chungkhoan.repository.NDTRepository;
 import chungkhoan.service.NDTService;
 import chungkhoan.service.NganHangService;
 import chungkhoan.service.TaiKhoanNganHangService;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +47,9 @@ public class InvestorsController {
 	
 	@Autowired
 	private NganHangService nganHangService;
+	
+	@Autowired 
+	private NDTRepository ndtRepository;
 
 	@GetMapping("/investors")
 	public String InvestorList(@RequestParam(defaultValue = "0") int page,
@@ -439,4 +445,77 @@ public class InvestorsController {
 	    return result;
 	}
 
+	@PostMapping("/investors/add-bank-account")
+	@ResponseBody
+	public ResponseEntity<?> addBankAccount(@RequestBody Map<String, String> request) {
+	    try {
+	        String maNDT = request.get("maNDT");
+	        String maNH = request.get("maNH");
+	        String maTK = request.get("maTK");
+	        String soTienStr = request.get("soTien");
+
+	        if (maNDT == null || maNH == null || maTK == null || soTienStr == null) {
+	            return ResponseEntity.badRequest().body("Thiếu thông tin đầu vào");
+	        }
+
+	        BigDecimal soTien;
+	        try {
+	            soTien = new BigDecimal(soTienStr);
+	            if (soTien.compareTo(BigDecimal.ZERO) < 0)
+	                return ResponseEntity.badRequest().body("Số tiền không được âm");
+	        } catch (NumberFormatException e) {
+	            return ResponseEntity.badRequest().body("Số tiền không hợp lệ");
+	        }
+
+	        // Lấy NganHang từ service
+	        Optional<NganHang> optionalNH = nganHangService.findByMaNH(maNH);
+	        if (optionalNH.isEmpty())
+	            return ResponseEntity.badRequest().body("Không tìm thấy ngân hàng");
+
+	        // Lấy NhaDauTu từ service
+	        NhaDauTu nhaDauTu = ndtRepository.findById(maNDT.trim()).orElse(null);
+
+	        if (nhaDauTu == null)
+	            return ResponseEntity.badRequest().body("Không tìm thấy nhà đầu tư");
+
+	        // Tạo tài khoản ngân hàng
+	        TaiKhoanNganHang tknh = TaiKhoanNganHang.builder()
+	                .maTK(maTK)
+	                .nhaDauTu(nhaDauTu)
+	                .nganHang(optionalNH.get())
+	                .soTien(soTien)
+	                .build();
+
+	        // Gọi service để xử lý thêm (dùng stored procedure)
+	        taiKhoanNganHangService.themTaiKhoanNganHang(tknh);
+
+	        return ResponseEntity.ok("Tạo tài khoản ngân hàng thành công");
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body("Lỗi hệ thống: " + e.getMessage());
+	    }
+	}
+	
+	@PostMapping("/investors/edit-bank-temp")
+    public String updateBankInfo(
+            @RequestParam("maNDT") String maNDT,
+            @RequestParam("nganHang.maNH") String maNH,
+            @RequestParam("nganHang.tenNH") String tenNH,
+            @RequestParam("nganHang.diaChi") String diaChi,
+            @RequestParam("nganHang.phone") String phone,
+            @RequestParam("nganHang.email") String email,
+            RedirectAttributes redirectAttributes
+    ) {
+        boolean success = nganHangService.capNhatNganHang(maNH, tenNH, diaChi, phone, email);
+
+        if (success) {
+            redirectAttributes.addFlashAttribute("message", "Cập nhật ngân hàng thành công");
+            redirectAttributes.addFlashAttribute("messageType", "success");
+        } else {
+            redirectAttributes.addFlashAttribute("message", "Không tìm thấy ngân hàng để cập nhật");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+        }
+
+        return "redirect:/investors";
+    }
 }

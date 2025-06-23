@@ -16,7 +16,7 @@ public interface TaiKhoanNganHangRepository extends JpaRepository<TaiKhoanNganHa
     List<TaiKhoanNganHang> findByNhaDauTu(NhaDauTu nhaDauTu);
 
     // Tìm danh sách tài khoản ngân hàng theo maNDT
-    @Query("SELECT t FROM TaiKhoanNganHang t WHERE t.nhaDauTu.maNDT = :maNDT")
+    @Query("SELECT DISTINCT t FROM TaiKhoanNganHang t WHERE t.nhaDauTu.maNDT = :maNDT")
     List<TaiKhoanNganHang> findByNhaDauTuMaNDT(@Param("maNDT") String maNDT);
     
     // Tìm danh sách mã tài khoản ngân hàng theo maNDT
