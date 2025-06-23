@@ -33,7 +33,8 @@
                         <th>Chứng khoán</th>
                         <td>
                             <div style="display: flex; align-items: center;">
-                                <input list="dsMaCP" type="text" name="maCP" id="maCP" placeholder="Nhập hoặc chọn mã cổ phiếu..." style="flex: 1; margin-right: 10px;" />
+                                <input list="dsMaCP" type="text" name="maCP" id="maCP" placeholder="Nhập hoặc chọn mã cổ phiếu..." 
+                                	style="flex: 1; margin-right: 10px;" autocomplete="off"/>
                                 <datalist id="dsMaCP">
                                     <option th:each="cp : ${tatCaCoPhieu}" th:value="${cp.maCP}" th:text="${cp.maCP}"></option>
                                 </datalist>

@@ -110,29 +110,64 @@
         </span>
     </div>
 
-    <!-- Form Thêm -->
     <div id="add-form" class="subform-container" style="display:none;">
-        <h3>Thêm cổ phiếu</h3>
-        <form th:action="@{/stocks/add-temp(page=${stocks.number},size=${stocks.size})}" method="post">
-            <input type="hidden" name="page" th:value="${stocks.number}"/>
-            <input type="hidden" name="size" th:value="${stocks.size}"/>
-            <label>Mã CP: <input type="text" name="maCP" required/></label><br/>
-            <label>Tên công ty: <input type="text" name="tenCty" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" required/></label><br/>
-            <label>Số lượng phát hành: <input type="number" name="soLuongPH" required/></label><br/>
-            <button type="submit">Lưu vào tạm</button>
-            <button type="button" onclick="hideSubform('add-form')">Hủy</button>
-        </form>
-    </div>
+	    <h3>Thêm cổ phiếu</h3>
+	    <form th:action="@{/stocks/add-temp(page=${stocks.number},size=${stocks.size})}" method="post">
+	        <input type="hidden" name="page" th:value="${stocks.number}"/>
+	        <input type="hidden" name="size" th:value="${stocks.size}"/>
+	
+	        <!-- Mã CP: chỉ chữ hoa, không số/ký tự đặc biệt -->
+	        <label>Mã CP: 
+	            <input type="text" name="maCP" required 
+	                   pattern="^[A-Z]+$" 
+	                   title="Chỉ nhập chữ in hoa, không chứa số hoặc ký tự đặc biệt." 
+	                   autocomplete="off"/>
+	        </label><br/>
+	
+	        <!-- Tên công ty -->
+			<label>Tên công ty: 
+			    <input type="text" name="tenCty" required 
+			           pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)$" 
+			           title="Chữ cái đầu mỗi từ viết hoa. Cho phép khoảng trắng, dấu '-' và ','." 
+			           autocomplete="off"/>
+			</label><br/>
+			
+			<!-- Địa chỉ -->
+			<label>Địa chỉ: 
+			    <input type="text" name="diaChi" required 
+			           pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)$"
+			           title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'." 
+			           autocomplete="off"/>
+			</label><br/>
+	
+	        <!-- Số lượng phát hành: số nguyên dương -->
+	        <label>Số lượng phát hành: 
+	            <input type="number" name="soLuongPH" required min="1" step="1" autocomplete="off"/>
+	        </label><br/>
+	
+	        <button type="submit">Lưu vào tạm</button>
+	        <button type="button" onclick="hideSubform('add-form')">Hủy</button>
+	    </form>
+	</div>
+
 
     <!-- Form Sửa -->
     <div id="edit-form" class="subform-container" style="display:none;">
         <h3>Sửa cổ phiếu</h3>
         <form th:action="@{/stocks/edit-temp}" method="post">
-            <input type="hidden" name="maCP" id="maCP" />
-            <label>Tên công ty: <input type="text" name="tenCty" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" required/></label><br/>
-            <label>Số lượng phát hành: <input type="number" name="soLuongPH" required/></label><br/>
+            <input type="hidden" name="maCP" id="maCP"/>
+            
+            <label>Tên công ty: <input type="text" name="tenCty" required 
+            	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)$" 
+			    title="Chữ cái đầu mỗi từ viết hoa. Cho phép khoảng trắng, dấu '-' và ','."
+			    autocomplete="off"/></label><br/>
+			    
+            <label>Địa chỉ: <input type="text" name="diaChi" required
+            	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)$"
+			    title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'."
+			    autocomplete="off"/></label><br/>
+			    
+            <label>Số lượng phát hành: <input type="number" name="soLuongPH" required autocomplete="off"/></label><br/>
             <button type="submit">Lưu thay đổi</button>
             <button type="button" onclick="hideSubform('edit-form')">Hủy</button>
         </form>

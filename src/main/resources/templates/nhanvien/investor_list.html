@@ -6,119 +6,121 @@
     <link rel="stylesheet" th:href="@{/css/investor_list.css}">
 </head>
 <body>
-<div>
-    <!-- Toolbar -->
-    <div class="toolbar">
-        <button type="button" class="toolbar-btn" onclick="showAddForm()">Thêm</button> |
-        <form th:action="@{/investors/reload}" method="get" style="display:inline;">
-            <button type="submit" class="toolbar-btn">Reload</button> |
-        </form>
-        <form th:action="@{/investors/save-all}" method="post" style="display:inline;">
-            <button type="submit" class="toolbar-btn" th:disabled="${temporaryInvestors.isEmpty()}">Ghi tất cả</button>
-        </form> |
-        <form th:action="@{/investors/search}" method="post" style="display:inline;">
-            <input type="text" name="query" placeholder="Tìm kiếm..." />
-            <button type="submit" class="toolbar-btn">Tìm</button>
-        </form> |
-        <form th:action="@{/investors/undo}" method="post" style="display:inline;">
-            <button type="submit" class="toolbar-btn" th:disabled="${!canUndo}">Hoàn tác</button>
-        </form> |
-        <form th:action="@{/investors/clear-undo}" method="post" style="display:inline;">
-            <button type="submit" class="toolbar-btn btn btn-danger">Thoát</button>
-        </form>
-    </div>
-
-    <!-- Thông báo -->
-    <div th:if="${message}" th:class="'alert ' + (${messageType}=='success'?'alert-success':'alert-danger')" role="alert">
-        <span th:text="${message}"></span>
-    </div>
-
-    <!-- Bảng danh sách -->
-    <div class="table-container">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Mã</th>
-                <th>Họ tên</th>
-                <th>Ngày sinh</th>
-                <th>Địa chỉ</th>
-                <th>Số điện thoại</th>
-                <th>CMND</th>
-                <th>Giới tính</th>
-                <th>Email</th>
-                <th>Hành động</th>
-            </tr>
-            </thead>
-            <tbody>
-            <!-- Duyệt qua investors.content -->
-            <tr th:each="investor : ${investors.content}"
-                th:classappend="${temporaryMaNDTList != null and temporaryMaNDTList.contains(investor.maNDT)} ? 'unsaved' : ''">
-                <td th:text="${investor.maNDT}"></td>
-                <td th:text="${investor.hoTen}"></td>
-                <td th:text="${investor.ngaySinh}"></td>
-                <td th:text="${investor.diaChi}"></td>
-                <td th:text="${investor.phone}"></td>
-                <td th:text="${investor.cmnd}"></td>
-                <td th:text="${investor.gioiTinh}"></td>
-                <td th:text="${investor.email}"></td>
-                <td>
-                    <!-- Nếu nhà đầu tư đã bị xóa: chỉ hiển thị nút "Hoàn tác xóa" -->
-                    <form th:if="${investor.daXoa}" th:action="@{/investors/undo-delete}" method="post" style="display:inline;">
-                        <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
-                        <button type="submit" class="toolbar-btn">Hoàn tác xóa</button>
-                    </form>
-
-                    <!-- Nếu chưa bị xóa: hiển thị Sửa và Xóa -->
-                    <div th:if="${!investor.daXoa}">
-                        <button type="button" class="edit-link"
-                                th:attr="data-maNDT=${investor.maNDT},
-                                    data-hoTen=${investor.hoTen},
-                                    data-ngaySinh=${investor.ngaySinh},
-                                    data-diaChi=${investor.diaChi},
-                                    data-phone=${investor.phone},
-                                    data-cmnd=${investor.cmnd},
-                                    data-gioiTinh=${investor.gioiTinh},
-                                    data-email=${investor.email}">Sửa</button> |
-                        <button type="button" class="bank-link" th:attr="data-maNDT=${investor.maNDT}">TKNH</button> |
-                        <!-- Nếu là nhà đầu tư tạm thời -->
-                        <form th:if="${temporaryMaNDTList != null and temporaryMaNDTList.contains(investor.maNDT)}"
-                              th:action="@{/investors/remove-temp}" method="post" style="display:inline;">
-                            <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
-                            <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi danh sách tạm?')">Xóa</button>
-                        </form>
-
-                        <!-- Nếu là nhà đầu tư trong DB -->
-                        <form th:unless="${temporaryMaNDTList != null and temporaryMaNDTList.contains(investor.maNDT)}"
-                              th:action="@{/investors/delete}" method="post" style="display:inline;">
-                            <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
-                            <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi hệ thống?')">Xóa</button>
-                        </form>
-                    </div>
-                </td>
-            </tr>
-            <!-- Nếu không có bản ghi -->
-            <tr th:if="${investors.empty}">
-                <td colspan="9" style="text-align:center;">Không có dữ liệu nhà đầu tư.</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-        <!-- Div ẩn chứa tài khoản ngân hàng từ session tạm -->
-        <div style="display: none;" id="temp-bank-accounts-data">
-            <th:block th:each="entry : ${tempBankAccounts}">
-                <th:block th:each="account : ${entry.value}">
-                    <div th:data-maNDT="${entry.key}"
-                         th:data-accountNumber="${account.maTK}"
-                         th:data-bankName="${account.nganHang.tenNH}"
-                         th:data-bankCode="${account.nganHang.maNH}"
-                         th:data-amount="${account.soTien}"
-                         th:data-address="${account.nganHang.diaChi}"
-                         th:data-phone="${account.nganHang.phone}"
-                         th:data-email="${account.nganHang.email}">
-                    </div>
-                </th:block>
-            </th:block>
-        </div>
+	<div>
+	    <!-- Toolbar -->
+	    <div class="toolbar">
+	        <button type="button" class="toolbar-btn" onclick="showAddForm()">Thêm</button> |
+	        <form th:action="@{/investors/reload}" method="get" style="display:inline;">
+	            <button type="submit" class="toolbar-btn">Reload</button> |
+	        </form>
+	        <form th:action="@{/investors/save-all}" method="post" style="display:inline;">
+	            <button type="submit" class="toolbar-btn" th:disabled="${temporaryInvestors.isEmpty()}">Ghi tất cả</button>
+	        </form> |
+	        <form th:action="@{/investors/search}" method="post" style="display:inline;">
+	            <input type="text" name="query" placeholder="Tìm kiếm..." />
+	            <button type="submit" class="toolbar-btn">Tìm</button>
+	        </form> |
+	        <form th:action="@{/investors/undo}" method="post" style="display:inline;">
+	            <button type="submit" class="toolbar-btn" th:disabled="${!canUndo}">Hoàn tác</button>
+	        </form> |
+	        <form th:action="@{/investors/clear-undo}" method="post" style="display:inline;">
+	            <button type="submit" class="toolbar-btn btn btn-danger">Thoát</button>
+	        </form>
+	    </div>
+	
+	    <!-- Thông báo -->
+	    <div th:if="${message}" th:class="'alert ' + (${messageType}=='success'?'alert-success':'alert-danger')" role="alert">
+	        <span th:text="${message}"></span>
+	    </div>
+	
+	    <!-- Bảng danh sách -->
+	    <div class="table-container">
+	        <table class="table">
+	            <thead>
+		            <tr>
+		                <th>Mã</th>
+		                <th>Họ tên</th>
+		                <th>Ngày sinh</th>
+		                <th>Địa chỉ</th>
+		                <th>Số điện thoại</th>
+		                <th>CMND</th>
+		                <th>Giới tính</th>
+		                <th>Email</th>
+		                <th>Hành động</th>
+		            </tr>
+		       	</thead>
+		            <tbody>
+			            <!-- Duyệt qua investors.content -->
+			            <tr th:each="investor : ${investors.content}"
+			                th:classappend="${temporaryMaNDTList != null and temporaryMaNDTList.contains(investor.maNDT)} ? 'unsaved' : ''">
+			                <td th:text="${investor.maNDT}"></td>
+			                <td th:text="${investor.hoTen}"></td>
+			                <td th:text="${investor.ngaySinh}"></td>
+			                <td th:text="${investor.diaChi}"></td>
+			                <td th:text="${investor.phone}"></td>
+			                <td th:text="${investor.cmnd}"></td>
+			                <td th:text="${investor.gioiTinh}"></td>
+			                <td th:text="${investor.email}"></td>
+			                <td>
+			                    <!-- Nếu nhà đầu tư đã bị xóa: chỉ hiển thị nút "Hoàn tác xóa" -->
+			                    <form th:if="${investor.daXoa}" th:action="@{/investors/undo-delete}" method="post" style="display:inline;">
+			                        <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
+			                        <button type="submit" class="toolbar-btn">Hoàn tác xóa</button>
+			                    </form>
+			
+			                    <!-- Nếu chưa bị xóa: hiển thị Sửa và Xóa -->
+			                    <div th:if="${!investor.daXoa}">
+			                        <button type="button" class="edit-link"
+			                                th:attr="data-maNDT=${investor.maNDT},
+			                                    data-hoTen=${investor.hoTen},
+			                                    data-ngaySinh=${investor.ngaySinh},
+			                                    data-diaChi=${investor.diaChi},
+			                                    data-phone=${investor.phone},
+			                                    data-cmnd=${investor.cmnd},
+			                                    data-gioiTinh=${investor.gioiTinh},
+			                                    data-email=${investor.email}">Sửa</button> |
+			                        <button type="button" class="bank-link" th:attr="data-maNDT=${investor.maNDT}">TKNH</button> |
+			                        <!-- Nếu là nhà đầu tư tạm thời -->
+			                        <form th:if="${temporaryMaNDTList != null and temporaryMaNDTList.contains(investor.maNDT)}"
+			                              th:action="@{/investors/remove-temp}" method="post" style="display:inline;">
+			                            <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
+			                            <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi danh sách tạm?')">Xóa</button>
+			                        </form>
+			
+			                        <!-- Nếu là nhà đầu tư trong DB -->
+			                        <form th:unless="${temporaryMaNDTList != null and temporaryMaNDTList.contains(investor.maNDT)}"
+			                              th:action="@{/investors/delete}" method="post" style="display:inline;">
+			                            <input type="hidden" name="maNDT" th:value="${investor.maNDT}" />
+			                            <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi hệ thống?')">Xóa</button>
+			                        </form>
+			                    </div>
+			                </td>
+			            </tr>
+			
+			            <!-- Nếu không có bản ghi -->
+			            <tr th:if="${investors.empty}">
+			                <td colspan="9" style="text-align:center;">Không có dữ liệu nhà đầu tư.</td>
+			            </tr>
+	            </tbody>
+	        </table>
+	    </div>
+	
+	    <!-- Div ẩn chứa tài khoản ngân hàng từ session tạm -->
+	    <div style="display: none;" id="temp-bank-accounts-data">
+	    	<th:block th:each="entry : ${tempBankAccounts}">
+	    		<th:block th:each="account : ${entry.value}">
+	    			<div th:data-maNDT="${entry.key}"
+	    				th:data-accountNumber="${account.maTK}"
+	                    th:data-bankName="${account.nganHang.tenNH}"
+	                    th:data-bankCode="${account.nganHang.maNH}"
+	                    th:data-amount="${account.soTien}"
+	                    th:data-address="${account.nganHang.diaChi}"
+	                    th:data-phone="${account.nganHang.phone}"
+	                   	th:data-email="${account.nganHang.email}">
+	                 </div>
+	             </th:block>
+	         </th:block>
+	    </div>
     </div>
 
     <!-- Phân trang -->
@@ -140,17 +142,18 @@
     <div id="add-form" class="subform-container" style="display:none;">
         <h3>Thêm nhà đầu tư</h3>
         <form th:action="@{/investors/add-temp(page=${investors.number},size=${investors.size})}" method="post">
-            <label>Mã nhà đầu tư: <input type="text" name="maNDT" maxlength="20" required/></label><br/>
-            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
-            <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
-            <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
-            <label>CMND: <input type="text" name="cmnd" maxlength="10" required/></label><br/>
+            <label>Mã nhà đầu tư: <input type="text" name="maNDT" maxlength="20" required autocomplete="off"/></label><br/>
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"/></label><br/>
+            <label>Mã khẩu giao dịch: <input type="password" name="mkGiaoDich" maxlength="50" required autocomplete="off"/></label><br/>
+            <label>Ngày sinh: <input type="date" name="ngaySinh" required autocomplete="off"/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"/></label><br/>
+            <label>Số điện thoại: <input type="number" name="phone" maxlength="10" required autocomplete="off"/></label><br/>
+            <label>CMND: <input type="number" name="cmnd" maxlength="10" required autocomplete="off"/></label><br/>
             <label>Giới tính:
                 <input type="radio" name="gioiTinh" value="Nam" required/> Nam
                 <input type="radio" name="gioiTinh" value="Nữ" required style="margin-left: 20px;"/> Nữ
             </label><br/>
-            <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
+            <label>Email: <input type="email" name="email" maxlength="50" required autocomplete="off"/></label><br/>
 
             <div class="form-actions">
 	            <button type="submit">Lưu vào tạm</button>
@@ -164,20 +167,23 @@
         <h3>Sửa nhà đầu tư</h3>
         <form th:action="@{/investors/edit-temp}" method="post">
             <input type="hidden" name="maNDT" id="maNDT" />
-            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
-            <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
-            <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
-            <label>CMND: <input type="text" name="cmnd" maxlength="10" required/></label><br/>
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"/></label><br/>
+            <label>Mã khẩu giao dịch: <input type="password" name="mkGiaoDich" maxlength="50" readonly="readonly"/></label><br/>
+            <label>Ngày sinh: <input type="date" name="ngaySinh" required autocomplete="off"/></label><br/>
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"/></label><br/>
+            <label>Số điện thoại: <input type="number" name="phone" maxlength="10" required autocomplete="off"/></label><br/>
+            <label>CMND: <input type="number" name="cmnd" maxlength="10" required autocomplete="off"/></label><br/>
             <label>Giới tính:
                 <input type="radio" name="gioiTinh" value="Nam" id="edit-nam" required/>
                 <label for="edit-nam">Nam</label>
                 <input type="radio" name="gioiTinh" value="Nữ" id="edit-nu" style="margin-left: 20px;" required/>
                 <label for="edit-nu">Nữ</label>
             </label><br/>
-            <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
-            <button type="submit">Lưu thay đổi</button>
-            <button type="button" onclick="hideSubform('edit-form')">Hủy</button>
+            <label>Email: <input type="email" name="email" maxlength="50" required autocomplete="off"/></label><br/>
+            <div class="form-actions">
+            	<button type="submit">Lưu thay đổi</button>
+            	<button type="button" onclick="hideSubform('edit-form')">Hủy</button>
+            </div>
         </form>
     </div>
 
@@ -189,7 +195,7 @@
 	            <thead>
 	            <tr>
 	            	<th>Mã ngân hàng</th>
-	                <th>Mã tài khoản</th>
+	                <th>Mã tài khoản</th>	                
 	                <th>Số tiền</th>
 	                <th>Hành động</th>
 	            </tr>
@@ -197,7 +203,7 @@
 	            <tbody id="bank-subform-1-body"></tbody>
 	        </table>
 	        <div class="form-actions">
-	        	<button type="button" onclick="createNewBankAccountRow()">Tạo tài khoản</button>
+	        	<button type="button" onclick="createNewBankAccountRow()">Thêm</button>	
 	        	<button type="button" onclick="hideSubform('bank-subform-1')">Đóng</button>
 	        </div>
 	    </div>
@@ -228,12 +234,9 @@
 	</div>
 
 
-
-
-</div>
-
 <script th:inline="javascript">
     let usedMaTKs = /*[[${usedMaTKs}]]*/ [];
+    let danhSachNganHang = /*[[${dsNganHang}]]*/ [];
 </script>
 
 <script>
@@ -330,7 +333,7 @@
                         <td>${acc.maTK}</td>
                         <td>${acc.soTien}</td>
                         <td>
-	                        <button type="button" onclick="showBankSubform2('${acc.maNH}', '${maNDT}')">Sửa</button>
+	                        <button type="button" onclick="showBankSubform2('${acc.maNH}', '${maNDT}')">Thông tin ngân hàng</button>
 	                        <button type="button" onclick="deleteBankAccount('${maNDT}', '${acc.maTK}')">Xóa</button>
                         </td>
                     `;
