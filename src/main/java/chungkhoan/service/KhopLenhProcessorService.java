@@ -196,13 +196,13 @@ public class KhopLenhProcessorService {
 
     private void capNhatTrangThai(LenhDat lenh, int slKhop) {
         int daKhop = lenhKhopRepo.sumSoLuongKhopByLenhDatId(lenh.getMaGD());
-        int soLuongGoc = lenh.getSoLuong(); // giữ nguyên giá trị gốc
+        int soLuongGoc = lenh.getSoLuong();
         int soLuongConLai = soLuongGoc - daKhop;
 
         String trangThaiMoi = (soLuongConLai <= 0) ? "Hết" : "Một phần";
         if (!trangThaiMoi.equalsIgnoreCase(lenh.getTrangThai())) {
             lenh.setTrangThai(trangThaiMoi);
-            lenhDatRepo.save(lenh); // chỉ lưu khi có thay đổi trạng thái
+            lenhDatRepo.save(lenh);
         }
     }
 

@@ -25,4 +25,12 @@ public class NganHang {
 
     @Column(name = "Email", columnDefinition = "NVARCHAR(50)")
     private String email;
+
+    public NganHang(NganHang other) {
+        this.maNH = other.maNH;
+        this.tenNH = other.tenNH;
+        this.diaChi = other.diaChi;
+        this.phone = other.phone;
+        this.email = other.email;
+    }
 }

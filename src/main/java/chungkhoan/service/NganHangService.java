@@ -1,16 +1,23 @@
 package chungkhoan.service;
 
 import chungkhoan.entity.NganHang;
+import chungkhoan.entity.UndoAction;
 import chungkhoan.repository.NganHangRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class NganHangService {
@@ -21,62 +28,142 @@ public class NganHangService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Transactional
-    public void themNganHang(NganHang nganHang) {
+    private final Deque<UndoAction> undoStack = new ArrayDeque<>();
+
+    public NganHang findByMaNH(String maNH) {
+        return nganHangRepository.findById(maNH).orElse(null);
+    }
+
+    public void themNganHang(NganHang nh) {
         try {
-            if (nganHang == null || nganHang.getMaNH() == null) {
-                throw new IllegalArgumentException("NganHang hoặc MaNH không được null");
-            }
+            jdbcTemplate.execute(
+                    (Connection conn) -> {
+                        CallableStatement cs = conn.prepareCall("{call sp_ThemNganHang(?, ?, ?, ?, ?)}");
+                        cs.setString(1, nh.getMaNH());
+                        cs.setString(2, nh.getTenNH());
+                        cs.setString(3, nh.getDiaChi());
+                        cs.setString(4, nh.getPhone());
+                        cs.setString(5, nh.getEmail());
+                        cs.execute();
+                        return null;
+                    }
+            );
 
-            System.out.println("Attempting to add or check NganHang with MaNH: " + nganHang.getMaNH() +
-                    ", TenNH: " + nganHang.getTenNH() +
-                    ", DiaChi: " + nganHang.getDiaChi() +
-                    ", Phone: " + nganHang.getPhone() +
-                    ", Email: " + nganHang.getEmail());
-
-            // Kiểm tra xem ngân hàng đã tồn tại chưa
-            Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM nganhang WHERE MaNH = ?", Integer.class, nganHang.getMaNH());
-            if (count == 0) {
-                jdbcTemplate.execute(
-                        (Connection conn) -> {
-                            CallableStatement cs = conn.prepareCall("{call sp_ThemNganHang(?, ?, ?, ?, ?)}");
-                            cs.setString(1, nganHang.getMaNH());
-                            cs.setString(2, nganHang.getTenNH());
-                            cs.setString(3, nganHang.getDiaChi());
-                            cs.setString(4, nganHang.getPhone());
-                            cs.setString(5, nganHang.getEmail());
-                            boolean executed = cs.execute();
-                            System.out.println("Stored procedure sp_ThemNganHang executed for MaNH " + nganHang.getMaNH() + ": " + executed);
-                            return null;
-                        }
-                );
-            } else {
-                System.out.println("NganHang with MaNH " + nganHang.getMaNH() + " already exists, skipping.");
-            }
-
-            // Xác nhận dữ liệu sau khi lưu
-            NganHang saved = nganHangRepository.findById(nganHang.getMaNH()).orElse(null);
-            if (saved != null) {
-                System.out.println("Confirmed NganHang in DB: MaNH=" + saved.getMaNH() + ", TenNH=" + saved.getTenNH());
-            } else {
-                System.out.println("Warning: NganHang with MaNH " + nganHang.getMaNH() + " not found after save.");
-            }
+            undoStack.push(new UndoAction(
+                    UndoAction.ActionType.ADD,
+                    UndoAction.EntityType.NGAN_HANG,
+                    null,
+                    nh
+            ));
         } catch (Exception e) {
-            System.out.println("Exception during themNganHang: " + e.getMessage());
-            throw new RuntimeException("Lỗi khi thêm ngân hàng: " + e.getMessage());
+            String errorMessage = e.getMessage();
+            if (errorMessage.contains("Mã ngân hàng đã tồn tại")) {
+                throw new RuntimeException("Mã ngân hàng đã tồn tại!");
+            } else {
+                throw new RuntimeException("Lỗi khi thêm ngân hàng: " + errorMessage);
+            }
         }
     }
 
-    public boolean existsByMaNH(String maNH) {
-        return nganHangRepository.existsByMaNH(maNH);
+    public void xoaNganHang(String maNH) {
+        NganHang existing = nganHangRepository.findById(maNH).orElse(null);
+        if (existing != null) {
+            NganHang copy = new NganHang(existing);
+            nganHangRepository.deleteById(maNH);
+            undoStack.push(new UndoAction(
+                    UndoAction.ActionType.DELETE,
+                    UndoAction.EntityType.NGAN_HANG,
+                    copy,
+                    null
+            ));
+        }
     }
-    
+
+    public void capNhatNganHang(String maNH, NganHang nhMoi) {
+        NganHang nhCu = nganHangRepository.findById(maNH).orElse(null);
+        if (nhCu != null) {
+            NganHang copy = new NganHang(nhCu);
+
+            nhMoi.setMaNH(maNH);
+            nganHangRepository.save(nhMoi);
+            undoStack.push(new UndoAction(
+                    UndoAction.ActionType.EDIT,
+                    UndoAction.EntityType.NGAN_HANG,
+                    copy,
+                    nhMoi
+            ));
+        }
+    }
+
+    @Transactional
+    public boolean undoThaoTacCuoi() {
+        if (undoStack.isEmpty()) return false;
+
+        UndoAction action = undoStack.pop();
+
+        if (action.getEntityType() != UndoAction.EntityType.NGAN_HANG) {
+            return false;
+        }
+
+        NganHang oldNH = (NganHang) action.getOldData();
+        NganHang newNH = (NganHang) action.getNewData();
+
+        switch (action.getActionType()) {
+            case ADD:
+                nganHangRepository.deleteById(newNH.getMaNH());
+                break;
+            case DELETE:
+                nganHangRepository.save(oldNH);
+                break;
+            case EDIT:
+                nganHangRepository.save(oldNH);
+                break;
+        }
+
+        return true;
+    }
+
+    public boolean isUndoStackEmpty() {
+        return undoStack.isEmpty();
+    }
+
+    public void clearUndoStack() {
+        undoStack.clear();
+    }
+
+    public Page<NganHang> getPaginated(int page, int size) {
+        if (size == Integer.MAX_VALUE) {
+            List<NganHang> allBanks = nganHangRepository.findAll();
+            return new PageImpl<>(allBanks, PageRequest.of(0, Integer.MAX_VALUE), allBanks.size());
+        }
+        return nganHangRepository.findAll(PageRequest.of(page, size));
+    }
+
+    public List<NganHang> searchBanks(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return nganHangRepository.findAll();
+        }
+        return nganHangRepository.findAll().stream()
+                .filter(nh ->
+                        (nh.getMaNH() != null && nh.getMaNH().toLowerCase().contains(query.toLowerCase())) ||
+                                (nh.getTenNH() != null && nh.getTenNH().toLowerCase().contains(query.toLowerCase())) ||
+                                (nh.getDiaChi() != null && nh.getDiaChi().toLowerCase().contains(query.toLowerCase())))
+                .collect(Collectors.toList());
+    }
+
+    public Optional<NganHang> findById(String maNH) {
+        return nganHangRepository.findById(maNH);
+    }
+
+    public boolean existsById(String maNH) {
+        return nganHangRepository.existsById(maNH);
+    }
+
     public List<NganHang> findAll() {
         return nganHangRepository.findAll();
     }
     
-    public Optional<NganHang> findByMaNH(String maNH) {
+    public Optional<NganHang> findByMaNHOpt(String maNH) {
         return nganHangRepository.findById(maNH);
     }
     
@@ -95,4 +182,5 @@ public class NganHangService {
             return false;
         }
     }
+
 }

@@ -6,7 +6,7 @@ import lombok.Getter;
 public class UndoAction {
 
     public enum ActionType { ADD, DELETE, EDIT }
-    public enum EntityType { NHA_DAU_TU, CO_PHIEU, NHAN_VIEN }
+    public enum EntityType { NHA_DAU_TU, CO_PHIEU, NHAN_VIEN ,NGAN_HANG}
 
     private final ActionType actionType;
     private final EntityType entityType;

@@ -1,6 +1,7 @@
 package chungkhoan.service;
 
 import chungkhoan.entity.CoPhieu;
+
 import chungkhoan.entity.UndoAction;
 import chungkhoan.repository.CoPhieuRepository;
 
@@ -8,6 +9,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -133,5 +135,17 @@ public class CoPhieuService {
 
     public boolean existsById(String maCP) {
         return coPhieuRepository.existsByMaCP(maCP);
+    }
+
+    public List<CoPhieu> searchStocks(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return coPhieuRepository.findAll();
+        }
+        return coPhieuRepository.findAll().stream()
+                .filter(cp ->
+                        (cp.getMaCP() != null && cp.getMaCP().toLowerCase().contains(query.toLowerCase())) ||
+                                (cp.getTenCty() != null && cp.getTenCty().toLowerCase().contains(query.toLowerCase())) ||
+                                (cp.getDiaChi() != null && cp.getDiaChi().toLowerCase().contains(query.toLowerCase())))
+                .collect(Collectors.toList());
     }
 }
