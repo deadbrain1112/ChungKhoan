@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 public class EmployeeController {
@@ -298,7 +299,7 @@ public class EmployeeController {
 
 	@PostMapping("/employees/search")
 	public String searchEmployees(@RequestParam String query, Model model, HttpSession session) {
-		List<NhanVien> searchResults = nhanVienService.searchEmployees(query);
+		List<NhanVien> dbResults = nhanVienService.searchEmployees(query);
 
 		@SuppressWarnings("unchecked")
 		List<NhanVienTemp> tempList = (List<NhanVienTemp>) session.getAttribute("temporaryEmployees");
@@ -306,29 +307,48 @@ public class EmployeeController {
 			tempList = new ArrayList<>();
 		}
 
-		// Thêm các nhân viên tạm không bị đánh dấu xóa và có chứa từ khóa
+		// Chuyển dbResults thành NhanVienTemp
+		List<NhanVienTemp> searchResults = dbResults.stream()
+				.map(NhanVienTemp::new)
+				.collect(Collectors.toList());
+
+		// Thêm các nhân viên tạm không bị xóa và khớp từ khóa
 		for (NhanVienTemp temp : tempList) {
 			if (!temp.isDaXoa()) {
 				boolean match = temp.getMaNV().toLowerCase().contains(query.toLowerCase())
 						|| temp.getHoTen().toLowerCase().contains(query.toLowerCase())
 						|| temp.getCmnd().toLowerCase().contains(query.toLowerCase());
 				if (match) {
-					searchResults.add(temp.toNhanVienEntity());
+					searchResults.add(temp);
 				}
 			}
 		}
 
-		// Gói lại kết quả tìm kiếm vào Page
-		Page<NhanVien> employeePage = new PageImpl<>(searchResults, PageRequest.of(0, Integer.MAX_VALUE), searchResults.size());
+		// Gói kết quả vào Page<NhanVienTemp>
+		Page<NhanVienTemp> employeePage = new PageImpl<>(searchResults, PageRequest.of(0, Integer.MAX_VALUE), searchResults.size());
+
+		// Thêm temporaryMaNVList
+		List<String> temporaryMaNVList = tempList.stream()
+				.filter(t -> !t.isDaXoa())
+				.map(NhanVienTemp::getMaNV)
+				.toList();
 
 		model.addAttribute("employees", employeePage);
 		model.addAttribute("temporaryEmployees", tempList);
+		model.addAttribute("temporaryMaNVList", temporaryMaNVList);
 		model.addAttribute("canUndo", !nhanVienService.isUndoStackEmpty());
 
 		if (searchResults.isEmpty()) {
 			model.addAttribute("message", "Không tìm thấy nhân viên nào.");
 			model.addAttribute("messageType", "danger");
 		}
+
+		// Logging để debug
+		System.out.println("searchEmployees - searchResults size: " + searchResults.size());
+		System.out.println("searchEmployees - temporaryMaNVList: " + temporaryMaNVList);
+		System.out.println("searchEmployees - temporaryEmployees size: " + tempList.size());
+		System.out.println("searchEmployees - employees class: " + employeePage.getClass().getName());
+		System.out.println("searchEmployees - employees.content size: " + employeePage.getContent().size());
 
 		return "nhanvien/employee_list";
 	}

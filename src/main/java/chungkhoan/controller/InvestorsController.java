@@ -36,14 +36,14 @@ import java.util.stream.Collectors;
 @Controller
 public class InvestorsController {
 
-	@Autowired
-	private NDTService ndtService;
+    @Autowired
+    private NDTService ndtService;
 
-	@Autowired
-	private TaiKhoanNganHangService taiKhoanNganHangService;
+    @Autowired
+    private TaiKhoanNganHangService taiKhoanNganHangService;
 
-	@Autowired
-	private NganHangService nganHangService;
+    @Autowired
+    private NganHangService nganHangService;
 
     @GetMapping("/investors")
     public String InvestorList(@RequestParam(defaultValue = "0") int page,
@@ -101,13 +101,15 @@ public class InvestorsController {
                 .toList();
         model.addAttribute("temporaryMaNDTList", temporaryMaNDTList);
 
-		// Logging để debug
-		System.out.println("InvestorList - TempList size: " + tempList.size());
-		System.out.println("InvestorList - Allinvestors size: " + allinvestors.size());
-		System.out.println("InvestorList - Page content size: " + pageContent.size());
-		System.out.println("InvestorList - temporaryMaNDTList: " + temporaryMaNDTList);
-		System.out.println("InvestorList - investors class: " + allinvestorsPage.getClass().getName());
-		System.out.println("InvestorList - investors.content size: " + allinvestorsPage.getContent().size());
+        // Logging để debug
+        System.out.println("InvestorList - TempList size: " + tempList.size());
+        System.out.println("InvestorList - Allinvestors size: " + allinvestors.size());
+        System.out.println("InvestorList - Page content size: " + pageContent.size());
+        System.out.println("InvestorList - temporaryMaNDTList: " + temporaryMaNDTList);
+        System.out.println("InvestorList - investors class: " + allinvestorsPage.getClass().getName());
+        System.out.println("InvestorList - investors.content size: " + allinvestorsPage.getContent().size());
+
+        model.addAttribute("dsNganHang", nganHangService.findAll());
 
         return "nhanvien/investor_list";
     }
@@ -342,13 +344,6 @@ public class InvestorsController {
             model.addAttribute("messageType", "danger");
         }
 
-        // Logging để debug
-        System.out.println("searchInvestors - searchResults size: " + searchResults.size());
-        System.out.println("searchInvestors - temporaryMaNDTList: " + temporaryMaNDTList);
-        System.out.println("searchInvestors - temporaryInvestors size: " + tempList.size());
-        System.out.println("searchInvestors - investors class: " + investorPage.getClass().getName());
-        System.out.println("searchInvestors - investors.content size: " + investorPage.getContent().size());
-
         return "nhanvien/investor_list";
     }
 
@@ -392,49 +387,49 @@ public class InvestorsController {
         return "redirect:/investors?page=" + page + "&size=" + size;
     }
 
-	@PostMapping("/investors/clear-undo")
-	public String clearUndoStackAndExit() {
-		ndtService.clearUndoStack();
-		return "redirect:/nhanvien/layout";
-	}
+    @PostMapping("/investors/clear-undo")
+    public String clearUndoStackAndExit() {
+        ndtService.clearUndoStack();
+        return "redirect:/nhanvien/layout";
+    }
 
-	@PostMapping(value = "/investors/load-bank-ajax", consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public List<Map<String, Object>> loadBankAccountsAjax(@RequestBody Map<String, String> request) {
-	    String maNDT = request.get("maNDT");
+    @PostMapping(value = "/investors/load-bank-ajax", consumes = "application/json", produces = "application/json")
+    @ResponseBody
+    public List<Map<String, Object>> loadBankAccountsAjax(@RequestBody Map<String, String> request) {
+        String maNDT = request.get("maNDT");
 
-	    // Gọi service để lấy danh sách từ DB
-	    List<TaiKhoanNganHang> accounts = taiKhoanNganHangService.findByInvestorMaNDT(maNDT);
+        // Gọi service để lấy danh sách từ DB
+        List<TaiKhoanNganHang> accounts = taiKhoanNganHangService.findByInvestorMaNDT(maNDT);
 
-	    // Chuyển danh sách sang JSON dạng đơn giản
-	    return accounts.stream().map(acc -> {
-	        Map<String, Object> map = new HashMap<>();
-	        map.put("maTK", acc.getMaTK());
-	        map.put("maNH", acc.getNganHang().getMaNH());
-	        map.put("tenNH", acc.getNganHang().getTenNH());
-	        map.put("soTien", acc.getSoTien());
-	        return map;
-	    }).collect(Collectors.toList());
-	}
+        // Chuyển danh sách sang JSON dạng đơn giản
+        return accounts.stream().map(acc -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("maTK", acc.getMaTK());
+            map.put("maNH", acc.getNganHang().getMaNH());
+            map.put("tenNH", acc.getNganHang().getTenNH());
+            map.put("soTien", acc.getSoTien());
+            return map;
+        }).collect(Collectors.toList());
+    }
 
-	@PostMapping(value = "/investors/load-nganhang-info", consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Map<String, String> getNganHangInfo(@RequestBody Map<String, String> request) {
-	    String maNH = request.get("maNH");
+    @PostMapping(value = "/investors/load-nganhang-info", consumes = "application/json", produces = "application/json")
+    @ResponseBody
+    public Map<String, String> getNganHangInfo(@RequestBody Map<String, String> request) {
+        String maNH = request.get("maNH");
 
-	    Optional<NganHang> optional = nganHangService.findByMaNH(maNH);
-	    if (optional.isEmpty()) {
-	        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ngân hàng");
-	    }
+        Optional<NganHang> optional = Optional.ofNullable(nganHangService.findByMaNH(maNH));
+        if (optional.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy ngân hàng");
+        }
 
-	    NganHang nh = optional.get();
-	    Map<String, String> result = new HashMap<>();
-	    result.put("maNH", nh.getMaNH());
-	    result.put("tenNH", nh.getTenNH());
-	    result.put("diaChi", nh.getDiaChi());
-	    result.put("phone", nh.getPhone());
-	    result.put("email", nh.getEmail());
-	    return result;
-	}
+        NganHang nh = optional.get();
+        Map<String, String> result = new HashMap<>();
+        result.put("maNH", nh.getMaNH());
+        result.put("tenNH", nh.getTenNH());
+        result.put("diaChi", nh.getDiaChi());
+        result.put("phone", nh.getPhone());
+        result.put("email", nh.getEmail());
+        return result;
+    }
 
 }

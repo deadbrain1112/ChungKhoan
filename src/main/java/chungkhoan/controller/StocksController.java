@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import chungkhoan.dto.CoPhieuTemp;
+import chungkhoan.dto.NhaDauTuTemp;
+import chungkhoan.entity.NhaDauTu;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -161,6 +164,54 @@ public class StocksController {
         ra.addFlashAttribute("messageType", "info");
 
         return "redirect:/stocks";
+    }
+    @PostMapping("/stocks/search")
+    public String searchStocks(@RequestParam String query, Model model, HttpSession session) {
+        List<CoPhieu> dbResults = coPhieuService.searchStocks(query);
+
+        @SuppressWarnings("unchecked")
+        List<CoPhieuTemp> tempList = (List<CoPhieuTemp>) session.getAttribute("temporaryStocks");
+        if (tempList == null) {
+            tempList = new ArrayList<>();
+        }
+
+        // Chuyển dbResults thành CoPhieuTemp
+        List<CoPhieuTemp> searchResults = dbResults.stream()
+                .map(CoPhieuTemp::new)
+                .collect(Collectors.toList());
+
+        // Thêm các cổ phiếu tạm không bị xóa và khớp từ khóa
+        for (CoPhieuTemp temp : tempList) {
+            if (!temp.isDaXoa()) {
+                boolean match = temp.getMaCP().toLowerCase().contains(query.toLowerCase())
+                        || temp.getTenCty().toLowerCase().contains(query.toLowerCase())
+                        || temp.getDiaChi().toLowerCase().contains(query.toLowerCase());
+                if (match) {
+                    searchResults.add(temp);
+                }
+            }
+        }
+
+        // Gói kết quả vào Page<CoPhieuTemp>
+        Page<CoPhieuTemp> stockPage = new PageImpl<>(searchResults, PageRequest.of(0, Integer.MAX_VALUE), searchResults.size());
+
+        // Thêm temporaryMaCPList
+        List<String> temporaryMaCPList = tempList.stream()
+                .filter(t -> !t.isDaXoa())
+                .map(CoPhieuTemp::getMaCP)
+                .toList();
+
+        model.addAttribute("stocks", stockPage);
+        model.addAttribute("temporaryStocks", tempList);
+        model.addAttribute("temporaryMaCPList", temporaryMaCPList);
+        model.addAttribute("canUndo", !coPhieuService.isUndoStackEmpty());
+
+        if (searchResults.isEmpty()) {
+            model.addAttribute("message", "Không tìm thấy cổ phiếu nào.");
+            model.addAttribute("messageType", "danger");
+        }
+
+        return "nhanvien/stocks";
     }
 
     @PostMapping("/stocks/save-all")

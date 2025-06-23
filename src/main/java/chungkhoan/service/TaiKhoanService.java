@@ -28,8 +28,15 @@ public class TaiKhoanService {
     }
 
     public void xoaTaiKhoan(String tenDangNhap) {
-        String sql = "DROP LOGIN [" + tenDangNhap + "]";
-        jdbcTemplate.execute(sql);
+        String sql = "EXEC master.dbo.sp_XoaLoginVaUser ?, ?";
 
+        try {
+            String tenDatabase = "QUANLYGIAODICHCHUNGKHOAN";
+            jdbcTemplate.update(sql, tenDangNhap, tenDatabase);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
 }

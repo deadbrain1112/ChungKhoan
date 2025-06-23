@@ -32,4 +32,13 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, String> {
     """, nativeQuery = true)
     List<NhanVien> findAllNhanVienChuaCoTaiKhoan();
 
+    @Query(value = """
+    SELECT * FROM nhanvien nv
+    WHERE EXISTS (
+        SELECT 1 FROM sys.sql_logins sl
+        WHERE sl.name = nv.maNV
+    )
+    AND nv.maNV <> ?1
+    """, nativeQuery = true)
+    List<NhanVien> findAllNhanVienCoTaiKhoanTruNguoiDangNhap(String loginName);
 }
