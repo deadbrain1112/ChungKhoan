@@ -142,18 +142,45 @@
     <div id="add-form" class="subform-container" style="display:none;">
         <h3>Thêm nhà đầu tư</h3>
         <form th:action="@{/investors/add-temp(page=${investors.number},size=${investors.size})}" method="post">
-            <label>Mã nhà đầu tư: <input type="text" name="maNDT" maxlength="20" required autocomplete="off"/></label><br/>
-            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"/></label><br/>
+            <label>Mã nhà đầu tư: <input type="text" name="maNDT" maxlength="20" required autocomplete="off"
+            	pattern="^NDT(0[1-9]|[1-9][0-9]*)$"
+            	title="Nhập dạng NDT01 đến NDT09 hoặc NDT10 trở đi"/></label><br/>
+            	
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"
+	            pattern="^\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)\s*$" 
+	            title="Chữ cái đầu viết hoa, không chứa số hoặc ký tự đặc biệt"/></label><br/>
+	            
             <label>Mã khẩu giao dịch: <input type="password" name="mkGiaoDich" maxlength="50" required autocomplete="off"/></label><br/>
+            
             <label>Ngày sinh: <input type="date" name="ngaySinh" required autocomplete="off"/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"/></label><br/>
-            <label>Số điện thoại: <input type="number" name="phone" maxlength="10" required autocomplete="off"/></label><br/>
-            <label>CMND: <input type="number" name="cmnd" maxlength="10" required autocomplete="off"/></label><br/>
+            
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"
+            	pattern="^\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)\s*$"
+			    title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'."/></label><br/>
+            
+			 <label>Số điện thoại: 
+			  <input type="text" id="phone" name="phone" required 
+			         pattern="^[0-9]{10,11}$"
+			         maxlength="11"
+			         title="Số điện thoại gồm 10 hoặc 11 chữ số" 
+			         autocomplete="off"/>
+			</label><br/>
+			
+			<label>CMND: 
+			  <input type="text" id="cmnd" name="cmnd" required 
+			         pattern="^[0-9]{10}$"
+			         maxlength="10"
+			         title="CMND phải đủ 10 chữ số"
+			         autocomplete="off"/>
+			</label><br/>
+            	
             <label>Giới tính:
                 <input type="radio" name="gioiTinh" value="Nam" required/> Nam
                 <input type="radio" name="gioiTinh" value="Nữ" required style="margin-left: 20px;"/> Nữ
             </label><br/>
-            <label>Email: <input type="email" name="email" maxlength="50" required autocomplete="off"/></label><br/>
+            
+            <label>Email: <input type="email" name="email" maxlength="50" required autocomplete="off"
+            	title="Nhập đúng định dạng email (abc@xyz.com)"/></label><br/>
 
             <div class="form-actions">
 	            <button type="submit">Lưu vào tạm</button>
@@ -167,19 +194,42 @@
         <h3>Sửa nhà đầu tư</h3>
         <form th:action="@{/investors/edit-temp}" method="post">
             <input type="hidden" name="maNDT" id="maNDT" />
-            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"/></label><br/>
-            <label>Mã khẩu giao dịch: <input type="password" name="mkGiaoDich" maxlength="50" readonly="readonly"/></label><br/>
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"
+            	pattern="^\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)\s*$" 
+	            title="Chữ cái đầu viết hoa, không chứa số hoặc ký tự đặc biệt"/></label><br/>
+            
             <label>Ngày sinh: <input type="date" name="ngaySinh" required autocomplete="off"/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"/></label><br/>
-            <label>Số điện thoại: <input type="number" name="phone" maxlength="10" required autocomplete="off"/></label><br/>
-            <label>CMND: <input type="number" name="cmnd" maxlength="10" required autocomplete="off"/></label><br/>
+            
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"
+            	pattern="^\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)\s*$"
+			    title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'."/></label><br/>
+            
+			 <label>Số điện thoại: 
+			  <input type="text" id="phone" name="phone" required 
+			         pattern="^[0-9]{10,11}$"
+			         maxlength="11"
+			         title="Số điện thoại gồm 10 hoặc 11 chữ số" 
+			         autocomplete="off"/>
+			</label><br/>
+			
+			<label>CMND: 
+			  <input type="text" id="cmnd" name="cmnd" required 
+			         pattern="^[0-9]{10}$"
+			         maxlength="10"
+			         title="CMND phải đủ 10 chữ số"
+			         autocomplete="off"/>
+			</label><br/>
+            
             <label>Giới tính:
                 <input type="radio" name="gioiTinh" value="Nam" id="edit-nam" required/>
                 <label for="edit-nam">Nam</label>
                 <input type="radio" name="gioiTinh" value="Nữ" id="edit-nu" style="margin-left: 20px;" required/>
                 <label for="edit-nu">Nữ</label>
             </label><br/>
-            <label>Email: <input type="email" name="email" maxlength="50" required autocomplete="off"/></label><br/>
+            
+            <label>Email: <input type="email" name="email" maxlength="50" required autocomplete="off"
+            	title="Nhập đúng định dạng email (abc@xyz.com)"/></label><br/>
+            	
             <div class="form-actions">
             	<button type="submit">Lưu thay đổi</button>
             	<button type="button" onclick="hideSubform('edit-form')">Hủy</button>
@@ -225,7 +275,7 @@
 	                <tbody id="bank-subform-2-body"></tbody>
 	            </table>
 	            <div class="form-actions">
-				    <button type="button">Sửa</button>
+				    <button type="button" onclick="enableBankSubform2Inputs()">Sửa</button>
 				    <button type="submit">Ghi</button>
 				    <button type="button" onclick="hideSubform('bank-subform-2')">Đóng</button>
 				</div>
@@ -233,6 +283,7 @@
 	    </div>
 	</div>
 
+<script src="/js/validate.js"></script>
 
 <script th:inline="javascript">
     let usedMaTKs = /*[[${usedMaTKs}]]*/ [];
@@ -435,22 +486,61 @@
 
         if (tableId === 'bank-accounts-add') {
             newRow.innerHTML = `
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" maxlength="20" required /></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required /></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" maxlength="20" required /></td>
-                <td><input type="number" step="0.01" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" value="0.00" required /></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" maxlength="100" required /></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="10" required /></td>
-                <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required /></td>
+                <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" required autocomplete="off"/></td>
+                
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required 
+                	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)$" 
+			           title="Chữ cái đầu mỗi từ viết hoa. Cho phép khoảng trắng, dấu '-' và ','." 
+			           autocomplete="off"/></td>
+			           
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" maxlength="20" required 
+                	pattern="^[A-Z]+$" 
+	                   title="Chỉ nhập chữ in hoa, không chứa số hoặc ký tự đặc biệt." 
+	                   autocomplete="off"/></td>
+                
+                <td><input type="number" step="0.01" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" value="0.00" required 
+                	autocomplete="off"/></td>
+                
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" maxlength="100" required 
+                	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)$"
+			           title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'." 
+			           autocomplete="off"/></td>
+                
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="10" required 
+	                autocomplete="off"
+	                    pattern="^[0-9]{10,11}$"
+	                    title="Số điện thoại gồm 10 hoặc 11 chữ số"/></td>
+                
+                <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required 
+                	title="Nhập đúng định dạng email (abc@xyz.com)"/></td>
+                	
                 <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
             `;
         } else if (tableId === 'bank-accounts-subform-2') {
             newRow.innerHTML = `
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required /></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" maxlength="20" required /></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" maxlength="100" required /></td>
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="10" required /></td>
-                <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required /></td>
+            	<td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.tenNH" maxlength="50" required 
+	            	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)$" 
+			           title="Chữ cái đầu mỗi từ viết hoa. Cho phép khoảng trắng, dấu '-' và ','." 
+			           autocomplete="off"/></td>
+			           
+			     <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.maNH" maxlength="20" required 
+	                pattern="^[A-Z]+$" 
+		                title="Chỉ nhập chữ in hoa, không chứa số hoặc ký tự đặc biệt." 
+		                autocomplete="off"/></td>
+		                
+		         <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.diaChi" maxlength="100" required 
+	                pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)$"
+				         title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'." 
+				         autocomplete="off"/></td>
+				         
+				 <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="10" required 
+			        autocomplete="off"
+			             pattern="^[0-9]{10,11}$"
+			             title="Số điện thoại gồm 10 hoặc 11 chữ số"/></td>
+			             
+                <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required 
+                	title="Nhập đúng định dạng email (abc@xyz.com)"/></td>
+                	
                 <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
             `;
         }
@@ -478,7 +568,7 @@
                     ${selectOptions}
                 </select>
             </td>
-            <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" maxlength="20" required></td>
+            <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].maTK" maxlength="20" required></td>
             <td><input type="number" name="taiKhoanNganHangs[${bankAccountIndex}].soTien" min="0" required></td>
             <td>
             	<button type="button" onclick="submitNewBankAccount(this)">Tạo</button>
@@ -489,6 +579,38 @@
         tbody.appendChild(row);
         bankAccountIndex++;
     }
+    
+    function allowOnlyDigitsAndLimit(id, maxLen) {
+        const input = document.getElementById(id);
+        input.addEventListener("input", function () {
+            let val = this.value.replace(/\D/g, ''); // bỏ ký tự không phải số
+            if (val.length > maxLen) val = val.slice(0, maxLen);
+            this.value = val;
+        });
+    }
+
+    allowOnlyDigitsAndLimit("phone", 11);
+    allowOnlyDigitsAndLimit("cmnd", 10);
+    
+    function enableBankSubform2Inputs() {
+        const inputs = document.querySelectorAll('#bank-subform-2 input');
+        inputs.forEach(input => {
+            input.removeAttribute('readonly');
+        });
+    }
+    
+    function disableBankSubform2Inputs() {
+        const inputs = document.querySelectorAll('#bank-subform-2 input');
+        inputs.forEach(input => {
+            input.setAttribute('readonly', true);
+        });
+    }
+
+    document.getElementById('bank-subform-2-form').addEventListener('submit', function () {
+        disableBankSubform2Inputs();
+    });
 </script>
+
+<script src="/js/validate.js"></script>
 </body>
 </html>
