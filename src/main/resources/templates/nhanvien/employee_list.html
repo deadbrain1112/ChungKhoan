@@ -132,21 +132,51 @@
         <form th:action="@{/employees/add-temp(page=${employees.number},size=${employees.size})}" method="post">
             <input type="hidden" name="page" th:value="${employees.number}"/>
             <input type="hidden" name="size" th:value="${employees.size}"/>
-            <label>Mã nhân viên: <input type="text" name="maNV" maxlength="20" required/></label><br/>
-            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
+            <label>Mã nhân viên: <input type="text" name="maNV" maxlength="20" required
+	            autocomplete="off"
+	            	pattern="^NV(0[1-9]|[1-9][0-9]*)$"
+	            	title="Nhập dạng NV01 đến NDT09 hoặc NV10 trở đi"/></label><br/>
+            
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"
+	            pattern="^\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)\s*$" 
+	            title="Chữ cái đầu viết hoa, không chứa số hoặc ký tự đặc biệt"/></label><br/>
+	            
             <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
-            <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
-            <label>CMND: <input type="text" name="cmnd" maxlength="10" required/></label><br/>
+            
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"
+            	pattern="^\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)\s*$"
+			    title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'."/></label><br/>
+			    
+            <label>Số điện thoại: 
+			  <input type="text" id="phone" name="phone" required 
+			         pattern="^[0-9]{10,11}$"
+			         maxlength="11"
+			         title="Số điện thoại gồm 10 hoặc 11 chữ số" 
+			         autocomplete="off"/>
+			</label><br/>
+			
+			<label>CMND: 
+			  <input type="text" id="cmnd" name="cmnd" required 
+			         pattern="^[0-9]{10}$"
+			         maxlength="10"
+			         title="CMND phải đủ 10 chữ số"
+			         autocomplete="off"/>
+			</label><br/>
+			
             <label>Giới tính:
                 <input type="radio" name="gioiTinh" value="Nam" id="add-nam" required/>
                 <label for="add-nam">Nam</label>
                 <input type="radio" name="gioiTinh" value="Nữ" id="add-nu" style="margin-left: 20px;"/>
                 <label for="add-nu">Nữ</label>
             </label><br/>
-            <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
-            <button type="submit">Lưu vào tạm</button>
-            <button type="button" onclick="hideSubform('add-form')">Hủy</button>
+            
+            <label>Email: <input type="email" name="email" maxlength="50" required
+            	autocomplete="off"
+            	title="Nhập đúng định dạng email (abc@xyz.com)"/></label><br/>
+            <div class="form-actions">
+            	<button type="submit">Lưu vào tạm</button>
+            	<button type="button" onclick="hideSubform('add-form')">Hủy</button>
+            </div>
         </form>
     </div>
 
@@ -156,20 +186,48 @@
         <form th:action="@{/employees/edit-temp}" method="post" id="editForm">
             <input type="hidden" name="maNV" id="editMaNV" />
             <label>Mã nhân viên: <span id="editMaNVDisplay"></span></label><br/>
-            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required/></label><br/>
+            
+            <label>Họ tên: <input type="text" name="hoTen" maxlength="50" required autocomplete="off"
+	            pattern="^\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)\s*$" 
+	            title="Chữ cái đầu viết hoa, không chứa số hoặc ký tự đặc biệt"/></label><br/>
+	            
             <label>Ngày sinh: <input type="date" name="ngaySinh" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required/></label><br/>
-            <label>Số điện thoại: <input type="text" name="phone" maxlength="15" required/></label><br/>
-            <label>CMND: <input type="text" name="cmnd" maxlength="10" required/></label><br/>
+            
+            <label>Địa chỉ: <input type="text" name="diaChi" maxlength="100" required autocomplete="off"
+            	pattern="^\s*([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)\s*$"
+			    title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'."/></label><br/>
+            
+            <label>Số điện thoại: 
+			  <input type="text" id="phone" name="phone" required 
+			         pattern="^[0-9]{10,11}$"
+			         maxlength="11"
+			         title="Số điện thoại gồm 10 hoặc 11 chữ số" 
+			         autocomplete="off"/>
+			</label><br/>
+			
+			<label>CMND: 
+			  <input type="text" id="cmnd" name="cmnd" required 
+			         pattern="^[0-9]{10}$"
+			         maxlength="10"
+			         title="CMND phải đủ 10 chữ số"
+			         autocomplete="off"/>
+			</label><br/>
+			
             <label>Giới tính:
                 <input type="radio" name="gioiTinh" value="Nam" id="edit-nam" required/>
                 <label for="edit-nam">Nam</label>
                 <input type="radio" name="gioiTinh" value="Nữ" id="edit-nu" style="margin-left: 20px;"/>
                 <label for="edit-nu">Nữ</label>
             </label><br/>
-            <label>Email: <input type="email" name="email" maxlength="50" required/></label><br/>
-            <button type="submit">Lưu thay đổi</button>
-            <button type="button" onclick="hideSubform('edit-form')">Hủy</button>
+            
+            <label>Email: <input type="email" name="email" maxlength="50" required
+            	autocomplete="off"
+            	title="Nhập đúng định dạng email (abc@xyz.com)"/></label><br/>
+            	
+            <div class="form-actions">
+            	<button type="submit">Lưu thay đổi</button>
+            	<button type="button" onclick="hideSubform('edit-form')">Hủy</button>
+            </div>
         </form>
     </div>
 </div>
@@ -268,6 +326,18 @@
             }
         });
     });
+    
+    function allowOnlyDigitsAndLimit(id, maxLen) {
+        const input = document.getElementById(id);
+        input.addEventListener("input", function () {
+            let val = this.value.replace(/\D/g, ''); // bỏ ký tự không phải số
+            if (val.length > maxLen) val = val.slice(0, maxLen);
+            this.value = val;
+        });
+    }
+
+    allowOnlyDigitsAndLimit("phone", 11);
+    allowOnlyDigitsAndLimit("cmnd", 10);
 </script>
 </body>
 </html>

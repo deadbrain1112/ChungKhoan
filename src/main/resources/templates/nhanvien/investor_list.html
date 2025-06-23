@@ -259,7 +259,8 @@
 	    </div>
 	    <div id="bank-subform-2" class="subform-bank half-width">
 	        <h3>Chi Tiết Ngân Hàng</h3>
-	        <form id="bank-subform-2-form" th:action="@{/investors/edit-bank-temp}" method="post">
+	        <form id="bank-subform-2-form" th:action="@{/investors/edit-bank-temp}" method="post"
+	        		onsubmit="disableBankSubform2Inputs()">
 	            <input type="hidden" name="maNDT" id="bank-subform-2-maNDT" />
 	            <table class="bank-account-table" id="bank-accounts-subform-2">
 	                <thead>
@@ -506,10 +507,11 @@
 			           title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'." 
 			           autocomplete="off"/></td>
                 
-                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="10" required 
-	                autocomplete="off"
-	                    pattern="^[0-9]{10,11}$"
-	                    title="Số điện thoại gồm 10 hoặc 11 chữ số"/></td>
+                <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" required 
+	                pattern="^[0-9]{10,11}$"
+				         maxlength="11"
+				         title="Số điện thoại gồm 10 hoặc 11 chữ số" 
+				         autocomplete="off"/></td>
                 
                 <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required 
                 	title="Nhập đúng định dạng email (abc@xyz.com)"/></td>
@@ -533,10 +535,11 @@
 				         title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'." 
 				         autocomplete="off"/></td>
 				         
-				 <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" maxlength="10" required 
-			        autocomplete="off"
-			             pattern="^[0-9]{10,11}$"
-			             title="Số điện thoại gồm 10 hoặc 11 chữ số"/></td>
+				 <td><input type="text" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.phone" required 
+					 pattern="^[0-9]{10,11}$"
+				         maxlength="11"
+				         title="Số điện thoại gồm 10 hoặc 11 chữ số" 
+				         autocomplete="off"/></td>
 			             
                 <td><input type="email" name="taiKhoanNganHangs[${bankAccountIndex}].nganHang.email" maxlength="50" required 
                 	title="Nhập đúng định dạng email (abc@xyz.com)"/></td>

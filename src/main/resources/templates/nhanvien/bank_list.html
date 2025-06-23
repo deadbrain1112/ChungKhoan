@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Danh sách ngân hàng</title>
-    <link rel="stylesheet" th:href="@{/css/stocks.css}">
+    <link rel="stylesheet" th:href="@{/css/investor_list.css}">
 </head>
 <body>
 <div>
@@ -46,7 +46,7 @@
         </tr>
         </thead>
         <tbody>
-        <!-- Duyệt qua stocks.content -->
+        <!-- Duyệt qua banks.content -->
         <tr th:each="bank : ${banks.content}"
             th:classappend="${temporaryMaNHList.contains(bank.maNH)} ? 'unsaved'">
             <td th:text="${bank.maNH}"></td>
@@ -55,7 +55,7 @@
             <td th:text="${bank.phone}"></td>
             <td th:text="${bank.email}"></td>
             <td>
-                <!-- Nếu cổ phiếu đã bị xóa: chỉ hiển thị nút "Hoàn tác xóa" -->
+                <!-- Nếu ngân hàng đã bị xóa: chỉ hiển thị nút "Hoàn tác xóa" -->
                 <form th:if="${bank.daXoa}" th:action="@{/banks/undo-delete}" method="post" style="display:inline;">
                     <input type="hidden" name="maNH" th:value="${bank.maNH}" />
                     <button type="submit" class="toolbar-btn">Hoàn tác xóa</button>
@@ -70,14 +70,14 @@
                              data-phone=${bank.phone},
                              data-email=${bank.email}">Sửa</button> |
 
-                    <!-- Nếu là cổ phiếu tạm thời -->
+                    <!-- Nếu là ngân hàng tạm thời -->
                     <form th:if="${temporaryMaNHList.contains(bank.maNH)}"
                           th:action="@{/banks/remove-temp}" method="post" style="display:inline;">
                         <input type="hidden" name="maNH" th:value="${bank.maNH}" />
                         <button type="submit" class="delete-btn" onclick="return confirm('Xóa khỏi danh sách tạm?')">Xóa</button>
                     </form>
 
-                    <!-- Nếu là cổ phiếu trong DB -->
+                    <!-- Nếu là ngân hàng trong DB -->
                     <form th:unless="${temporaryMaNHList.contains(bank.maNH)}"
                           th:action="@{/banks/delete}" method="post" style="display:inline;">
                         <input type="hidden" name="maNH" th:value="${bank.maNH}" />
@@ -118,11 +118,29 @@
         <form th:action="@{/banks/add-temp(page=${banks.number},size=${banks.size})}" method="post">
             <input type="hidden" name="page" th:value="${banks.number}"/>
             <input type="hidden" name="size" th:value="${banks.size}"/>
-            <label>Mã ngân hàng: <input type="text" name="maNH" required/></label><br/>
-            <label>Tên ngân hàng: <input type="text" name="tenNH" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" required/></label><br/>
-            <label>Số điện thoại: <input type="number" name="phone" required/></label><br/>
-            <label>Email: <input type="number" name="email" required/></label><br/>
+            <label>Mã ngân hàng: <input type="number" name="maNH" required autocomplete="off"/></label><br/>
+            
+            <label>Tên ngân hàng: <input type="text" name="tenNH" required
+            	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)$" 
+			           title="Chữ cái đầu mỗi từ viết hoa. Cho phép khoảng trắng, dấu '-' và ','." 
+			           autocomplete="off"/></label><br/>
+            
+            <label>Địa chỉ: <input type="text" name="diaChi" required
+            	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)$"
+			           title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'." 
+			           autocomplete="off"/></label><br/>
+			           
+            <label>Số điện thoại: 
+			  <input type="text" id="phone" name="phone" required 
+			         pattern="^[0-9]{10,11}$"
+			         maxlength="11"
+			         title="Số điện thoại gồm 10 hoặc 11 chữ số" 
+			         autocomplete="off"/>
+			</label><br/>
+            
+            <label>Email: <input type="email" name="email" required
+            	title="Nhập đúng định dạng email (abc@xyz.com)" autocomplete="off"/></label><br/>
+            
             <button type="submit">Lưu vào tạm</button>
             <button type="button" onclick="hideSubform('add-form')">Hủy</button>
         </form>
@@ -133,10 +151,27 @@
         <h3>Sửa ngân hàng</h3>
         <form th:action="@{/banks/edit-temp}" method="post">
             <input type="hidden" name="maNH" id="maNH" />
-            <label>Tên ngân hàng: <input type="text" name="tenCty" required/></label><br/>
-            <label>Địa chỉ: <input type="text" name="diaChi" required/></label><br/>
-            <label>Số điện thoại: <input type="number" name="phone" required/></label><br/>
-            <label>Email: <input type="number" name="email" required/></label><br/>
+            <label>Tên ngân hàng: <input type="text" name="tenNH" required
+            	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*([ \-,][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ]*)*)$" 
+			           title="Chữ cái đầu mỗi từ viết hoa. Cho phép khoảng trắng, dấu '-' và ','." 
+			           autocomplete="off"/></label><br/>
+            
+            <label>Địa chỉ: <input type="text" name="diaChi" required
+            	pattern="^([A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*([ \/,\\-][A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƯẠ-ỹ0-9][a-zàáâãèéêìíòóôõùúăđĩũưạ-ỹ0-9]*)*)$"
+			           title="Viết hoa chữ cái đầu mỗi phần. Cho phép chữ, số, dấu '/' , ',' và '-'." 
+			           autocomplete="off"/></label><br/>
+			           
+            <label>Số điện thoại: 
+			  <input type="text" id="phone" name="phone" required 
+			         pattern="^[0-9]{10,11}$"
+			         maxlength="11"
+			         title="Số điện thoại gồm 10 hoặc 11 chữ số" 
+			         autocomplete="off"/>
+			</label><br/>
+            
+            <label>Email: <input type="email" name="email" required
+            	title="Nhập đúng định dạng email (abc@xyz.com)" autocomplete="off"/></label><br/>
+            	
             <button type="submit">Lưu thay đổi</button>
             <button type="button" onclick="hideSubform('edit-form')">Hủy</button>
         </form>
@@ -190,6 +225,18 @@
             })
         );
     });
+    
+    function allowOnlyDigitsAndLimit(id, maxLen) {
+        const input = document.getElementById(id);
+        input.addEventListener("input", function () {
+            let val = this.value.replace(/\D/g, ''); // bỏ ký tự không phải số
+            if (val.length > maxLen) val = val.slice(0, maxLen);
+            this.value = val;
+        });
+    }
+
+    allowOnlyDigitsAndLimit("phone", 11);
+    allowOnlyDigitsAndLimit("cmnd", 10);
 </script>
 </body>
 </html>
