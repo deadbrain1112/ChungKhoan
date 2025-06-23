@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,9 @@ public class KhopLenhService implements ApplicationContextAware {
 
     @SuppressWarnings("unused")
 	private ApplicationContext context;
+    
+    @SuppressWarnings("unused")
+	private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     public void setApplicationContext(ApplicationContext ctx) {
@@ -49,6 +53,17 @@ public class KhopLenhService implements ApplicationContextAware {
     public void xuLyKhopLenhSauATO() {
         System.out.println("[KHOP SAU ATO] Xử lý khớp ATO.");
         xuLyKhopTheoLoai(Phase.ATO);
+        
+        List<String> maCPs = lenhDatRepo.findMaCPConLenhATX();
+        for (String maCP : maCPs) {
+            messagingTemplate.convertAndSend("/topic/stock-board", Map.of(
+                "type", "clear",
+                "maCP", maCP
+            ));
+        }
+        
+        System.out.println("[CLEAR ATO/ATC] Số mã cần clear: " + maCPs.size());
+
     }
 
     @Scheduled(cron = "${trading-time.cron-atc-check}")
@@ -59,6 +74,14 @@ public class KhopLenhService implements ApplicationContextAware {
         snapshotBangGiaCuoiNgay();
         huyLenhATXChuaKhop();
         huyLenhLOChuaKhop();
+        
+        List<String> maCPs = lenhDatRepo.findMaCPConLenhATX();
+        for (String maCP : maCPs) {
+            messagingTemplate.convertAndSend("/topic/stock-board", Map.of(
+                "type", "clear",
+                "maCP", maCP
+            ));
+        }
     }
     
     @Transactional
@@ -70,7 +93,7 @@ public class KhopLenhService implements ApplicationContextAware {
         List<String> dsMaCP = coPhieuRepository.findAllMaCP();
 
         for (String maCP : dsMaCP) {
-            // 1. Lấy lệnh khớp cuối
+            // Lấy lệnh khớp cuối
             LenhKhop khopCuoi = lenhKhopRepository.findLenhKhopCuoiTrongNgay(maCP, ngayStr);
             if (khopCuoi == null) {
                 System.out.println("[SNAPSHOT] Không có khớp nào cho mã: " + maCP);
@@ -79,17 +102,28 @@ public class KhopLenhService implements ApplicationContextAware {
 
             double giaTC = khopCuoi.getGiaKhop();
 
-            // 2. Lưu lịch sử giá
+            // Lưu lịch sử giá
             lichSuGiaService.snapshotLichSuGia(maCP, thoiGianSnapshot, giaTC, true);
 
-            // 3. Top 3 MUA và BÁN (chỉ lưu vào RAM)
+            // Lưu top 3 MUA/BÁN cuối
             List<Object[]> topMua = lenhDatRepo.findTop3GiaMuaSnapshot(maCP, ngayStr);
             List<Object[]> topBan = lenhDatRepo.findTop3GiaBanSnapshot(maCP, ngayStr);
             topMuaSnapshotMap.put(maCP, topMua);
             topBanSnapshotMap.put(maCP, topBan);
+
+            // Gửi WebSocket realtime để cập nhật giao diện
+            messagingTemplate.convertAndSend("/topic/stock-board", Map.of(
+                "type", "match",
+                "maCP", maCP,
+                "giaKhop", giaTC * 1000,  // đưa về đơn vị gốc
+                "soLuongKhop", khopCuoi.getSoLuongKhop(),
+                "giaMua", giaTC * 1000,
+                "giaBan", giaTC * 1000,
+                "delta", 0
+            ));
         }
 
-        System.out.println("[SNAPSHOT] Hoàn tất snapshot bảng giá cuối phiên ATC.");
+        System.out.println("[SNAPSHOT] Hoàn tất snapshot bảng giá cuối phiên ATC và gửi realtime.");
     }
     
     // Truy xuất giá trị tạm thời trong phase NGHI
@@ -145,6 +179,19 @@ public class KhopLenhService implements ApplicationContextAware {
         }
         if (!lenhLO.isEmpty()) {
             System.out.println("[HUY LO] Đã hủy " + lenhLO.size() + " lệnh LO chưa khớp sau phiên.");
+        }
+    }
+    
+    @Scheduled(fixedDelay = 10000) // chạy mỗi 10s, bạn có thể điều chỉnh
+    @Transactional
+    public void huyLenhTrongPhaseNghi() {
+        LocalDateTime now = LocalDateTime.now();
+        Phase phase = tradingTimeUtil.getCurrentPhase(now);
+
+        if (phase == Phase.NGHI) {
+            System.out.println("[AUTO HỦY] Đang trong phase NGHI → tiến hành hủy các lệnh chưa khớp.");
+            huyLenhATXChuaKhop();
+            huyLenhLOChuaKhop();
         }
     }
 }

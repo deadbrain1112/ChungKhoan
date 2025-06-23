@@ -11,7 +11,6 @@ h2 {
     color: #ffffff;
 }
 
-
 /* ===== FORM LỌC ===== */
 form {
     display: flex;
@@ -49,38 +48,13 @@ th, td {
     border: 1px solid #2a3c4d;
     padding: 8px;
     text-align: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 thead {
     background-color: #1a2a3a;
     font-weight: bold;
     color: #ffffff;
-}
-
-/* Giá màu */
-.gia-tran {
-    color: #dd99ff; 
-    font-weight: bold;
-}
-
-.gia-san {
-    color: #3399ff;
-    font-weight: bold;
-}
-
-.gia-tang {
-    color: #00ff00; 
-    font-weight: bold;
-}
-
-.gia-giam {
-    color: #ff3333;
-    font-weight: bold;
-}
-
-.gia-tham-chieu {
-    color: #ffcc00;
-    font-weight: bold;
 }
 
 .tong-kl {
@@ -90,21 +64,11 @@ thead {
 
 /* Hover dòng */
 tbody tr:hover {
-   background-color: #1f2f3f;
-   
-   transition: background-color 0.2s ease, transform 0.2s ease;
+    background-color: #1f2f3f;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.top-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 24px;
-    background-color: #1e1e2f;
-    color: white;
-    font-family: Arial, sans-serif;
-}
-
+/* HEADER */
 .top-header {
     display: flex;
     justify-content: space-between;
@@ -163,8 +127,7 @@ tbody tr:hover {
     background-color: #3c3c5c;
 }
 
-
-/* Gộp hàng ngang */
+/* TOOLBAR */
 .toolbar {
     display: flex;
     align-items: center;
@@ -186,29 +149,26 @@ tbody tr:hover {
 }
 
 .search-form:hover {
-    background-color: #252537; /* màu nền đậm hơn khi hover */
+    background-color: #252537;
 }
 
-/* Input trong search */
 .search-form input {
     width: 100%;
     padding: 10px 12px;
     border: none;
     border-radius: 6px;
-    background-color: transparent; /* để dùng màu từ .search-form */
+    background-color: transparent;
     color: white;
     font-size: 14px;
     outline: none;
 }
 
-/* Đảm bảo khi hover vào input không bị trắng */
 .search-form input:hover,
 .search-form input:focus {
     background-color: transparent;
     color: white;
 }
 
-/* Icon kính lúp */
 .search-form .search-icon {
     position: absolute;
     left: 10px;
@@ -216,30 +176,18 @@ tbody tr:hover {
     color: #888;
 }
 
+/* DÒNG NỔI BẬT */
 .highlighted-row {
     animation: highlightFade 3s ease-out forwards;
-    background-color: #3a506b !important; /* hoặc màu bạn chọn */
+    background-color: #3a506b !important;
 }
 
 @keyframes highlightFade {
-    0% {
-        background-color: #3a506b;
-    }
-    100% {
-        background-color: transparent;
-    }
+    0% { background-color: #3a506b; }
+    100% { background-color: transparent; }
 }
 
-.green { color: green; }
-    .red { color: red; }
-    .yellow { color: yellow; }
-    .flash {
-    animation: flash 0.5s ease-in-out 2;
-}
-@keyframes flash {
-     0%, 100% { opacity: 1; }
-     50% { opacity: 0.5; }
-}
+/* ===== MÀU GIÁ ===== */
 
 /* Trong phiên - nền + chữ trắng */
 .bg-tang-live { background-color: #2e7d32; color: white; }
@@ -254,6 +202,18 @@ tbody tr:hover {
 .text-tran { color: #dd99ff; font-weight: bold; }
 .text-san { color: #3399ff; font-weight: bold; }
 .text-thamchieu { color: #ffcc00; font-weight: bold; }
+
+.bg-thamchieu { background-color: #f0b400; color: white; font-weight: bold; }
+.bg-tran       { background-color: #ff00ff; color: white; font-weight: bold; }
+.bg-san        { background-color: #00bfff; color: white; font-weight: bold; }
+.flash         { animation: flash 0.5s ease-in-out; }
+
+@keyframes flash {
+  0%   { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+
 
 /* Không có giá */
 .bg-chua-co { background-color: #666; color: white; }

@@ -5,18 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng giá cổ phiếu</title>
     <link rel="stylesheet" th:href="@{/css/stock_board.css}">
-    <style>
-        .green { color: green; }
-        .red { color: red; }
-        .yellow { color: yellow; }
-        .flash {
-            animation: flash 0.5s ease-in-out 2;
-        }
-        @keyframes flash {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-    </style>
 </head>
 <body>
 	<header class="top-header">
@@ -51,290 +39,403 @@
 		</div>
 	</div>
 
-<table>
-    <thead>
-    <tr>
-        <th rowspan="2">Mã CK</th>
-        <th rowspan="2">T.C</th>
-        <th rowspan="2">Trần</th>
-        <th rowspan="2">Sàn</th>
-        <th colspan="6">Bên mua</th>
-        <th colspan="3">Khớp lệnh</th>
-        <th colspan="6">Bên bán</th>
-        <th rowspan="2">Tổng KL</th>
-    </tr>
-    <tr>
-        <th>Giá 3</th><th>KL 3</th>
-        <th>Giá 2</th><th>KL 2</th>
-        <th>Giá 1</th><th>KL 1</th>
-        <th>Giá</th><th>KL</th><th>+/-</th>
-        <th>Giá 1</th><th>KL 1</th>
-        <th>Giá 2</th><th>KL 2</th>
-        <th>Giá 3</th><th>KL 3</th>
-    </tr>
-    </thead>
+	<table>
+	    <thead>
+	    <tr>
+	        <th rowspan="2">Mã CK</th>
+	        <th rowspan="2">T.C</th>
+	        <th rowspan="2">Trần</th>
+	        <th rowspan="2">Sàn</th>
+	        <th colspan="6">Bên mua</th>
+	        <th colspan="3">Khớp lệnh</th>
+	        <th colspan="6">Bên bán</th>
+	        <th rowspan="2">Tổng KL</th>
+	    </tr>
+	    <tr>
+	        <th>Giá 3</th><th>KL 3</th>
+	        <th>Giá 2</th><th>KL 2</th>
+	        <th>Giá 1</th><th>KL 1</th>
+	        <th>Giá</th><th>KL</th><th>+/-</th>
+	        <th>Giá 1</th><th>KL 1</th>
+	        <th>Giá 2</th><th>KL 2</th>
+	        <th>Giá 3</th><th>KL 3</th>
+	    </tr>
+	    </thead>
 	    <tbody>
-			<tr th:each="cp : ${dsCP}">
+			<tr th:each="cp : ${dsCP}"
+			    th:with="
+			        muaGia1=${benMuaMap[cp.maCP]?.size() > 0 ? benMuaMap[cp.maCP][0].gia : null},
+			        muaGia2=${benMuaMap[cp.maCP]?.size() > 1 ? benMuaMap[cp.maCP][1].gia : null},
+			        muaGia3=${benMuaMap[cp.maCP]?.size() > 2 ? benMuaMap[cp.maCP][2].gia : null},
+			        banGia1=${benBanMap[cp.maCP]?.size() > 0 ? benBanMap[cp.maCP][0].gia : null},
+			        banGia2=${benBanMap[cp.maCP]?.size() > 1 ? benBanMap[cp.maCP][1].gia : null},
+			        banGia3=${benBanMap[cp.maCP]?.size() > 2 ? benBanMap[cp.maCP][2].gia : null},
+			        khopGia=${lenhKhopMap[cp.maCP]?.giaKhop},
+			        delta=${khopGia != null ? khopGia - giaTCMap[cp.maCP] : null},
+			
+			        clsMua1=${muaGia1 == null ? '' : muaGia1 > giaTCMap[cp.maCP] ? 'text-tang' : muaGia1 < giaTCMap[cp.maCP] ? 'text-giam' : 'text-thamchieu'},
+			        clsMua2=${muaGia2 == null ? '' : muaGia2 > giaTCMap[cp.maCP] ? 'text-tang' : muaGia2 < giaTCMap[cp.maCP] ? 'text-giam' : 'text-thamchieu'},
+			        clsMua3=${muaGia3 == null ? '' : muaGia3 > giaTCMap[cp.maCP] ? 'text-tang' : muaGia3 < giaTCMap[cp.maCP] ? 'text-giam' : 'text-thamchieu'},
+			        clsBan1=${banGia1 == null ? '' : banGia1 > giaTCMap[cp.maCP] ? 'text-tang' : banGia1 < giaTCMap[cp.maCP] ? 'text-giam' : 'text-thamchieu'},
+			        clsBan2=${banGia2 == null ? '' : banGia2 > giaTCMap[cp.maCP] ? 'text-tang' : banGia2 < giaTCMap[cp.maCP] ? 'text-giam' : 'text-thamchieu'},
+			        clsBan3=${banGia3 == null ? '' : banGia3 > giaTCMap[cp.maCP] ? 'text-tang' : banGia3 < giaTCMap[cp.maCP] ? 'text-giam' : 'text-thamchieu'},
+			        clsKhop=${khopGia == null ? '' : khopGia > giaTCMap[cp.maCP] ? 'text-tang' : khopGia < giaTCMap[cp.maCP] ? 'text-giam' : 'text-thamchieu'},
+			        clsDelta=${delta == null ? '' : delta > 0 ? 'text-tang' : delta < 0 ? 'text-giam' : 'text-thamchieu'}
+			    ">
+			
 			    <td th:text="${cp.maCP}"></td>
 			
 			    <!-- Tham chiếu / Trần / Sàn -->
-			    <td class="gia-tham-chieu" th:text="${#numbers.formatDecimal(giaTCMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
-			    <td class="gia-tran" th:text="${#numbers.formatDecimal(giaTranMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
-			    <td class="gia-san" th:text="${#numbers.formatDecimal(giaSanMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
+			    <td class="bg-thamchieu" th:text="${#numbers.formatDecimal(giaTCMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
+			    <td class="bg-tran" th:text="${#numbers.formatDecimal(giaTranMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
+			    <td class="bg-san" th:text="${#numbers.formatDecimal(giaSanMap[cp.maCP], 0, 'POINT', 0, 'POINT')}"></td>
 			
 			    <!-- Bên mua -->
-			    <td th:id="'mua-gia3-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-			    <td th:id="'mua-kl3-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			    <td th:id="'mua-gia3-' + ${cp.maCP}" th:text="${muaGia3 != null ? #numbers.formatDecimal(muaGia3, 0, 'POINT', 0, 'POINT') : '-'}" th:class="${clsMua3}"></td>
+			    <td th:id="'mua-kl3-' + ${cp.maCP}" th:text="${benMuaMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benMuaMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}" th:class="${clsMua3}"></td>
 			
-			    <td th:id="'mua-gia2-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-			    <td th:id="'mua-kl2-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			    <td th:id="'mua-gia2-' + ${cp.maCP}" th:text="${muaGia2 != null ? #numbers.formatDecimal(muaGia2, 0, 'POINT', 0, 'POINT') : '-'}" th:class="${clsMua2}"></td>
+			    <td th:id="'mua-kl2-' + ${cp.maCP}" th:text="${benMuaMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benMuaMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}" th:class="${clsMua2}"></td>
 			
-			    <td th:id="'mua-gia1-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-			    <td th:id="'mua-kl1-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			    <td th:id="'mua-gia1-' + ${cp.maCP}" 
+				    th:text="${muaGia1 != null ? #numbers.formatDecimal(muaGia1, 0, 'POINT', 0, 'POINT') : '-'}" 
+				    th:class="${clsMua1}"></td>
+
+			    <td th:id="'mua-kl1-' + ${cp.maCP}" th:text="${benMuaMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benMuaMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}" th:class="${clsMua1}"></td>
 			
-			    <!-- Giá khớp -->
-			    <td th:id="'giaKhop-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]} + ' flash'"
-			        th:text="${lenhKhopMap[cp.maCP]?.giaKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].giaKhop, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-			
-			    <!-- Khối lượng khớp -->
-			    <td th:id="'klKhop-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]} + ' flash'"
-			        th:text="${lenhKhopMap[cp.maCP]?.soLuongKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].soLuongKhop, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
-			
-			    <!-- +/- -->
-			    <td th:id="'delta-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]} + ' flash'"
-			        th:text="${deltaMap[cp.maCP] != null ? #numbers.formatDecimal(deltaMap[cp.maCP], 0, 'POINT', 0, 'POINT') : '-'}"></td>
+			    <!-- Khớp lệnh -->
+			    <td th:id="'giaKhop-' + ${cp.maCP}" th:text="${khopGia != null ? #numbers.formatDecimal(khopGia, 0, 'POINT', 0, 'POINT') : '-'}" th:class="${clsKhop + ' flash'}"></td>
+			    <td th:id="'klKhop-' + ${cp.maCP}" th:text="${lenhKhopMap[cp.maCP]?.soLuongKhop != null ? #numbers.formatDecimal(lenhKhopMap[cp.maCP].soLuongKhop, 0, 'COMMA', 0, 'COMMA') : '-'}" th:class="${clsKhop + ' flash'}"></td>
+			    <td th:id="'delta-' + ${cp.maCP}" th:text="${delta != null ? #numbers.formatDecimal(delta, 0, 'POINT', 0, 'POINT') : '-'}" th:class="${clsDelta + ' flash'}"></td>
 			
 			    <!-- Bên bán -->
-			    <td th:id="'ban-gia1-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-			    <td th:id="'ban-kl1-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			    <td th:id="'ban-gia1-' + ${cp.maCP}" 
+				    th:text="${banGia1 != null ? #numbers.formatDecimal(banGia1, 0, 'POINT', 0, 'POINT') : '-'}" 
+				    th:class="${clsBan1}"></td>
+				    
+			    <td th:id="'ban-kl1-' + ${cp.maCP}" th:text="${benBanMap[cp.maCP]?.size() > 0 ? #numbers.formatDecimal(benBanMap[cp.maCP][0].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}" th:class="${clsBan1}"></td>
 			
-			    <td th:id="'ban-gia2-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-			    <td th:id="'ban-kl2-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			    <td th:id="'ban-gia2-' + ${cp.maCP}" th:text="${banGia2 != null ? #numbers.formatDecimal(banGia2, 0, 'POINT', 0, 'POINT') : '-'}" th:class="${clsBan2}"></td>
+			    <td th:id="'ban-kl2-' + ${cp.maCP}" th:text="${benBanMap[cp.maCP]?.size() > 1 ? #numbers.formatDecimal(benBanMap[cp.maCP][1].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}" th:class="${clsBan2}"></td>
 			
-			    <td th:id="'ban-gia3-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].gia, 0, 'POINT', 0, 'POINT') : '-'}"></td>
-			    <td th:id="'ban-kl3-' + ${cp.maCP}" th:classappend="${colorMap[cp.maCP]}"
-			        th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}"></td>
+			    <td th:id="'ban-gia3-' + ${cp.maCP}" th:text="${banGia3 != null ? #numbers.formatDecimal(banGia3, 0, 'POINT', 0, 'POINT') : '-'}" th:class="${clsBan3}"></td>
+			    <td th:id="'ban-kl3-' + ${cp.maCP}" th:text="${benBanMap[cp.maCP]?.size() > 2 ? #numbers.formatDecimal(benBanMap[cp.maCP][2].soLuong, 0, 'COMMA', 0, 'COMMA') : '-'}" th:class="${clsBan3}"></td>
 			
 			    <!-- Tổng khối lượng -->
 			    <td class="tong-kl" th:text="${#numbers.formatDecimal(tongKhopMap[cp.maCP], 0, 'COMMA', 0, 'COMMA')}"></td>
 			</tr>
 		</tbody>
-</table>
+	</table>
+	
+	<script th:inline="javascript">
+	    let giaTCMap = [[${giaTCMap}]];
+	    
+	    // Nếu lớn hơn 1000 thì chia về đơn vị x 1000
+	    Object.keys(giaTCMap).forEach(maCP => {
+	        let raw = giaTCMap[maCP];
+	        let num = typeof raw === 'number' ? raw : parseFloat(raw);
+	        if (num > 1000) num = num / 1000;
+	        giaTCMap[maCP] = num;
+	    });
+	</script>
+	
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-    <script>
-        let socket = new SockJS('/ws-stock');
-        let stompClient = Stomp.over(socket);
-        let orderBook = {};
+	<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+    let socket = new SockJS('/ws-stock');
+    let stompClient = Stomp.over(socket);
+    let orderBook = {};
 
-        // Hàm lấy dữ liệu từ bảng để khởi tạo orderBook
-        function initializeOrderBookFromTable() {
-            const tableBody = document.querySelector('table tbody');
-            if (!tableBody) return;
+    function getColorClass(gia, maCP) {
+        const giaTCRaw = giaTCMap?.[maCP];
+        if (giaTCRaw == null || gia == null) return '';
 
-            const rows = Array.from(tableBody.querySelectorAll('tr'));
-            rows.forEach(row => {
-                const maCP = row.cells[0]?.textContent.trim();
-                if (!maCP) return;
+        const giaTC = typeof giaTCRaw === 'number' ? giaTCRaw : parseFloat(giaTCRaw);
+        let parsedGia = typeof gia === 'number' ? gia : parseFloat(gia);
+        
+        if (parsedGia > 1000) parsedGia = parsedGia / 1000; // chuẩn hóa giá đặt nếu cần
 
-                // Khởi tạo orderBook cho mã cổ phiếu
-                if (!orderBook[maCP]) {
-                    orderBook[maCP] = { buy: [], sell: [] };
-                }
+        if (isNaN(parsedGia) || isNaN(giaTC)) return '';
 
-                // Lấy dữ liệu bên mua (Giá 1, KL 1, Giá 2, KL 2, Giá 3, KL 3)
-                for (let i = 1; i <= 3; i++) {
-                    const priceElem = document.getElementById(`mua-gia${i}-${maCP}`);
-                    const quantityElem = document.getElementById(`mua-kl${i}-${maCP}`);
-                    if (priceElem && quantityElem && priceElem.textContent !== '-' && quantityElem.textContent !== '-') {
-                        const gia = parseFloat(priceElem.textContent);
-                        const soLuong = parseInt(quantityElem.textContent.replace(/,/g, ''));
-                        if (!isNaN(gia) && !isNaN(soLuong)) {
-                            orderBook[maCP].buy.push({ gia, soLuong });
-                        }
+        if (parsedGia > giaTC) return 'text-tang';
+        if (parsedGia < giaTC) return 'text-giam';
+        return 'text-thamchieu';
+    }
+
+    function updateClassColor(elem, newClass) {
+        if (!elem) return;
+        elem.classList.remove('text-tang', 'text-giam', 'text-thamchieu', 'flash');
+        if (newClass) elem.classList.add(newClass, 'flash');
+        setTimeout(() => {
+            elem.classList.remove('flash');
+        }, 1000);
+    }
+
+    function initializeOrderBookFromTable() {
+        const tableBody = document.querySelector('table tbody');
+        if (!tableBody) return;
+
+        const rows = Array.from(tableBody.querySelectorAll('tr'));
+        rows.forEach(row => {
+            const maCP = row.cells[0]?.textContent.trim();
+            if (!maCP) return;
+            if (!orderBook[maCP]) orderBook[maCP] = { buy: [], sell: [] };
+
+            for (let i = 1; i <= 3; i++) {
+                const priceElem = document.getElementById(`mua-gia${i}-${maCP}`);
+                const quantityElem = document.getElementById(`mua-kl${i}-${maCP}`);
+                if (priceElem && quantityElem && priceElem.textContent !== '-' && quantityElem.textContent !== '-') {
+                    const gia = parseFloat(priceElem.textContent);
+                    const soLuong = parseInt(quantityElem.textContent.replace(/,/g, ''));
+                    if (!isNaN(gia) && !isNaN(soLuong)) {
+                        orderBook[maCP].buy.push({ gia, soLuong });
                     }
                 }
+            }
 
-                // Lấy dữ liệu bên bán
-                for (let i = 1; i <= 3; i++) {
-                    const priceElem = document.getElementById(`ban-gia${i}-${maCP}`);
-                    const quantityElem = document.getElementById(`ban-kl${i}-${maCP}`);
-                    if (priceElem && quantityElem && priceElem.textContent !== '-' && quantityElem.textContent !== '-') {
-                        const gia = parseFloat(priceElem.textContent);
-                        const soLuong = parseInt(quantityElem.textContent.replace(/,/g, ''));
-                        if (!isNaN(gia) && !isNaN(soLuong)) {
-                            orderBook[maCP].sell.push({ gia, soLuong });
-                        }
+            for (let i = 1; i <= 3; i++) {
+                const priceElem = document.getElementById(`ban-gia${i}-${maCP}`);
+                const quantityElem = document.getElementById(`ban-kl${i}-${maCP}`);
+                if (priceElem && quantityElem && priceElem.textContent !== '-' && quantityElem.textContent !== '-') {
+                    const gia = parseFloat(priceElem.textContent);
+                    const soLuong = parseInt(quantityElem.textContent.replace(/,/g, ''));
+                    if (!isNaN(gia) && !isNaN(soLuong)) {
+                        orderBook[maCP].sell.push({ gia, soLuong });
                     }
                 }
+            }
 
-                // Sắp xếp: mua giảm dần, bán tăng dần
-                orderBook[maCP].buy.sort((a, b) => b.gia - a.gia);
-                orderBook[maCP].sell.sort((a, b) => a.gia - b.gia);
+            orderBook[maCP].buy.sort((a, b) => {
+                const isZeroA = a.gia === 0;
+                const isZeroB = b.gia === 0;
+                if (isZeroA && !isZeroB) return -1;
+                if (!isZeroA && isZeroB) return 1;
+                return b.gia - a.gia;
             });
 
-            console.log('Initialized orderBook:', orderBook);
-        }
+            orderBook[maCP].sell.sort((a, b) => {
+                const isZeroA = a.gia === 0;
+                const isZeroB = b.gia === 0;
+                if (isZeroA && !isZeroB) return -1;
+                if (!isZeroA && isZeroB) return 1;
+                return a.gia - b.gia;
+            });
 
-        stompClient.connect({}, function () {
-            console.log('WebSocket connected');
-            stompClient.subscribe('/topic/stock-board', function (message) {
-                try {
-                    const order = JSON.parse(message.body);
-                    if (!order || !order.maCP) return;
+        });
+    }
 
-                    const maCP = order.maCP.trim();
-                    const isMatch = order.type === 'match';
+    stompClient.connect({}, function () {
+        console.log('WebSocket connected');
+        stompClient.subscribe('/topic/stock-board', function (message) {
+            try {
+                const order = JSON.parse(message.body);
+                if (!order || !order.maCP) return;
 
-                    // Khởi tạo orderBook cho mã cổ phiếu nếu chưa tồn tại
+                const maCP = order.maCP.trim();
+
+                // ==== CLEAR ATO/ATC ====
+                if (order?.type === 'clear') {
                     if (!orderBook[maCP]) {
                         orderBook[maCP] = { buy: [], sell: [] };
                     }
 
-                    // Xử lý lệnh mới (không phải khớp lệnh)
-                    if (!isMatch && order.loaiGD && order.gia != null && order.soLuong != null) {
-                        const gia = parseFloat(order.gia) / 1000;
-                        const soLuong = parseInt(order.soLuong);
-                        const side = order.loaiGD === 'M' ? 'buy' : 'sell';
+                    // Lọc ra các lệnh KHÔNG PHẢI ATO/ATC (loại bỏ cả khi bị ép sai về 0)
+                    orderBook[maCP].buy = orderBook[maCP].buy.filter(o => typeof o.gia === 'number');
+                    orderBook[maCP].sell = orderBook[maCP].sell.filter(o => typeof o.gia === 'number');
 
-                        // Tìm lệnh hiện có với cùng giá
-                        let existing = orderBook[maCP][side].find(o => Math.abs(o.gia - gia) < 0.001);
-                        if (existing) {
-                            // Cộng dồn khối lượng
-                            existing.soLuong = parseInt(existing.soLuong) + soLuong;
-                            if (existing.soLuong <= 0) {
-                                // Xóa lệnh nếu khối lượng <= 0
-                                orderBook[maCP][side] = orderBook[maCP][side].filter(o => Math.abs(o.gia - gia) >= 0.001);
-                            }
-                        } else {
-                            // Thêm lệnh mới nếu giá chưa tồn tại
-                            orderBook[maCP][side].push({ gia, soLuong });
-                        }
+                    updateOrderSide(maCP, 'buy');
+                    updateOrderSide(maCP, 'sell');
 
-                        // Sắp xếp danh sách: mua giảm dần, bán tăng dần
-                        orderBook[maCP][side].sort((a, b) => side === 'buy' ? b.gia - a.gia : a.gia - b.gia);
-
-                        // Cập nhật giao diện
-                        updateOrderSide(maCP, side);
-                    }
-
-                    // Xử lý khớp lệnh
-                    if (isMatch && order.giaKhop != null && order.soLuongKhop != null) {
-                        capNhatBangGia({
-                            maCP,
-                            giakhop: parseFloat(order.giaKhop) / 1000,
-                            soLuong: order.soLuongKhop,
-                            delta: order.delta != null ? parseFloat(order.delta) / 1000 : 0
-                        });
-
-                        const soLuongKhop = parseInt(order.soLuongKhop);
-                        const giaMua = parseFloat(order.giaMua) / 1000;
-                        const giaBan = parseFloat(order.giaBan) / 1000;
-
-                        if (!isNaN(giaMua)) capNhatSoLuong(maCP, 'buy', giaMua, soLuongKhop);
-                        if (!isNaN(giaBan)) capNhatSoLuong(maCP, 'sell', giaBan, soLuongKhop);
-                    }
-                } catch (e) {
-                    console.error('WebSocket error:', e);
+                    console.log('[CLEAR ATO/ATC]', maCP, '→ đã xóa các lệnh ATO/ATC.');
+                    return;
                 }
-            });
-        });
 
-        function updateOrderSide(maCP, side) {
-            const sideOrders = (orderBook[maCP][side] || []).slice(0, 3); // Hiển thị top 3
-            for (let i = 1; i <= 3; i++) {
-                const priceElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-gia${i}-${maCP}`);
-                const quantityElem = document.getElementById(`${side === 'buy' ? 'mua' : 'ban'}-kl${i}-${maCP}`);
-                if (priceElem && quantityElem) {
-                    const order = sideOrders[i - 1];
-                    if (order) {
-                        priceElem.textContent = order.gia.toFixed(3);
-                        quantityElem.textContent = order.soLuong.toLocaleString();
-                        const color = side === 'buy' ? 'green' : 'red';
-                        priceElem.className = quantityElem.className = `${color} flash`;
-                        setTimeout(() => {
-                            priceElem.className = quantityElem.className = color;
-                        }, 1000);
+                const isMatch = order.type === 'match';
+
+                if (!orderBook[maCP]) orderBook[maCP] = { buy: [], sell: [] };
+
+                // ==== XỬ LÝ LỆNH ĐẶT ====
+                if (!isMatch && order.loaiGD && order.gia != null && order.soLuong != null) {
+                    let gia = order.gia;
+                    const soLuong = parseInt(order.soLuong);
+                    const side = order.loaiGD === 'M' ? 'buy' : 'sell';
+
+                    // Giữ nguyên chuỗi ATO/ATC
+                    if (typeof gia === 'string' && (gia === 'ATO' || gia === 'ATC')) {
+                        // Không làm gì thêm
                     } else {
-                        priceElem.textContent = quantityElem.textContent = '-';
-                        priceElem.className = quantityElem.className = '';
+                        gia = parseFloat(gia);
+                        if (isNaN(gia)) return;
+                        gia = gia / 1000;
                     }
-                }
-            }
-        }
 
-        function capNhatBangGia(data) {
-            const { maCP, giakhop, soLuong, delta } = data;
-            let giaKhopElem = document.getElementById(`giaKhop-${maCP}`);
-            let klKhopElem = document.getElementById(`klKhop-${maCP}`);
-            let deltaElem = document.getElementById(`delta-${maCP}`);
-
-            if (!giaKhopElem || !klKhopElem || !deltaElem) return;
-
-            giaKhopElem.textContent = giakhop?.toFixed(3) ?? '-';
-            klKhopElem.textContent = soLuong?.toLocaleString() ?? '-';
-            deltaElem.textContent = delta?.toFixed(3) ?? '-';
-
-            const color = delta > 0 ? 'green' : delta < 0 ? 'red' : 'yellow';
-            giaKhopElem.className = klKhopElem.className = deltaElem.className = `${color} flash`;
-            setTimeout(() => {
-                giaKhopElem.className = klKhopElem.className = deltaElem.className = color;
-            }, 1000);
-        }
-
-        function capNhatSoLuong(maCP, side, giaCanTru, soLuongTru) {
-            const list = orderBook[maCP]?.[side];
-            if (!list) return;
-
-            const index = list.findIndex(o => Math.abs(o.gia - giaCanTru) < 0.001);
-            if (index === -1) return;
-
-            list[index].soLuong = parseInt(list[index].soLuong) - soLuongTru;
-            if (list[index].soLuong <= 0) {
-                list.splice(index, 1);
-            }
-
-            list.sort((a, b) => side === 'buy' ? b.gia - a.gia : a.gia - b.gia);
-            updateOrderSide(maCP, side);
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            // Khởi tạo orderBook từ bảng
-            initializeOrderBookFromTable();
-
-            const input = document.querySelector('input[name="maCP"]');
-            const tableBody = document.querySelector('table tbody');
-
-            if (!input || !tableBody) return;
-
-            input.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const value = input.value.trim().toUpperCase();
-                    const rows = Array.from(tableBody.querySelectorAll('tr'));
-                    const matchingRow = rows.find(row => row.cells[0]?.textContent.trim().toUpperCase() === value);
-
-                    if (matchingRow) {
-                        tableBody.insertBefore(matchingRow, tableBody.firstChild);
-                        matchingRow.classList.add('highlighted-row');
-                        setTimeout(() => {
-                            matchingRow.classList.remove('highlighted-row');
-                        }, 3000);
+                    let existing = orderBook[maCP][side].find(o => o.gia === gia);
+                    if (existing) {
+                        existing.soLuong += soLuong;
+                        if (existing.soLuong <= 0) {
+                            orderBook[maCP][side] = orderBook[maCP][side].filter(o => o.gia !== gia);
+                        }
+                    } else {
+                        orderBook[maCP][side].push({ gia, soLuong });
                     }
+
+                    orderBook[maCP][side].sort((a, b) => {
+                        const giaA = a.gia;
+                        const giaB = b.gia;
+
+                        const isZeroA = (typeof giaA === 'number') && giaA === 0;
+                        const isZeroB = (typeof giaB === 'number') && giaB === 0;
+
+                        if (isZeroA && !isZeroB) return -1;
+                        if (!isZeroA && isZeroB) return 1;
+
+                        if (typeof giaA === 'string' && typeof giaB !== 'string') return -1;
+                        if (typeof giaB === 'string' && typeof giaA !== 'string') return 1;
+
+                        if (typeof giaA === 'string' && typeof giaB === 'string') return 0;
+
+                        return side === 'buy' ? giaB - giaA : giaA - giaB;
+                    });
+
+
+                    orderBook[maCP][side] = orderBook[maCP][side].slice(0, 3);
+                    updateOrderSide(maCP, side);
                 }
-            });
+
+                // ==== LỆNH KHỚP ====
+                if (isMatch && order.giaKhop != null && order.soLuongKhop != null) {
+                    capNhatBangGia({
+                        maCP,
+                        giakhop: parseFloat(order.giaKhop) / 1000,
+                        soLuong: order.soLuongKhop,
+                        delta: order.delta != null ? parseFloat(order.delta) / 1000 : 0
+                    });
+
+                    const soLuongKhop = parseInt(order.soLuongKhop);
+                    const giaMua = parseFloat(order.giaMua) / 1000;
+                    const giaBan = parseFloat(order.giaBan) / 1000;
+
+                    if (!isNaN(giaMua)) capNhatSoLuong(maCP, 'buy', giaMua, soLuongKhop);
+                    if (!isNaN(giaBan)) capNhatSoLuong(maCP, 'sell', giaBan, soLuongKhop);
+                }
+            } catch (e) {
+                console.error('WebSocket error:', e);
+            }
         });
-    </script>
+    });
+
+    function updateOrderSide(maCP, side) {
+        const sideOrders = (orderBook[maCP][side] || []).slice(0, 3);
+
+        for (let i = 1; i <= 3; i++) {
+            const priceId = `${side === 'buy' ? 'mua' : 'ban'}-gia${i}-${maCP}`;
+            const qtyId = `${side === 'buy' ? 'mua' : 'ban'}-kl${i}-${maCP}`;
+            const priceElem = document.getElementById(priceId);
+            const quantityElem = document.getElementById(qtyId);
+            if (!priceElem || !quantityElem) continue;
+
+            const order = sideOrders[i - 1];
+
+            if (order) {
+                let newGia;
+                // Nếu là ATO/ATC (dạng string) thì giữ nguyên
+                if (order.gia === 'ATO' || order.gia === 'ATC') {
+                    newGia = order.gia;
+                } 
+                // Nếu là số hợp lệ thì hiển thị toFixed(3)
+                else if (typeof order.gia === 'number' && !isNaN(order.gia)) {
+                    newGia = order.gia.toFixed(3);
+                } 
+                // Trường hợp khác thì hiển thị "-"
+                else {
+                    newGia = '-';
+                }
+
+                // Kiểm tra số lượng
+                const newSL = (typeof order.soLuong === 'number' && order.soLuong > 0)
+                    ? order.soLuong.toLocaleString()
+                    : '-';
+
+                const oldGia = priceElem.textContent.trim();
+                const oldSL = quantityElem.textContent.trim();
+
+                if (oldGia === newGia && oldSL === newSL) continue;
+
+                priceElem.textContent = newGia;
+                quantityElem.textContent = newSL;
+
+                // Nếu là ATO/ATC thì không áp dụng màu
+                const newColor = (order.gia === 'ATO' || order.gia === 'ATC') ? '' : getColorClass(order.gia, maCP);
+                updateClassColor(priceElem, newColor);
+                updateClassColor(quantityElem, newColor);
+            } else {
+                // Không có order nào thì reset
+                priceElem.textContent = '-';
+                quantityElem.textContent = '-';
+                updateClassColor(priceElem, '');
+                updateClassColor(quantityElem, '');
+            }
+        }
+    }
+
+    function capNhatBangGia(data) {
+        const { maCP, giakhop, soLuong, delta } = data;
+        let giaKhopElem = document.getElementById(`giaKhop-${maCP}`);
+        let klKhopElem = document.getElementById(`klKhop-${maCP}`);
+        let deltaElem = document.getElementById(`delta-${maCP}`);
+
+        if (!giaKhopElem || !klKhopElem || !deltaElem) return;
+
+        giaKhopElem.textContent = giakhop?.toFixed(3) ?? '-';
+        klKhopElem.textContent = soLuong?.toLocaleString() ?? '-';
+        deltaElem.textContent = delta?.toFixed(3) ?? '-';
+
+        const colorClass = getColorClass(giakhop, maCP);
+        updateClassColor(giaKhopElem, colorClass);
+        updateClassColor(klKhopElem, colorClass);
+        updateClassColor(deltaElem, colorClass);
+    }
+
+    function capNhatSoLuong(maCP, side, giaCanTru, soLuongTru) {
+        const list = orderBook[maCP]?.[side];
+        if (!list) return;
+
+        const index = list.findIndex(o => Math.abs(o.gia - giaCanTru) < 0.001);
+        if (index === -1) return;
+
+        list[index].soLuong = parseInt(list[index].soLuong) - soLuongTru;
+        if (list[index].soLuong <= 0) {
+            list.splice(index, 1);
+        }
+
+        list.sort((a, b) => side === 'buy' ? b.gia - a.gia : a.gia - b.gia);
+        updateOrderSide(maCP, side);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        initializeOrderBookFromTable();
+
+        const input = document.querySelector('input[name="maCP"]');
+        const tableBody = document.querySelector('table tbody');
+
+        if (!input || !tableBody) return;
+
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const value = input.value.trim().toUpperCase();
+                const rows = Array.from(tableBody.querySelectorAll('tr'));
+                const matchingRow = rows.find(row => row.cells[0]?.textContent.trim().toUpperCase() === value);
+                if (matchingRow) {
+                    tableBody.insertBefore(matchingRow, tableBody.firstChild);
+                    matchingRow.classList.add('highlighted-row');
+                    setTimeout(() => {
+                        matchingRow.classList.remove('highlighted-row');
+                    }, 3000);
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>

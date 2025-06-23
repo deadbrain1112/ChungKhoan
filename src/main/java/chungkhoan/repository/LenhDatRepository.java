@@ -101,7 +101,7 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     	    GROUP BY ld.gia
     	    ORDER BY ld.gia DESC
     	    """, nativeQuery = true)
-    	List<Object[]> findTop3GiaMuaSnapshot(@Param("maCP") String maCP, @Param("ngay") String ngay);
+    List<Object[]> findTop3GiaMuaSnapshot(@Param("maCP") String maCP, @Param("ngay") String ngay);
 
 	// Top 3 giá bán cuối phiên chưa khớp
     @Query(value = """
@@ -113,6 +113,38 @@ public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
     		AND CONVERT(date, ld.ngaygd) = :ngay
     		GROUP BY ld.gia
     		ORDER BY ld.gia ASC
-    		""", nativeQuery = true)
-    	List<Object[]> findTop3GiaBanSnapshot(@Param("maCP") String maCP, @Param("ngay") String ngay);    	
+    	""", nativeQuery = true)
+    List<Object[]> findTop3GiaBanSnapshot(@Param("maCP") String maCP, @Param("ngay") String ngay);
+
+    @Query(value = """
+    	    SELECT DISTINCT MaCP
+    	    FROM LenhDat
+    	    WHERE LoaiLenh IN ('ATO', 'ATC')
+    	      AND TrangThai = N'Chờ'
+    	    """, nativeQuery = true)
+    List<String> findMaCPConLenhATX();
+    
+    @Query("""
+    	    SELECT l FROM LenhDat l
+			WHERE l.coPhieu.maCP = :maCP
+			  AND l.loaiGD = :loaiGD
+			  AND l.trangThai IN :trangThais
+			  AND l.loaiLenh IN :loaiLenhs
+			  AND (
+			    l.loaiLenh NOT IN ('ATO', 'ATC')
+			    OR (l.loaiLenh IN ('ATO', 'ATC') AND l.gia = 0)
+			  )
+			ORDER BY 
+			  CASE WHEN :loaiGD = 'M' THEN l.gia END DESC,
+			  CASE WHEN :loaiGD = 'B' THEN l.gia END ASC,
+			  l.ngayGD ASC
+
+    	""")
+    	List<LenhDat> findByMaCPLoaiGDTrangThaiLoaiLenh(
+    	    @Param("maCP") String maCP,
+    	    @Param("loaiGD") String loaiGD,
+    	    @Param("trangThais") List<String> trangThais,
+    	    @Param("loaiLenhs") List<String> loaiLenhs
+    	);
+
 }

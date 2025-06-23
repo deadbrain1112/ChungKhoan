@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -14,7 +15,24 @@ public class TradingTimeUtil {
     private final TradingTimeProperties config;
 
     public enum Phase {
-        ATO, LO, ATC, NGHI
+        ATO, LO, ATC, NGHI;
+    	
+    	public List<String> getLenhHienThi() {
+            return switch (this) {
+                case ATO -> List.of("ATO", "LO");
+                case LO -> List.of("LO");
+                case ATC -> List.of("ATC", "LO");
+                default -> List.of();
+            };
+        }
+
+        public boolean isShowBangGia() {
+            return this != NGHI;
+        }
+
+        public boolean isClearLenhATX() {
+            return this == LO;
+        }
     }
 
     public Phase getCurrentPhase(LocalDateTime now) {
