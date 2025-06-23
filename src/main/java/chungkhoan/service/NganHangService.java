@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NganHangService {
@@ -73,5 +74,9 @@ public class NganHangService {
     
     public List<NganHang> findAll() {
         return nganHangRepository.findAll();
+    }
+    
+    public Optional<NganHang> findByMaNH(String maNH) {
+        return nganHangRepository.findById(maNH);
     }
 }

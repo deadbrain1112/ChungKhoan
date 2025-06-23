@@ -182,7 +182,7 @@ public class KhopLenhService implements ApplicationContextAware {
         }
     }
     
-    @Scheduled(fixedDelay = 10000) // chạy mỗi 10s, bạn có thể điều chỉnh
+    //@Scheduled(fixedDelay = 10000) // chạy mỗi 10s, bạn có thể điều chỉnh
     @Transactional
     public void huyLenhTrongPhaseNghi() {
         LocalDateTime now = LocalDateTime.now();
