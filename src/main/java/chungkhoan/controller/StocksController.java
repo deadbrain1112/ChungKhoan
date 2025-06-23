@@ -151,7 +151,7 @@ public class StocksController {
     @PostMapping("/stocks/delete")
     public String markStockDeleted(@RequestParam String maCP, HttpSession session, RedirectAttributes ra) {
     	
-        if (lenhDatRepository.existsByMaCP(maCP)) {
+        if (lenhDatRepository.existsByCoPhieu_MaCP(maCP)) {
             ra.addFlashAttribute("message", "Không thể xóa cổ phiếu '" + maCP + "' vì đã có lệnh giao dịch.");
             ra.addFlashAttribute("messageType", "error");
             return "redirect:/stocks";

@@ -2,6 +2,7 @@ package chungkhoan.controller;
 
 import chungkhoan.dto.NganHangTemp;
 import chungkhoan.entity.NganHang;
+import chungkhoan.repository.TaiKhoanNganHangRepository;
 import chungkhoan.service.NganHangService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ public class BankController {
 
     @Autowired
     private NganHangService nganHangService;
+    
+    @Autowired
+    private TaiKhoanNganHangRepository taiKhoanNganHangRepository;
 
     @GetMapping("/banks")
     public String bankList(@RequestParam(defaultValue = "0") int page,
@@ -202,6 +206,13 @@ public class BankController {
 
     @PostMapping("/banks/delete")
     public String markBankDeleted(@RequestParam String maNH, HttpSession session, RedirectAttributes redirectAttributes) {
+    	
+    	if (taiKhoanNganHangRepository.existsByMaNH(maNH)) {
+            redirectAttributes.addFlashAttribute("message", "Không thể xóa ngân hàng '" + maNH + "' vì đang được sử dụng trong tài khoản nhà đầu tư.");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/banks";
+        }
+    	
         @SuppressWarnings("unchecked")
         List<NganHangTemp> tempList = (List<NganHangTemp>) session.getAttribute("temporaryBanks");
         if (tempList == null) tempList = new ArrayList<>();

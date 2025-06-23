@@ -4,6 +4,7 @@ import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.TaiKhoanNganHang;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -11,6 +12,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TaiKhoanNganHangRepository extends JpaRepository<TaiKhoanNganHang, String> {
+	
+	Optional<TaiKhoanNganHang> findById(String maTK);
+	
+	@Query("SELECT COUNT(t) > 0 FROM TaiKhoanNganHang t WHERE t.nganHang.maNH = :maNH")
+	boolean existsByMaNH(@Param("maNH") String maNH);
 
     // Tìm danh sách tài khoản ngân hàng theo đối tượng NhaDauTu
     List<TaiKhoanNganHang> findByNhaDauTu(NhaDauTu nhaDauTu);

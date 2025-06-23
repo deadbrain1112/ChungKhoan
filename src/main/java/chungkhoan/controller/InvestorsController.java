@@ -6,6 +6,7 @@ import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.TaiKhoanNganHang;
 import chungkhoan.repository.LenhDatRepository;
 import chungkhoan.repository.NDTRepository;
+import chungkhoan.repository.TaiKhoanNganHangRepository;
 import chungkhoan.service.NDTService;
 import chungkhoan.service.NganHangService;
 import chungkhoan.service.TaiKhoanNganHangService;
@@ -54,6 +55,9 @@ public class InvestorsController {
 	
 	@Autowired
 	private LenhDatRepository lenhDatRepository;
+	
+	@Autowired
+	private TaiKhoanNganHangRepository taiKhoanNganHangRepository;
 
 	@GetMapping("/investors")
 	public String InvestorList(@RequestParam(defaultValue = "0") int page,
@@ -511,4 +515,43 @@ public class InvestorsController {
 
         return "redirect:/investors";
     }
+	
+	@PostMapping("/investors/delete-bank-account")
+	public String deleteBankAccount(
+	        @RequestParam("maNDT") String maNDT,
+	        @RequestParam("maTK") String maTK,
+	        RedirectAttributes ra) {
+
+	    // Kiểm tra tồn tại
+	    Optional<TaiKhoanNganHang> optional = taiKhoanNganHangRepository.findById(maTK);
+	    if (optional.isEmpty()) {
+	        ra.addFlashAttribute("message", "Không tìm thấy tài khoản cần xóa.");
+	        ra.addFlashAttribute("messageType", "error");
+	        return "redirect:/investors";
+	    }
+
+	    TaiKhoanNganHang tk = optional.get();
+
+	    // Kiểm tra đúng người sở hữu
+	    if (!tk.getNhaDauTu().getMaNDT().equals(maNDT)) {
+	        ra.addFlashAttribute("message", "Không hợp lệ: Tài khoản không thuộc nhà đầu tư.");
+	        ra.addFlashAttribute("messageType", "error");
+	        return "redirect:/investors";
+	    }
+
+	    // Kiểm tra nếu tài khoản đã được sử dụng trong LenhDat
+	    boolean usedInOrders = lenhDatRepository.existsByTaiKhoanNganHang_MaTK(maTK);
+	    if (usedInOrders) {
+	        ra.addFlashAttribute("message", "Không thể xóa: tài khoản này đã đặt lệnh.");
+	        ra.addFlashAttribute("messageType", "error");
+	        return "redirect:/investors";
+	    }
+
+	    // Xóa tài khoản
+	    taiKhoanNganHangRepository.deleteById(maTK);
+	    ra.addFlashAttribute("message", "Đã xóa tài khoản ngân hàng thành công.");
+	    ra.addFlashAttribute("messageType", "success");
+
+	    return "redirect:/investors?maNDT=" + maNDT; // hoặc load lại subform nếu cần
+	}
 }

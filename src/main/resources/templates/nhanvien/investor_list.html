@@ -415,7 +415,6 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ maNH: maNH })
         })
-<<<<<<< HEAD
         .then(res => res.json())
         .then(data => {
             const tbody = document.querySelector('#bank-subform-2-body');
@@ -427,29 +426,10 @@
                 <td><input type="text" name="nganHang.diaChi" value="${data.diaChi}" readonly required /></td>
                 <td><input type="text" name="nganHang.phone" value="${data.phone}" readonly required /></td>
                 <td><input type="email" name="nganHang.email" value="${data.email}" readonly required /></td>
-=======
-            .then(res => res.json())
-            .then(data => {
-                const tbody = document.querySelector('#bank-subform-2-body');
-                tbody.innerHTML = '';
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                <td><input type="text" name="nganHang.tenNH" value="${data.tenNH}" readonly /></td>
-                <td><input type="text" name="nganHang.maNH" value="${data.maNH}" readonly /></td>
-                <td><input type="text" name="nganHang.diaChi" value="${data.diaChi}" readonly /></td>
-                <td><input type="text" name="nganHang.phone" value="${data.phone}" readonly /></td>
-                <td><input type="email" name="nganHang.email" value="${data.email}" readonly /></td>
-                <td><button type="button" onclick="removeBankAccount(this)">Xóa</button></td>
->>>>>>> Tien
             `;
                 tbody.appendChild(row);
 
-<<<<<<< HEAD
-            document.getElementById('bank-subform-2-maNDT').value = maNDT;
-=======
-                // Truyền lại maNDT cho form
-                document.getElementById('bank-subform-2-maNDT').value = maNDT;
->>>>>>> Tien
+            	document.getElementById('bank-subform-2-maNDT').value = maNDT;
 
                 document.getElementById('bank-subform-wrapper').style.display = 'flex';
                 document.getElementById('bank-subform-1').style.display = 'block';
@@ -469,7 +449,7 @@
 
         const form = document.createElement('form');
         form.method = 'post';
-        form.action = '/investors/delete-bank-temp';
+        form.action = '/investors/delete-bank-account';
         form.style.display = 'none';
 
         const inputMaNDT = document.createElement('input');
