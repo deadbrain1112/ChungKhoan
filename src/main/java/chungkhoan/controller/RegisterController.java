@@ -1,10 +1,10 @@
 package chungkhoan.controller;
 
-import chungkhoan.entity.NhanVien;
-import chungkhoan.entity.NhaDauTu;
 import chungkhoan.repository.NDTRepository;
 import chungkhoan.repository.NhanVienRepository;
 import chungkhoan.service.TaiKhoanService;
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,7 +26,12 @@ public class RegisterController {
     }
 
     @GetMapping("/register")
-    public String showRegisterForm(@RequestParam(value = "action", defaultValue = "create") String action, Model model) {
+    public String showRegisterForm(@RequestParam(value = "action", defaultValue = "create") String action, Model model, HttpSession session) {
+    	
+    	if (session.getAttribute("nhanVien") == null) {
+	        return "redirect:/login";
+	    }
+    	
         // Thêm danh sách vào model
         model.addAttribute("nhanViensWithoutAccount", nhanVienRepository.findAllNhanVienChuaCoTaiKhoan());
         model.addAttribute("nhaDauTusWithoutAccount", ndtRepository.findAllNhaDauTuChuaCoTaiKhoan());

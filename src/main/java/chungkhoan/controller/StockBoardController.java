@@ -44,7 +44,6 @@ public class StockBoardController {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
-        LocalDate homNay = now.toLocalDate();
 
         // Khởi tạo các map dữ liệu
         Map<String, Double> giaTCMap = new HashMap<>();
@@ -70,7 +69,7 @@ public class StockBoardController {
         for (CoPhieu cp : dsCP) {
             String maCP = cp.getMaCP();
 
-            // --- Giá tham chiếu, trần, sàn ---
+            // Giá tham chiếu, trần, sàn 
             Map<String, Double> giaMap = lichSuGiaService.getLichSuGia(maCP, phase);
             double giaTC = giaMap.get("tc");
             double giaTran = giaMap.get("tran");
@@ -80,7 +79,7 @@ public class StockBoardController {
             giaTranMap.put(maCP, giaTran);
             giaSanMap.put(maCP, giaSan);
 
-            // --- Lệnh đặt: theo phase ---
+            // Lệnh đặt: theo phase
             List<Map<String, Object>> benMua;
             List<Map<String, Object>> benBan;
 
@@ -106,7 +105,7 @@ public class StockBoardController {
             benMuaMap.put(maCP, benMua);
             benBanMap.put(maCP, benBan);
 
-            // --- Lệnh khớp cuối ---
+            // Lệnh khớp cuối 
             LocalDate ngayHienThi = (phase == TradingTimeUtil.Phase.NGHI)
                 ? LocalDate.now().minusDays(1)
                 : LocalDate.now();
@@ -120,7 +119,7 @@ public class StockBoardController {
                 lenhKhopMoiNhatMap.put(maCP, khopCuoi);
             }
 
-            // --- Tổng khối lượng khớp ---
+            // Tổng khối lượng khớp
             Long tongKL = lenhKhopRepo.sumSoLuongKhopByCoPhieu(cp, startOfDay, endOfDay);
             tongKLMoiMap.put(maCP, tongKL != null ? tongKL : 0L);
         }
@@ -152,9 +151,9 @@ public class StockBoardController {
             .map(e -> {
                 Map<String, Object> m = new HashMap<>();
                 try {
-                    m.put("gia", Double.parseDouble(e.getKey())); // ép về Double nếu có thể
+                    m.put("gia", Double.parseDouble(e.getKey())); 
                 } catch (NumberFormatException ex) {
-                    m.put("gia", e.getKey()); // giữ nguyên ATO/ATC
+                    m.put("gia", e.getKey()); 
                 }
                 m.put("soLuong", e.getValue());
                 return m;

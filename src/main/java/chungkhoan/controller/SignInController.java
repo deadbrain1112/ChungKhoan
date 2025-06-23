@@ -7,9 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import chungkhoan.entity.NhaDauTu;
-import chungkhoan.entity.NhanVien;
-import chungkhoan.repository.NDTRepository;
-import chungkhoan.repository.NhanVienRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 

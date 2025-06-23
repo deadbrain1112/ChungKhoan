@@ -161,7 +161,7 @@ public class NhanVienService {
         if (query == null || query.trim().isEmpty()) {
             return nhanVienRepository.findAll();
         }
-        // Search by maNV, hoTen, or cmnd (case-insensitive)
+        // Search by maNV, hoTen, or cmnd 
         return nhanVienRepository.findAll().stream()
                 .filter(nv ->
                         (nv.getMaNV() != null && nv.getMaNV().toLowerCase().contains(query.toLowerCase())) ||

@@ -1,14 +1,11 @@
 package chungkhoan.repository;
 
 import chungkhoan.entity.CoPhieu;
-import chungkhoan.entity.NhaDauTu;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import jakarta.transaction.Transactional;
 

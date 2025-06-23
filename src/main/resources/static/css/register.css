@@ -63,30 +63,39 @@ input[type="password"] {
 
 
 /* Định dạng button */
-button {
-    width: 100%;
+/* Nhóm nút */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Nút bấm chung */
+.button-group button {
+    flex: 1;
     padding: 10px;
-    background-color: #f44336;
-    color: white;
+    font-size: 16px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 16px;
 }
 
-button:last-child {
-    margin-right: 0;
-    background-color: #f44336;
+/* Nút "Thực hiện" */
+.button-group button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
 }
 
-button:hover {
+/* Nút "Thoát" */
+.button-group button[type="button"] {
+    background-color: #9E9E9E;
+    color: white;
+}
+
+.button-group button:hover {
     opacity: 0.9;
 }
 
-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
 
 /* Định dạng thông báo lỗi */
 .error {
@@ -111,8 +120,6 @@ button:disabled {
     gap: 20px;
     align-items: center;
 }
-
-
 
 .radio-group input[type="radio"] {
     margin-right: 5px;

@@ -5,6 +5,7 @@ import chungkhoan.entity.LenhKhop;
 import chungkhoan.repository.CoPhieuRepository;
 import chungkhoan.repository.LenhDatRepository;
 import chungkhoan.repository.LenhKhopRepository;
+import chungkhoan.util.TradingTimeProperties;
 import chungkhoan.util.TradingTimeUtil;
 import chungkhoan.util.TradingTimeUtil.Phase;
 import jakarta.transaction.Transactional;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,6 +42,8 @@ public class KhopLenhService implements ApplicationContextAware {
     
     @SuppressWarnings("unused")
 	private final SimpMessagingTemplate messagingTemplate;
+    
+    private final TradingTimeProperties config;
 
     @Override
     public void setApplicationContext(ApplicationContext ctx) {
@@ -87,7 +89,7 @@ public class KhopLenhService implements ApplicationContextAware {
     @Transactional
     public void snapshotBangGiaCuoiNgay() {
         LocalDate ngay = LocalDate.now();
-        String ngayStr = ngay.toString(); // yyyy-MM-dd
+        String ngayStr = ngay.toString(); 
         Timestamp thoiGianSnapshot = Timestamp.valueOf(LocalDateTime.now());
 
         List<String> dsMaCP = coPhieuRepository.findAllMaCP();
@@ -115,7 +117,7 @@ public class KhopLenhService implements ApplicationContextAware {
             messagingTemplate.convertAndSend("/topic/stock-board", Map.of(
                 "type", "match",
                 "maCP", maCP,
-                "giaKhop", giaTC * 1000,  // đưa về đơn vị gốc
+                "giaKhop", giaTC * 1000,  
                 "soLuongKhop", khopCuoi.getSoLuongKhop(),
                 "giaMua", giaTC * 1000,
                 "giaBan", giaTC * 1000,
@@ -135,7 +137,7 @@ public class KhopLenhService implements ApplicationContextAware {
         return topBanSnapshotMap.getOrDefault(maCP, List.of());
     }
 
-    //@Scheduled(fixedDelay = 3000)
+    //@Scheduled(fixedDelay = 3000) // Chạy mỗi 3s
     @Transactional
     public void khopLORealtime() {
         LocalDateTime now = LocalDateTime.now();
@@ -160,7 +162,12 @@ public class KhopLenhService implements ApplicationContextAware {
 
     @Transactional
     public void huyLenhATXChuaKhop() {
-        List<LenhDat> lenhATX = lenhDatRepo.findByLoaiLenhInAndTrangThai(List.of("ATC", "ATO"), "Chờ");
+    	LocalDateTime gioATC = LocalDateTime.of(LocalDate.now(), config.getAtcEnd());
+    	
+    	List<LenhDat> lenhATX = lenhDatRepo.findByLoaiLenhInAndTrangThai(List.of("ATO", "ATC"), "Chờ").stream()
+    	        .filter(l -> l.getNgayGD().isBefore(gioATC))
+    	        .toList();
+    	 
         for (LenhDat lenh : lenhATX) {
             lenh.setTrangThai("Hủy");
             lenhDatRepo.save(lenh);
@@ -172,7 +179,12 @@ public class KhopLenhService implements ApplicationContextAware {
     
     @Transactional
     public void huyLenhLOChuaKhop() {
-        List<LenhDat> lenhLO = lenhDatRepo.findByLoaiLenhInAndTrangThai(List.of("LO"), "Chờ");
+    	LocalDateTime gioATC = LocalDateTime.of(LocalDate.now(), config.getAtcEnd());
+    	
+        List<LenhDat> lenhLO = lenhDatRepo.findByLoaiLenhInAndTrangThai(List.of("LO"), "Chờ").stream()
+		        .filter(l -> l.getNgayGD().isBefore(gioATC))
+		        .toList();
+        
         for (LenhDat lenh : lenhLO) {
             lenh.setTrangThai("Hủy");
             lenhDatRepo.save(lenh);
@@ -182,7 +194,7 @@ public class KhopLenhService implements ApplicationContextAware {
         }
     }
     
-    //@Scheduled(fixedDelay = 10000) // chạy mỗi 10s, bạn có thể điều chỉnh
+    @Scheduled(fixedDelay = 10000) // chạy mỗi 10s
     @Transactional
     public void huyLenhTrongPhaseNghi() {
         LocalDateTime now = LocalDateTime.now();

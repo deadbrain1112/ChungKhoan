@@ -37,10 +37,6 @@ public class TaiKhoanNganHangService {
         return taiKhoanNganHangRepository.findByNhaDauTu(nhaDauTu);
     }
 
-//    public void save(TaiKhoanNganHang taiKhoanNganHang) {
-//        taiKhoanNganHangRepository.save(taiKhoanNganHang);
-//    }
-
     public Map<String, List<TaiKhoanNganHang>> getBankAccountsForInvestors(List<NhaDauTu> investors) {
         Map<String, List<TaiKhoanNganHang>> bankAccountMap = new HashMap<>();
         for (NhaDauTu ndt : investors) {

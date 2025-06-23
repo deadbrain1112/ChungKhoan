@@ -44,10 +44,10 @@ public class TradingTimeUtil {
         System.out.println("[DEBUG] LO:  " + config.getAtoEnd() + " - " + config.getLoEnd());
         System.out.println("[DEBUG] ATC: " + config.getLoEnd() + " - " + config.getAtcEnd());
 
-//        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
-//            System.out.println("→ Phase = NGHI (thứ Bảy/CN)");
-//            return Phase.NGHI;
-//        }
+        if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+            System.out.println("→ Phase = NGHI (thứ Bảy/CN)");
+            return Phase.NGHI;
+       }
 
         if (!time.isBefore(config.getAtoStart()) && time.isBefore(config.getAtoEnd())) {
             System.out.println("→ Phase = ATO");

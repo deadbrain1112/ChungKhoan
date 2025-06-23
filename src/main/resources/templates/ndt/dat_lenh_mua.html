@@ -12,16 +12,16 @@
 
     <section class="buy-container">
         <form id="datLenhForm" th:action="@{/nhadautu/dat-lenh-mua}" method="post">
-        <!-- Hiển thị thông báo lỗi -->
-<div th:if="${error != null}" style="color: red; margin-bottom: 10px;">
-    <strong th:text="${error}"></strong>
-</div>
+		<!-- Block hiển thị lỗi -->
+		<div class="alert-box" th:if="${error != null}">
+		    <div class="alert-error" th:text="${error}"></div>
+		</div>
+		
+		<!-- Block hiển thị thành công -->
+		<div class="alert-box" th:if="${success != null}">
+		    <div class="alert-success" th:text="${success}"></div>
+		</div>
 
-<!-- Hiển thị thông báo thành công -->
-<div th:if="${success != null}" style="color: green; margin-bottom: 10px;">
-    <strong th:text="${success}"></strong>
-</div>
-        
             <table class="buy-table">
                 <tbody>
                     <tr>

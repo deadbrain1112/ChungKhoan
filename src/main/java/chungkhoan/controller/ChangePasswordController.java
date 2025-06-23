@@ -3,6 +3,8 @@ package chungkhoan.controller;
 import chungkhoan.repository.NDTRepository;
 import chungkhoan.repository.NhanVienRepository;
 import chungkhoan.service.TaiKhoanService;
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +25,11 @@ public class ChangePasswordController {
     }
 
     @GetMapping("/change-password")
-    public String hienThiFormDoiMatKhau(Model model) {
+    public String hienThiFormDoiMatKhau(Model model, HttpSession session) {
+    	if (session.getAttribute("nhanVien") == null) {
+	        return "redirect:/login";
+	    }
+    	
         model.addAttribute("nhanViens", nhanVienRepository.findAllNhanVienCoTaiKhoan());
         model.addAttribute("nhaDauTus", ndtRepository.findAllNhaDauTuCoTaiKhoan());
         return "nhanvien/change_password"; 

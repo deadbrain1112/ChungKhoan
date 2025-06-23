@@ -4,6 +4,7 @@ import chungkhoan.dto.NhaDauTuTemp;
 import chungkhoan.entity.NganHang;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.TaiKhoanNganHang;
+import chungkhoan.repository.LenhDatRepository;
 import chungkhoan.repository.NDTRepository;
 import chungkhoan.service.NDTService;
 import chungkhoan.service.NganHangService;
@@ -50,12 +51,19 @@ public class InvestorsController {
 	
 	@Autowired 
 	private NDTRepository ndtRepository;
+	
+	@Autowired
+	private LenhDatRepository lenhDatRepository;
 
 	@GetMapping("/investors")
 	public String InvestorList(@RequestParam(defaultValue = "0") int page,
 							   @RequestParam(defaultValue = "5") int size,
 							   Model model,
 							   HttpSession session) {
+		
+		if (session.getAttribute("nhanVien") == null) {
+	        return "redirect:/login";
+	    }
 
 		List<NhaDauTu> fromDb = ndtService.getPaginated(0, Integer.MAX_VALUE).getContent();
 
@@ -248,6 +256,13 @@ public class InvestorsController {
 
 	@PostMapping("/investors/delete")
 	public String markInvestorDeleted(@RequestParam String maNDT, HttpSession session, RedirectAttributes redirectAttributes) {
+		
+		if (lenhDatRepository.existsByNhaDauTu(maNDT)) {
+	        redirectAttributes.addFlashAttribute("message", "Không thể xóa nhà đầu tư '" + maNDT + "' vì đã thực hiện giao dịch.");
+	        redirectAttributes.addFlashAttribute("messageType", "error");
+	        return "redirect:/investors";
+	    }
+		
 		@SuppressWarnings("unchecked")
 		List<NhaDauTuTemp> tempList = (List<NhaDauTuTemp>) session.getAttribute("temporaryInvestors");
 		if (tempList == null) tempList = new ArrayList<>();

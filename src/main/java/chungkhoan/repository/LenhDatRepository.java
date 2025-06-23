@@ -12,6 +12,11 @@ import chungkhoan.entity.LenhDat;
 import jakarta.transaction.Transactional;
 
 public interface LenhDatRepository extends JpaRepository<LenhDat, Long> {
+	boolean existsByMaCP(String maCP);
+	
+	@Query("SELECT COUNT(ld) > 0 FROM LenhDat ld WHERE ld.taiKhoanNganHang.nhaDauTu.maNDT = :maNDT")
+	boolean existsByNhaDauTu(@Param("maNDT") String maNDT);
+
     // MUA: Lấy lệnh mua đang chờ hoặc một phần khớp, theo giá giảm dần và ngày tăng dần
     List<LenhDat> findByCoPhieu_MaCPAndLoaiGDAndTrangThaiInOrderByGiaDescNgayGDAsc(
             String maCP,

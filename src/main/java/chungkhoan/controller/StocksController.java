@@ -17,18 +17,26 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import chungkhoan.entity.CoPhieu;
+import chungkhoan.repository.LenhDatRepository;
 import chungkhoan.service.CoPhieuService;
 @Controller
 public class StocksController {
 
     @Autowired
     private CoPhieuService coPhieuService;
+    
+    @Autowired
+    private LenhDatRepository lenhDatRepository;
 
     @GetMapping("/stocks")
     public String listStocks(@RequestParam(defaultValue = "0") int page,
                              @RequestParam(defaultValue = "5") int size,
                              Model model,
                              HttpSession session) {
+    	
+    	if (session.getAttribute("nhanVien") == null) {
+	        return "redirect:/login";
+	    }
 
         List<CoPhieu> fromDb = coPhieuService.getPaginated(0, Integer.MAX_VALUE).getContent();
 
@@ -139,6 +147,13 @@ public class StocksController {
 
     @PostMapping("/stocks/delete")
     public String markStockDeleted(@RequestParam String maCP, HttpSession session, RedirectAttributes ra) {
+    	
+        if (lenhDatRepository.existsByMaCP(maCP)) {
+            ra.addFlashAttribute("message", "Không thể xóa cổ phiếu '" + maCP + "' vì đã có lệnh giao dịch.");
+            ra.addFlashAttribute("messageType", "error");
+            return "redirect:/stocks";
+        }
+        
         @SuppressWarnings("unchecked")
         List<CoPhieuTemp> tempList = (List<CoPhieuTemp>) session.getAttribute("temporaryStocks");
         if (tempList == null) tempList = new ArrayList<>();

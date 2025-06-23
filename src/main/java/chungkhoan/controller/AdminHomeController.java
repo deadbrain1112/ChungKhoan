@@ -10,8 +10,10 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/nhanvien")
 public class AdminHomeController {
 	@GetMapping("/layout")
-	public String showLayout() {
-		return "nhanvien/layout";
+	public String showLayout(HttpSession session) {
+	    if (session.getAttribute("nhanVien") == null) {
+	        return "redirect:/login";
+	    }
+	    return "nhanvien/layout";
 	}
 }
-

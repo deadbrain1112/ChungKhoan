@@ -13,7 +13,6 @@ body {
 
 .buy-table {
     width: 100%;
-    height: 82vh;
     border-collapse: collapse;
     background-color: #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -131,5 +130,28 @@ input[list] {
     background-position: right 10px center;
     background-size: 16px 16px;
     padding-right: 35px;
+}
+
+.alert-box {
+    margin-bottom: 20px;
+}
+
+.alert-error, .alert-success {
+    padding: 10px 15px;
+    border-radius: 4px;
+    font-size: 16px; 
+    font-weight: normal;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
 }
 

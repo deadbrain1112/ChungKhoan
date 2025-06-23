@@ -34,7 +34,9 @@ public class EmployeeController {
 							   @RequestParam(defaultValue = "5") int size,
 							   Model model,
 							   HttpSession session) {
-
+		if (session.getAttribute("nhanVien") == null) {
+	        return "redirect:/login";
+	    }
 
 		List<NhanVien> fromDb = nhanVienService.getPaginated(0, Integer.MAX_VALUE).getContent();
 

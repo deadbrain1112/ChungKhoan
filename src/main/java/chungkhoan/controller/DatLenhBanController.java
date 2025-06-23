@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import chungkhoan.entity.CoPhieu;
 import chungkhoan.entity.LenhDat;
-import chungkhoan.entity.LichSuGia;
 import chungkhoan.entity.NhaDauTu;
 import chungkhoan.entity.TaiKhoanNganHang;
 import chungkhoan.service.CoPhieuService;

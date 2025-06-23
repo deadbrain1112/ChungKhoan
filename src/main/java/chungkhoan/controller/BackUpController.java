@@ -1,16 +1,14 @@
 package chungkhoan.controller;
 
 import chungkhoan.service.BackupService;
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.awt.*;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +20,12 @@ public class BackUpController {
 	String dbName = "QUANLYGIAODICHCHUNGKHOAN";
 
 	@GetMapping("/backup")
-	public String backUpForm(Model model) {
+	public String backUpForm(Model model, HttpSession session) {
+		
+		if (session.getAttribute("nhanVien") == null) {
+	        return "redirect:/login";
+	    }
+		
 		String dbName = "QUANLYGIAODICHCHUNGKHOAN";
 		String deviceName = "QUANLYGIAODICHCHUNGKHOAN";
 
@@ -68,6 +71,4 @@ public class BackUpController {
 		}
 		return "redirect:/backup";
 	}
-
-
 }

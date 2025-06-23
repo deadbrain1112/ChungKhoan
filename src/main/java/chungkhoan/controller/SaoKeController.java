@@ -20,13 +20,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import chungkhoan.entity.LenhDat;
 import chungkhoan.entity.LenhKhop;
-import chungkhoan.entity.LichSuGia;
 import chungkhoan.entity.NhaDauTu;
-import chungkhoan.entity.SoHuu;
 import chungkhoan.repository.LenhKhopRepository;
 import chungkhoan.util.TradingTimeUtil.Phase;
 import chungkhoan.service.LenhDatService;

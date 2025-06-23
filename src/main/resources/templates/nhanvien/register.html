@@ -60,7 +60,11 @@
 			</select>
 		</div>
 
-		<button type="submit">Thực hiện</button>
+		<div class="button-group">
+			<button type="submit">Thực hiện</button>
+			<button type="button" onclick="window.location.href='/nhanvien/layout'">Thoát</button>
+		</div>
+
 	</form>
 
 	<p th:if="${error}" class="error" th:text="${error}"></p>

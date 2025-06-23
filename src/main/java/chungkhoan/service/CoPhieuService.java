@@ -1,12 +1,9 @@
 package chungkhoan.service;
 
 import chungkhoan.entity.CoPhieu;
-import chungkhoan.entity.LichSuGia;
 import chungkhoan.entity.UndoAction;
 import chungkhoan.repository.CoPhieuRepository;
-import chungkhoan.repository.LichSuGiaRepository;
 
-import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -22,9 +19,6 @@ public class CoPhieuService {
 
     @Autowired
     private CoPhieuRepository coPhieuRepository;
-
-    @Autowired
-    private LichSuGiaRepository lichSuGiaRepository;
     
     @Autowired 
     private LichSuGiaService lichSuGiaService;
@@ -124,7 +118,6 @@ public class CoPhieuService {
         return true;
     }
 
-
     // Kiểm tra stack rỗng
     public boolean isUndoStackEmpty() {
     	return undoStack.isEmpty();
@@ -134,7 +127,6 @@ public class CoPhieuService {
         undoStack.clear();
     }
 
-
     public double layGiaMoiNhat(String maCP) {
         return lichSuGiaService.layGiaMoiNhat(maCP).getGiaTC();
     }
@@ -142,7 +134,4 @@ public class CoPhieuService {
     public boolean existsById(String maCP) {
         return coPhieuRepository.existsByMaCP(maCP);
     }
-
-
-
 }

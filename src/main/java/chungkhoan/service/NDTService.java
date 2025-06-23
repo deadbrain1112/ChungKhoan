@@ -37,7 +37,7 @@ public class NDTService {
         jdbcTemplate.execute(
                 (Connection conn) -> {
                     CallableStatement cs = conn.prepareCall("{call sp_ThemNhaDauTu(?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-                    cs.setString(1, ndt.getMaNDT()); // truyền mã NĐT từ đối tượng
+                    cs.setString(1, ndt.getMaNDT()); 
                     cs.setString(2, ndt.getHoTen());
                     cs.setDate(3, Date.valueOf(ndt.getNgaySinh()));
                     cs.setString(4, "1"); // Mật khẩu giao dịch mặc định
@@ -162,7 +162,7 @@ public class NDTService {
         if (query == null || query.trim().isEmpty()) {
             return ndtRepository.findAll();
         }
-        // Search by maNDT, hoTen, or cmnd (case-insensitive)
+        // Search by maNDT, hoTen, or cmnd 
         return ndtRepository.findAll().stream()
                 .filter(ndt ->
                         (ndt.getMaNDT() != null && ndt.getMaNDT().toLowerCase().contains(query.toLowerCase())) ||
